@@ -17,7 +17,7 @@ dotenv.config({ path: path.resolve(__dirname, ".env") });
 async function main() {
   // Initialize the SDK with values from environment variables
   const sdk = new QuikDBNodesSDK({
-    provider: process.env.RPC_URL || "https://rpc.lisk.io",
+    provider: process.env.RPC_URL || "https://rpc.sepolia-api.lisk.com",
     nodeStorageAddress:
       process.env.NODE_STORAGE_ADDRESS ||
       "0x1234567890123456789012345678901234567890",

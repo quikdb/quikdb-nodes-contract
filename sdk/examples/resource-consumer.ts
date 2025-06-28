@@ -13,7 +13,7 @@ import { QuikDBUtils } from "../src/utils";
 async function main() {
   // Initialize the SDK with consumer credentials
   const sdk = new QuikDBNodesSDK({
-    provider: "https://rpc.lisk.io",
+    provider: "https://rpc.sepolia-api.lisk.com",
     nodeStorageAddress: "0x1234567890123456789012345678901234567890", // Replace with actual contract addresses
     userStorageAddress: "0x0987654321098765432109876543210987654321",
     resourceStorageAddress: "0x2468101214161820222426283032343638404244",

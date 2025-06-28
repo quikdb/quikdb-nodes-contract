@@ -31,7 +31,7 @@ import { QuikDBUtils } from "quikdb-nodes-sdk/utils";
 
 // Initialize the SDK
 const sdk = new QuikDBNodesSDK({
-  provider: "https://rpc.lisk.io",
+  provider: "https://rpc.sepolia-api.lisk.com",
   nodeStorageAddress: "0xYourNodeStorageContractAddress",
   userStorageAddress: "0xYourUserStorageContractAddress",
   resourceStorageAddress: "0xYourResourceStorageContractAddress",
