@@ -1,0 +1,1217 @@
+{
+  "name": "NodeStorage",
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [
+        {
+          "name": "admin",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "DEFAULT_ADMIN_ROLE",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "LOGIC_ROLE",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "addNodeCertification",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "certificationId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "details",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "addNodeNetwork",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "network",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "doesNodeExist",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getCertificationDetails",
+      "inputs": [
+        {
+          "name": "certificationId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getExtendedStats",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "total",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "active",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "listed",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "verified",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getNodeAddress",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getNodeCertifications",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32[]",
+          "internalType": "bytes32[]"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getNodeCustomAttribute",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getNodeInfo",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct NodeStorage.NodeInfo",
+          "components": [
+            {
+              "name": "nodeId",
+              "type": "string",
+              "internalType": "string"
+            },
+            {
+              "name": "nodeAddress",
+              "type": "address",
+              "internalType": "address"
+            },
+            {
+              "name": "status",
+              "type": "uint8",
+              "internalType": "enum NodeStorage.NodeStatus"
+            },
+            {
+              "name": "providerType",
+              "type": "uint8",
+              "internalType": "enum NodeStorage.ProviderType"
+            },
+            {
+              "name": "tier",
+              "type": "uint8",
+              "internalType": "enum NodeStorage.NodeTier"
+            },
+            {
+              "name": "capacity",
+              "type": "tuple",
+              "internalType": "struct NodeStorage.NodeCapacity",
+              "components": [
+                {
+                  "name": "cpuCores",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "memoryGB",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "storageGB",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "networkMbps",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "gpuCount",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "gpuType",
+                  "type": "string",
+                  "internalType": "string"
+                }
+              ]
+            },
+            {
+              "name": "metrics",
+              "type": "tuple",
+              "internalType": "struct NodeStorage.NodeMetrics",
+              "components": [
+                {
+                  "name": "uptimePercentage",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "totalJobs",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "successfulJobs",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "totalEarnings",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "lastHeartbeat",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "avgResponseTime",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                }
+              ]
+            },
+            {
+              "name": "listing",
+              "type": "tuple",
+              "internalType": "struct NodeStorage.NodeListing",
+              "components": [
+                {
+                  "name": "isListed",
+                  "type": "bool",
+                  "internalType": "bool"
+                },
+                {
+                  "name": "hourlyRate",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "availability",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "region",
+                  "type": "string",
+                  "internalType": "string"
+                },
+                {
+                  "name": "supportedServices",
+                  "type": "string[]",
+                  "internalType": "string[]"
+                },
+                {
+                  "name": "minJobDuration",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "maxJobDuration",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                }
+              ]
+            },
+            {
+              "name": "registeredAt",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "lastUpdated",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "exists",
+              "type": "bool",
+              "internalType": "bool"
+            },
+            {
+              "name": "extended",
+              "type": "tuple",
+              "internalType": "struct NodeStorage.NodeExtendedInfo",
+              "components": [
+                {
+                  "name": "hardwareFingerprint",
+                  "type": "string",
+                  "internalType": "string"
+                },
+                {
+                  "name": "carbonFootprint",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "compliance",
+                  "type": "string[]",
+                  "internalType": "string[]"
+                },
+                {
+                  "name": "securityScore",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "operatorBio",
+                  "type": "string",
+                  "internalType": "string"
+                },
+                {
+                  "name": "specialCapabilities",
+                  "type": "string[]",
+                  "internalType": "string[]"
+                },
+                {
+                  "name": "bondAmount",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "isVerified",
+                  "type": "bool",
+                  "internalType": "bool"
+                },
+                {
+                  "name": "verificationExpiry",
+                  "type": "uint256",
+                  "internalType": "uint256"
+                },
+                {
+                  "name": "contactInfo",
+                  "type": "string",
+                  "internalType": "string"
+                }
+              ]
+            },
+            {
+              "name": "certifications",
+              "type": "bytes32[]",
+              "internalType": "bytes32[]"
+            },
+            {
+              "name": "connectedNetworks",
+              "type": "string[]",
+              "internalType": "string[]"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getNodeNetworks",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "string[]",
+          "internalType": "string[]"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getNodeSecurityBond",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getNodeStatus",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint8",
+          "internalType": "enum NodeStorage.NodeStatus"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getNodesByOperator",
+      "inputs": [
+        {
+          "name": "operator",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "string[]",
+          "internalType": "string[]"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getNodesByProvider",
+      "inputs": [
+        {
+          "name": "providerType",
+          "type": "uint8",
+          "internalType": "enum NodeStorage.ProviderType"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "string[]",
+          "internalType": "string[]"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getNodesByStatus",
+      "inputs": [
+        {
+          "name": "status",
+          "type": "uint8",
+          "internalType": "enum NodeStorage.NodeStatus"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "string[]",
+          "internalType": "string[]"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getNodesByTier",
+      "inputs": [
+        {
+          "name": "tier",
+          "type": "uint8",
+          "internalType": "enum NodeStorage.NodeTier"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "string[]",
+          "internalType": "string[]"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getNodesByVerification",
+      "inputs": [
+        {
+          "name": "verified",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "string[]",
+          "internalType": "string[]"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getRoleAdmin",
+      "inputs": [
+        {
+          "name": "role",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getStats",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "total",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "active",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "listed",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getTotalNodes",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "grantRole",
+      "inputs": [
+        {
+          "name": "role",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "hasRole",
+      "inputs": [
+        {
+          "name": "role",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "isOperator",
+      "inputs": [
+        {
+          "name": "operator",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "listNode",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "hourlyRate",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "availability",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "registerNode",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "nodeAddress",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "tier",
+          "type": "uint8",
+          "internalType": "enum NodeStorage.NodeTier"
+        },
+        {
+          "name": "providerType",
+          "type": "uint8",
+          "internalType": "enum NodeStorage.ProviderType"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "removeNodeCertification",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "certificationId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "renounceRole",
+      "inputs": [
+        {
+          "name": "role",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "callerConfirmation",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "revokeRole",
+      "inputs": [
+        {
+          "name": "role",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setLogicContract",
+      "inputs": [
+        {
+          "name": "logicContract",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setNodeCustomAttribute",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setNodeSecurityBond",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "bondAmount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "supportsInterface",
+      "inputs": [
+        {
+          "name": "interfaceId",
+          "type": "bytes4",
+          "internalType": "bytes4"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "unlistNode",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "updateNodeCapacity",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "capacity",
+          "type": "tuple",
+          "internalType": "struct NodeStorage.NodeCapacity",
+          "components": [
+            {
+              "name": "cpuCores",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "memoryGB",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "storageGB",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "networkMbps",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "gpuCount",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "gpuType",
+              "type": "string",
+              "internalType": "string"
+            }
+          ]
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "updateNodeExtendedInfo",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "extended",
+          "type": "tuple",
+          "internalType": "struct NodeStorage.NodeExtendedInfo",
+          "components": [
+            {
+              "name": "hardwareFingerprint",
+              "type": "string",
+              "internalType": "string"
+            },
+            {
+              "name": "carbonFootprint",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "compliance",
+              "type": "string[]",
+              "internalType": "string[]"
+            },
+            {
+              "name": "securityScore",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "operatorBio",
+              "type": "string",
+              "internalType": "string"
+            },
+            {
+              "name": "specialCapabilities",
+              "type": "string[]",
+              "internalType": "string[]"
+            },
+            {
+              "name": "bondAmount",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "isVerified",
+              "type": "bool",
+              "internalType": "bool"
+            },
+            {
+              "name": "verificationExpiry",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "contactInfo",
+              "type": "string",
+              "internalType": "string"
+            }
+          ]
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "updateNodeMetrics",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "metrics",
+          "type": "tuple",
+          "internalType": "struct NodeStorage.NodeMetrics",
+          "components": [
+            {
+              "name": "uptimePercentage",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "totalJobs",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "successfulJobs",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "totalEarnings",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "lastHeartbeat",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "avgResponseTime",
+              "type": "uint256",
+              "internalType": "uint256"
+            }
+          ]
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "updateNodeStatus",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "internalType": "string"
+        },
+        {
+          "name": "status",
+          "type": "uint8",
+          "internalType": "enum NodeStorage.NodeStatus"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "event",
+      "name": "NodeDataUpdated",
+      "inputs": [
+        {
+          "name": "nodeId",
+          "type": "string",
+          "indexed": true,
+          "internalType": "string"
+        },
+        {
+          "name": "dataType",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "RoleAdminChanged",
+      "inputs": [
+        {
+          "name": "role",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "previousAdminRole",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "newAdminRole",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "RoleGranted",
+      "inputs": [
+        {
+          "name": "role",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "sender",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "RoleRevoked",
+      "inputs": [
+        {
+          "name": "role",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "sender",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "error",
+      "name": "AccessControlBadConfirmation",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "AccessControlUnauthorizedAccount",
+      "inputs": [
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "neededRole",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ]
+    }
+  ]
+}
