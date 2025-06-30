@@ -19,7 +19,8 @@
     "examples:storage": "ts-node examples/storage-provider.ts",
     "examples:consumer": "ts-node examples/resource-consumer.ts",
     "examples:pagination": "ts-node examples/node-pagination.ts",
-    "examples:compute-listings": "ts-node examples/compute-listing-pagination.ts"
+    "examples:compute-listings": "ts-node examples/compute-listing-pagination.ts",
+    "examples:user-pagination": "ts-node examples/user-pagination.ts"
   },
   "keywords": [
     "quikdb",

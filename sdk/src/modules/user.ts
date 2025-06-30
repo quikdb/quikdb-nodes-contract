@@ -169,4 +169,192 @@ export class UserModule implements BaseModule {
   async getUsersByType(userType: UserType): Promise<string[]> {
     return await this.contract.getUsersByType(userType);
   }
+
+  /**
+   * Get users list with pagination and filtering
+   * @param page Page number (0-based)
+   * @param pageSize Number of users per page
+   * @param filter Optional filter criteria (userType, isActive)
+   * @returns Array of user addresses and pagination info
+   */
+  async getUsersList(
+    page: number = 0,
+    pageSize: number = 10,
+    filter?: {
+      userType?: UserType;
+      isActive?: boolean;
+      registeredAfter?: number; // timestamp
+      reputationScoreAbove?: number;
+    }
+  ): Promise<{
+    users: string[];
+    totalUsers: number;
+    totalPages: number;
+    currentPage: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  }> {
+    // Input validation
+    if (page < 0) page = 0;
+    if (pageSize <= 0) pageSize = 10;
+    if (pageSize > 100) pageSize = 100; // Set a reasonable limit
+
+    let totalUsers: number;
+    let users: string[] = [];
+
+    try {
+      // Get all user addresses - implementation depends on contract capabilities
+      try {
+        // Try to get all user addresses directly if the method exists
+        users = await this.getAllUserAddresses();
+      } catch (error) {
+        console.warn("Failed to get all user addresses directly:", error);
+
+        // Fallback to estimating from total count if available
+        try {
+          const totalCount = await this.getTotalUsers();
+
+          // Build list of addresses by user type and combine
+          const consumerUsers = await this.getUsersByType(UserType.CONSUMER).catch(() => []);
+          const providerUsers = await this.getUsersByType(UserType.PROVIDER).catch(() => []);
+          const marketplaceAdmins = await this.getUsersByType(UserType.MARKETPLACE_ADMIN).catch(() => []);
+          const platformAdmins = await this.getUsersByType(UserType.PLATFORM_ADMIN).catch(() => []);
+
+          // Combine and deduplicate (in case a user has multiple roles)
+          users = [...new Set([
+            ...consumerUsers, 
+            ...providerUsers, 
+            ...marketplaceAdmins, 
+            ...platformAdmins
+          ])];
+
+          // If we still don't have any users, check if we can iterate by index
+          if (users.length === 0 && totalCount > 0) {
+            try {
+              for (let i = 0; i < totalCount; i++) {
+                try {
+                  const userAddress = await this.getUserAddressByIndex(i);
+                  users.push(userAddress);
+                } catch (err) {
+                  console.warn(`Failed to get user at index ${i}:`, err);
+                }
+              }
+            } catch (indexError) {
+              console.warn("Failed to get users by index:", indexError);
+            }
+          }
+        } catch (countError) {
+          console.warn("Failed to get total users count:", countError);
+          users = [];
+        }
+      }
+
+      // Apply filters if provided
+      if (filter) {
+        const filteredUsers = [];
+
+        for (const userAddress of users) {
+          try {
+            // Get full user info to apply filters
+            const userInfo = await this.getUserInfo(userAddress);
+            let matches = true;
+
+            // Apply userType filter
+            if (filter.userType !== undefined && userInfo.profile.userType !== filter.userType) {
+              matches = false;
+            }
+
+            // Apply active status filter
+            if (filter.isActive !== undefined && userInfo.profile.isActive !== filter.isActive) {
+              matches = false;
+            }
+
+            // Apply registration date filter
+            if (
+              filter.registeredAfter !== undefined &&
+              userInfo.profile.createdAt < filter.registeredAfter
+            ) {
+              matches = false;
+            }
+
+            // Apply reputation score filter
+            if (
+              filter.reputationScoreAbove !== undefined &&
+              userInfo.profile.reputationScore < filter.reputationScoreAbove
+            ) {
+              matches = false;
+            }
+
+            if (matches) {
+              filteredUsers.push(userAddress);
+            }
+          } catch (error) {
+            console.warn(
+              `Failed to get details for user ${userAddress}:`,
+              error
+            );
+          }
+        }
+
+        users = filteredUsers;
+      }
+
+      totalUsers = users.length;
+
+      // Calculate pagination parameters
+      const totalPages = Math.ceil(totalUsers / pageSize) || 1; // At least 1 page
+      const startIdx = page * pageSize;
+      const endIdx = Math.min(startIdx + pageSize, totalUsers);
+
+      // Get the requested page of users
+      const pageUsers = users.slice(startIdx, endIdx);
+
+      return {
+        users: pageUsers,
+        totalUsers,
+        totalPages,
+        currentPage: page,
+        hasNextPage: page < totalPages - 1,
+        hasPreviousPage: page > 0,
+      };
+    } catch (error) {
+      console.error("Error in getUsersList:", error);
+      // Return empty results with proper pagination structure
+      return {
+        users: [],
+        totalUsers: 0,
+        totalPages: 1,
+        currentPage: 0,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      };
+    }
+  }
+
+  /**
+   * Get all user addresses
+   * @returns Array of all user addresses
+   */
+  async getAllUserAddresses(): Promise<string[]> {
+    try {
+      // Try to call contract method if it exists
+      return await this.contract.getAllUserAddresses();
+    } catch (error) {
+      throw new Error(`Failed to get all user addresses: ${error}`);
+    }
+  }
+
+  /**
+   * Get user address by index
+   * @param index User index
+   * @returns User address
+   */
+  async getUserAddressByIndex(index: number): Promise<string> {
+    try {
+      // Try to call contract method if it exists
+      return await this.contract.getUserAddressByIndex(index);
+    } catch (error) {
+      throw new Error(`Failed to get user address at index ${index}: ${error}`);
+    }
+  }
 }

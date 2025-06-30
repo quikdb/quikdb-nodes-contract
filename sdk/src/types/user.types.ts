@@ -49,6 +49,7 @@ export interface UserStats {
  * Complete user information
  */
 export interface UserInfo {
+  address?: string;  // Optional address property, present in mock data but not in contract return
   profile: UserProfile;
   preferences: UserPreferences;
   stats: UserStats;
