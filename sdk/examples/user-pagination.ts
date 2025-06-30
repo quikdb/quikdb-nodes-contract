@@ -75,7 +75,7 @@ async function main() {
     console.log(`Has next page: ${firstPage.hasNextPage}`);
     console.log(`Has previous page: ${firstPage.hasPreviousPage}`);
     console.log(`Users on this page: ${firstPage.users.length}`);
-    
+
     if (firstPage.users.length === 0) {
       console.log(
         "No users found. The blockchain may be empty or the contract address may be incorrect."
@@ -92,7 +92,11 @@ async function main() {
       console.log(`  Is Active: ${userDetails.profile.isActive}`);
       console.log(`  Is Verified: ${userDetails.profile.isVerified}`);
       console.log(`  Reputation Score: ${userDetails.profile.reputationScore}`);
-      console.log(`  Registered: ${new Date(userDetails.profile.createdAt * 1000).toLocaleString()}`);
+      console.log(
+        `  Registered: ${new Date(
+          userDetails.profile.createdAt * 1000
+        ).toLocaleString()}`
+      );
     }
     console.log();
 
@@ -131,13 +135,17 @@ async function main() {
 
     // Get current timestamp
     const now = Math.floor(Date.now() / 1000);
-    const thirtyDaysAgo = now - (30 * 24 * 60 * 60); // 30 days ago
+    const thirtyDaysAgo = now - 30 * 24 * 60 * 60; // 30 days ago
 
-    console.log("Example 6: Filtering by registration date (registered in the last 30 days)");
+    console.log(
+      "Example 6: Filtering by registration date (registered in the last 30 days)"
+    );
     const recentUsers = await userModule.getUsersList(0, 10, {
       registeredAfter: thirtyDaysAgo,
     });
-    console.log(`Total users registered in the last 30 days: ${recentUsers.totalUsers}`);
+    console.log(
+      `Total users registered in the last 30 days: ${recentUsers.totalUsers}`
+    );
     console.log("Recently registered user addresses:", recentUsers.users);
     console.log();
 
@@ -145,17 +153,23 @@ async function main() {
     const highRepUsers = await userModule.getUsersList(0, 10, {
       reputationScoreAbove: 75,
     });
-    console.log(`Total users with reputation score above 75: ${highRepUsers.totalUsers}`);
+    console.log(
+      `Total users with reputation score above 75: ${highRepUsers.totalUsers}`
+    );
     console.log("High reputation user addresses:", highRepUsers.users);
     console.log();
 
-    console.log("Example 8: Complex filtering (active providers with high reputation)");
+    console.log(
+      "Example 8: Complex filtering (active providers with high reputation)"
+    );
     const premiumProviders = await userModule.getUsersList(0, 10, {
       userType: UserType.PROVIDER,
       isActive: true,
       reputationScoreAbove: 75,
     });
-    console.log(`Total active providers with high reputation: ${premiumProviders.totalUsers}`);
+    console.log(
+      `Total active providers with high reputation: ${premiumProviders.totalUsers}`
+    );
     console.log("Premium provider user addresses:", premiumProviders.users);
   } catch (error) {
     console.error("Error:", error);

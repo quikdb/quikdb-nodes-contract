@@ -1,6 +1,6 @@
 /**
  * Example for using compute listing pagination functionality with mock data
- * 
+ *
  * This example demonstrates:
  * 1. Getting a paginated list of compute listings
  * 2. Filtering listings by different criteria
@@ -32,13 +32,15 @@ async function main() {
 
   // Create mock resource module for testing
   const resourceModule = new MockResourceModule(
-    provider, 
+    provider,
     resourceStorageAddress,
     wallet
   );
 
   try {
-    console.log("Example 1: Getting compute listings with pagination (default settings)");
+    console.log(
+      "Example 1: Getting compute listings with pagination (default settings)"
+    );
     // Default pagination (first page, 10 items)
     const firstPage = await resourceModule.getComputeListings();
     console.log(`Total compute listings: ${firstPage.totalListings}`);
@@ -52,14 +54,18 @@ async function main() {
     if (firstPage.listings.length > 0) {
       // Get details for the first listing to show
       const firstListingId = firstPage.listings[0];
-      const listingDetails = await resourceModule.getComputeListing(firstListingId);
+      const listingDetails = await resourceModule.getComputeListing(
+        firstListingId
+      );
       console.log(`Details for first listing ${firstListingId}:`);
       console.log(`  Node ID: ${listingDetails.nodeId}`);
       console.log(`  Tier: ${ComputeTier[listingDetails.tier]}`);
       console.log(`  CPU Cores: ${listingDetails.cpuCores}`);
       console.log(`  Memory: ${listingDetails.memoryGB} GB`);
       console.log(`  Storage: ${listingDetails.storageGB} GB`);
-      console.log(`  Hourly Rate: ${ethers.formatEther(listingDetails.hourlyRate)} ETH`);
+      console.log(
+        `  Hourly Rate: ${ethers.formatEther(listingDetails.hourlyRate)} ETH`
+      );
       console.log(`  Region: ${listingDetails.region}`);
       console.log(`  Active: ${listingDetails.isActive}`);
     }
@@ -106,15 +112,23 @@ async function main() {
     console.log("Active Listing IDs:", activeListings.listings);
     console.log();
 
-    console.log("Example 7: Complex filtering (active premium listings with at least 16 CPU cores)");
-    const complexFilteredListings = await resourceModule.getComputeListings(0, 10, {
-      tier: ComputeTier.PREMIUM,
-      isActive: true,
-      minCpuCores: 16,
-    });
-    console.log(`Total matching listings: ${complexFilteredListings.totalListings}`);
+    console.log(
+      "Example 7: Complex filtering (active premium listings with at least 16 CPU cores)"
+    );
+    const complexFilteredListings = await resourceModule.getComputeListings(
+      0,
+      10,
+      {
+        tier: ComputeTier.PREMIUM,
+        isActive: true,
+        minCpuCores: 16,
+      }
+    );
+    console.log(
+      `Total matching listings: ${complexFilteredListings.totalListings}`
+    );
     console.log("Matching Listing IDs:", complexFilteredListings.listings);
-    
+
     // If results exist, show details for these premium filtered listings
     if (complexFilteredListings.listings.length > 0) {
       console.log("\nDetails for filtered premium listings:");
@@ -125,12 +139,13 @@ async function main() {
         console.log(`  Memory: ${listing.memoryGB} GB`);
         console.log(`  Storage: ${listing.storageGB} GB`);
         console.log(`  Region: ${listing.region}`);
-        console.log(`  Hourly Rate: ${ethers.formatEther(listing.hourlyRate)} ETH`);
+        console.log(
+          `  Hourly Rate: ${ethers.formatEther(listing.hourlyRate)} ETH`
+        );
       }
     } else {
       console.log("No listings match the complex filter criteria.");
     }
-
   } catch (error) {
     console.error("Error:", error);
   }

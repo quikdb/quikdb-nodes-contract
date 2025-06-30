@@ -10,7 +10,7 @@ import {
 
 /**
  * Mock implementation of ResourceModule for testing without a blockchain
- * 
+ *
  * This module provides all the functionality of the standard ResourceModule
  * but uses in-memory mock data instead of making actual blockchain calls.
  * This is useful for:
@@ -39,7 +39,7 @@ export class MockResourceModule implements BaseModule {
 
     // Initialize with some mock data
     this.generateMockData();
-    
+
     // Create a dummy contract object to satisfy type requirements
     this.contract = new ethers.Contract(
       contractAddress,
@@ -56,21 +56,27 @@ export class MockResourceModule implements BaseModule {
     for (let i = 0; i < 20; i++) {
       const listingId = `compute-${i.toString().padStart(3, "0")}`;
       const nodeId = `node-${i % 10}`;
-      
+
       // Create deterministic but varied data
       // For some entries, ensure we have premium listings with many CPU cores
-      const tier = (i % 5 === 0) ? ComputeTier.PREMIUM : (i % 6);
-      const cpuCores = (i % 5 === 0) ? 32 + (i * 4) : 2 + (i % 16);
-      const memoryGB = (i % 5 === 0) ? 64 + (i * 8) : 2 + (i % 32);
+      const tier = i % 5 === 0 ? ComputeTier.PREMIUM : i % 6;
+      const cpuCores = i % 5 === 0 ? 32 + i * 4 : 2 + (i % 16);
+      const memoryGB = i % 5 === 0 ? 64 + i * 8 : 2 + (i % 32);
       const storageGB = 20 + (i % 980);
       // Fix decimal precision for ethers.parseEther
-      const hourlyRate = ethers.parseEther(
-        (0.001 + Math.floor(i % 100) / 10000).toFixed(18)
-      ).toString();
-      const regions = ["us-east", "us-west", "eu-central", "ap-south", "sa-east"];
+      const hourlyRate = ethers
+        .parseEther((0.001 + Math.floor(i % 100) / 10000).toFixed(18))
+        .toString();
+      const regions = [
+        "us-east",
+        "us-west",
+        "eu-central",
+        "ap-south",
+        "sa-east",
+      ];
       const region = regions[i % regions.length];
       const isActive = i % 4 !== 0; // 75% active
-      
+
       // Current time minus 0-90 days
       const now = Math.floor(Date.now() / 1000);
       const createdAt = now - (i % 90) * 24 * 60 * 60;
@@ -94,18 +100,24 @@ export class MockResourceModule implements BaseModule {
     for (let i = 0; i < 15; i++) {
       const listingId = `storage-${i.toString().padStart(3, "0")}`;
       const nodeId = `node-${i % 10}`;
-      
+
       // Create deterministic but varied data
       const tier = i % 4;
       const storageGB = 100 + (i % 10) * 100;
       // Fix decimal precision for ethers.parseEther
-      const hourlyRate = ethers.parseEther(
-        (0.0005 + Math.floor(i % 100) / 20000).toFixed(18)
-      ).toString();
-      const regions = ["us-east", "us-west", "eu-central", "ap-south", "sa-east"];
+      const hourlyRate = ethers
+        .parseEther((0.0005 + Math.floor(i % 100) / 20000).toFixed(18))
+        .toString();
+      const regions = [
+        "us-east",
+        "us-west",
+        "eu-central",
+        "ap-south",
+        "sa-east",
+      ];
       const region = regions[i % regions.length];
       const isActive = i % 3 !== 0; // 66% active
-      
+
       // Current time minus 0-120 days
       const now = Math.floor(Date.now() / 1000);
       const createdAt = now - (i % 120) * 24 * 60 * 60;
@@ -128,28 +140,30 @@ export class MockResourceModule implements BaseModule {
       const allocationId = `alloc-${i.toString().padStart(3, "0")}`;
       const listingId = `compute-${(i % 20).toString().padStart(3, "0")}`;
       const userId = ethers.Wallet.createRandom().address;
-      
+
       // Current time
       const now = Math.floor(Date.now() / 1000);
       const startTime = now - (i % 30) * 24 * 60 * 60;
-      const duration = 24 * (1 + i % 30); // 1-30 days in hours
+      const duration = 24 * (1 + (i % 30)); // 1-30 days in hours
       const endTime = startTime + duration * 60 * 60;
-      
+
       this.mockComputeAllocations.set(allocationId, {
         allocationId,
         listingId,
         buyerAddress: userId,
         startTime,
         endTime,
-        totalCost: ethers.parseEther((0.01 * (1 + i % 10)).toString()).toString(),
+        totalCost: ethers
+          .parseEther((0.01 * (1 + (i % 10))).toString())
+          .toString(),
         status: now < endTime ? 1 : 2, // 1 = active, 2 = completed
         usageMetrics: {
           cpuUsagePercent: Math.floor(Math.random() * 100),
           memoryUsageGB: Math.floor(Math.random() * 16),
           storageUsageGB: Math.floor(Math.random() * 100),
           bandwidthUsageGB: Math.floor(Math.random() * 50),
-          lastUpdated: now - Math.floor(Math.random() * 3600) // Last update between 0-1 hour ago
-        }
+          lastUpdated: now - Math.floor(Math.random() * 3600), // Last update between 0-1 hour ago
+        },
       });
     }
   }
@@ -195,12 +209,12 @@ export class MockResourceModule implements BaseModule {
     }
 
     // Generate a new listing ID
-    const listingId = `compute-${ethers.keccak256(
-      ethers.toUtf8Bytes(`${nodeId}-${Date.now()}`)
-    ).slice(0, 10)}`;
-    
+    const listingId = `compute-${ethers
+      .keccak256(ethers.toUtf8Bytes(`${nodeId}-${Date.now()}`))
+      .slice(0, 10)}`;
+
     const now = Math.floor(Date.now() / 1000);
-    
+
     // Create and store the new listing
     this.mockComputeListings.set(listingId, {
       listingId,
@@ -240,12 +254,12 @@ export class MockResourceModule implements BaseModule {
     }
 
     // Generate a new listing ID
-    const listingId = `storage-${ethers.keccak256(
-      ethers.toUtf8Bytes(`${nodeId}-${Date.now()}`)
-    ).slice(0, 10)}`;
-    
+    const listingId = `storage-${ethers
+      .keccak256(ethers.toUtf8Bytes(`${nodeId}-${Date.now()}`))
+      .slice(0, 10)}`;
+
     const now = Math.floor(Date.now() / 1000);
-    
+
     // Create and store the new listing
     this.mockStorageListings.set(listingId, {
       listingId,
@@ -307,39 +321,46 @@ export class MockResourceModule implements BaseModule {
 
     // Get all listings and convert to array
     let listings = Array.from(this.mockComputeListings.values());
-    
+
     // Apply filters if provided
     if (filter) {
       if (filter.tier !== undefined) {
-        listings = listings.filter(listing => listing.tier === filter.tier);
+        listings = listings.filter((listing) => listing.tier === filter.tier);
       }
-      
+
       if (filter.region !== undefined) {
         listings = listings.filter(
-          listing => listing.region.toLowerCase() === filter.region?.toLowerCase()
+          (listing) =>
+            listing.region.toLowerCase() === filter.region?.toLowerCase()
         );
       }
-      
+
       if (filter.isActive !== undefined) {
-        listings = listings.filter(listing => listing.isActive === filter.isActive);
+        listings = listings.filter(
+          (listing) => listing.isActive === filter.isActive
+        );
       }
-      
+
       if (filter.minCpuCores !== undefined) {
-        listings = listings.filter(listing => listing.cpuCores >= filter.minCpuCores!);
+        listings = listings.filter(
+          (listing) => listing.cpuCores >= filter.minCpuCores!
+        );
       }
-      
+
       if (filter.maxHourlyRate !== undefined) {
         const maxRate = BigInt(filter.maxHourlyRate);
-        listings = listings.filter(listing => BigInt(listing.hourlyRate) <= maxRate);
+        listings = listings.filter(
+          (listing) => BigInt(listing.hourlyRate) <= maxRate
+        );
       }
     }
 
     // Sort by creation date (newest first)
     listings.sort((a, b) => b.createdAt - a.createdAt);
-    
+
     // Extract listing IDs
-    const listingIds = listings.map(listing => listing.listingId);
-    
+    const listingIds = listings.map((listing) => listing.listingId);
+
     // Calculate pagination
     const totalListings = listingIds.length;
     const totalPages = Math.ceil(totalListings / pageSize) || 1;
@@ -402,39 +423,46 @@ export class MockResourceModule implements BaseModule {
 
     // Get all listings and convert to array
     let listings = Array.from(this.mockStorageListings.values());
-    
+
     // Apply filters if provided
     if (filter) {
       if (filter.tier !== undefined) {
-        listings = listings.filter(listing => listing.tier === filter.tier);
+        listings = listings.filter((listing) => listing.tier === filter.tier);
       }
-      
+
       if (filter.region !== undefined) {
         listings = listings.filter(
-          listing => listing.region.toLowerCase() === filter.region?.toLowerCase()
+          (listing) =>
+            listing.region.toLowerCase() === filter.region?.toLowerCase()
         );
       }
-      
+
       if (filter.isActive !== undefined) {
-        listings = listings.filter(listing => listing.isActive === filter.isActive);
+        listings = listings.filter(
+          (listing) => listing.isActive === filter.isActive
+        );
       }
-      
+
       if (filter.minStorageGB !== undefined) {
-        listings = listings.filter(listing => listing.storageGB >= filter.minStorageGB!);
+        listings = listings.filter(
+          (listing) => listing.storageGB >= filter.minStorageGB!
+        );
       }
-      
+
       if (filter.maxHourlyRate !== undefined) {
         const maxRate = BigInt(filter.maxHourlyRate);
-        listings = listings.filter(listing => BigInt(listing.hourlyRate) <= maxRate);
+        listings = listings.filter(
+          (listing) => BigInt(listing.hourlyRate) <= maxRate
+        );
       }
     }
 
     // Sort by creation date (newest first)
     listings.sort((a, b) => b.createdAt - a.createdAt);
-    
+
     // Extract listing IDs
-    const listingIds = listings.map(listing => listing.listingId);
-    
+    const listingIds = listings.map((listing) => listing.listingId);
+
     // Calculate pagination
     const totalListings = listingIds.length;
     const totalPages = Math.ceil(totalListings / pageSize) || 1;
@@ -480,12 +508,12 @@ export class MockResourceModule implements BaseModule {
     }
 
     // Generate a new allocation ID
-    const allocationId = `alloc-${ethers.keccak256(
-      ethers.toUtf8Bytes(`${listingId}-${Date.now()}`)
-    ).slice(0, 10)}`;
-    
+    const allocationId = `alloc-${ethers
+      .keccak256(ethers.toUtf8Bytes(`${listingId}-${Date.now()}`))
+      .slice(0, 10)}`;
+
     const now = Math.floor(Date.now() / 1000);
-    
+
     // Create and store the new allocation
     this.mockComputeAllocations.set(allocationId, {
       allocationId,
@@ -500,8 +528,8 @@ export class MockResourceModule implements BaseModule {
         memoryUsageGB: 0,
         storageUsageGB: 0,
         bandwidthUsageGB: 0,
-        lastUpdated: now
-      }
+        lastUpdated: now,
+      },
     });
 
     return allocationId;
@@ -535,7 +563,7 @@ export class MockResourceModule implements BaseModule {
   async getTotalStorageListings(): Promise<number> {
     return this.mockStorageListings.size;
   }
-  
+
   /**
    * Get compute listing ID by index
    * @param index Listing index
@@ -548,7 +576,7 @@ export class MockResourceModule implements BaseModule {
     }
     return listingIds[index];
   }
-  
+
   /**
    * Get storage listing ID by index
    * @param index Listing index
@@ -632,11 +660,11 @@ export class MockResourceModule implements BaseModule {
         gasUsed: BigInt(50000),
         cumulativeGasUsed: BigInt(50000),
         type: 0,
-        from: await this.signer?.getAddress() || "",
+        from: (await this.signer?.getAddress()) || "",
         to: "0x0000000000000000000000000000000000000000",
       }),
     } as unknown as TransactionResponse;
-    
+
     return mockTx;
   }
 }

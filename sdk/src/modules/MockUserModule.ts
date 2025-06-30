@@ -11,7 +11,7 @@ import { mockUsers } from "../../examples/mock-data";
 
 /**
  * Mock implementation of UserModule for testing without a blockchain
- * 
+ *
  * This module provides all the functionality of the standard UserModule
  * but uses in-memory mock data instead of making actual blockchain calls.
  * This is useful for:
@@ -36,7 +36,7 @@ export class MockUserModule implements BaseModule {
 
     // Initialize with some mock data
     this.generateMockData();
-    
+
     // Create a dummy contract object to satisfy type requirements
     this.contract = new ethers.Contract(
       contractAddress,
@@ -52,7 +52,7 @@ export class MockUserModule implements BaseModule {
     // Generate 30 mock users
     for (let i = 0; i < 30; i++) {
       const userAddress = ethers.Wallet.createRandom().address;
-      
+
       // Create deterministic but varied data
       let userType: UserType;
       if (i % 10 === 0) {
@@ -66,22 +66,25 @@ export class MockUserModule implements BaseModule {
       }
 
       const isActive = i % 4 !== 0; // 75% active
-      
+
       // Current time minus 0-365 days
       const now = Math.floor(Date.now() / 1000);
       const createdAt = now - Math.floor(i % 365) * 24 * 60 * 60;
-      const updatedAt = createdAt + Math.floor(Math.random() * (now - createdAt));
+      const updatedAt =
+        createdAt + Math.floor(Math.random() * (now - createdAt));
 
       // Create profile
-      const profileHash = ethers.keccak256(ethers.toUtf8Bytes(`profile-${userAddress}-${i}`));
-      
-      const totalSpent = ethers.parseEther(
-        (0.01 * (i % 100)).toFixed(18)
-      ).toString();
-      
-      const totalEarned = ethers.parseEther(
-        (0.02 * (i % 50)).toFixed(18)
-      ).toString();
+      const profileHash = ethers.keccak256(
+        ethers.toUtf8Bytes(`profile-${userAddress}-${i}`)
+      );
+
+      const totalSpent = ethers
+        .parseEther((0.01 * (i % 100)).toFixed(18))
+        .toString();
+
+      const totalEarned = ethers
+        .parseEther((0.02 * (i % 50)).toFixed(18))
+        .toString();
 
       const reputationScore = 50 + (i % 50); // 50-99
 
@@ -94,21 +97,21 @@ export class MockUserModule implements BaseModule {
         totalSpent,
         totalEarned,
         reputationScore,
-        isVerified: i % 3 === 0 // 33% verified
+        isVerified: i % 3 === 0, // 33% verified
       };
 
       // Create preferences
       const preferences: UserPreferences = {
-        preferredRegion: ['us-east', 'eu-central', 'ap-south'][i % 3],
-        maxHourlyRate: ethers.parseEther(
-          (0.1 * (1 + i % 10)).toFixed(18)
-        ).toString(),
+        preferredRegion: ["us-east", "eu-central", "ap-south"][i % 3],
+        maxHourlyRate: ethers
+          .parseEther((0.1 * (1 + (i % 10))).toFixed(18))
+          .toString(),
         autoRenewal: i % 2 === 0,
         preferredProviders: Array.from(
           { length: i % 5 },
           (_, idx) => ethers.Wallet.createRandom().address
         ),
-        notificationLevel: i % 3
+        notificationLevel: i % 3,
       };
 
       // Create stats
@@ -117,7 +120,7 @@ export class MockUserModule implements BaseModule {
         avgRating: 3 + (i % 20) / 10, // 3.0-4.9
         completedJobs: i * 3,
         cancelledJobs: i % 5,
-        lastActivity: now - (i % 30) * 24 * 60 * 60 // Last 30 days
+        lastActivity: now - (i % 30) * 24 * 60 * 60, // Last 30 days
       };
 
       // Create full user info
@@ -126,7 +129,7 @@ export class MockUserModule implements BaseModule {
         profile,
         preferences,
         stats,
-        exists: true
+        exists: true,
       });
     }
   }
@@ -205,7 +208,7 @@ export class MockUserModule implements BaseModule {
       totalSpent: "0",
       totalEarned: "0",
       reputationScore: 50,
-      isVerified: false
+      isVerified: false,
     };
 
     const preferences: UserPreferences = {
@@ -213,7 +216,7 @@ export class MockUserModule implements BaseModule {
       maxHourlyRate: "0",
       autoRenewal: false,
       preferredProviders: [],
-      notificationLevel: 1
+      notificationLevel: 1,
     };
 
     const stats: UserStats = {
@@ -221,7 +224,7 @@ export class MockUserModule implements BaseModule {
       avgRating: 0,
       completedJobs: 0,
       cancelledJobs: 0,
-      lastActivity: now
+      lastActivity: now,
     };
 
     this.mockUsers.set(userAddress, {
@@ -229,7 +232,7 @@ export class MockUserModule implements BaseModule {
       profile,
       preferences,
       stats,
-      exists: true
+      exists: true,
     });
 
     // Return mock transaction response
@@ -334,32 +337,41 @@ export class MockUserModule implements BaseModule {
 
     // Get all users and convert to array
     let users = Array.from(this.mockUsers.entries());
-    
+
     // Apply filters if provided
     if (filter) {
       if (filter.userType !== undefined) {
-        users = users.filter(([_, user]) => user.profile.userType === filter.userType);
+        users = users.filter(
+          ([_, user]) => user.profile.userType === filter.userType
+        );
       }
-      
+
       if (filter.isActive !== undefined) {
-        users = users.filter(([_, user]) => user.profile.isActive === filter.isActive);
+        users = users.filter(
+          ([_, user]) => user.profile.isActive === filter.isActive
+        );
       }
-      
+
       if (filter.registeredAfter !== undefined) {
-        users = users.filter(([_, user]) => user.profile.createdAt > filter.registeredAfter!);
+        users = users.filter(
+          ([_, user]) => user.profile.createdAt > filter.registeredAfter!
+        );
       }
-      
+
       if (filter.reputationScoreAbove !== undefined) {
-        users = users.filter(([_, user]) => user.profile.reputationScore > filter.reputationScoreAbove!);
+        users = users.filter(
+          ([_, user]) =>
+            user.profile.reputationScore > filter.reputationScoreAbove!
+        );
       }
     }
 
     // Sort by registration date (newest first)
     users.sort(([_, a], [__, b]) => b.profile.createdAt - a.profile.createdAt);
-    
+
     // Extract user addresses
     const userAddresses = users.map(([address, _]) => address);
-    
+
     // Calculate pagination
     const totalUsers = userAddresses.length;
     const totalPages = Math.ceil(totalUsers / pageSize) || 1;
@@ -394,7 +406,7 @@ export class MockUserModule implements BaseModule {
     const users = Array.from(this.mockUsers.entries())
       .filter(([_, user]) => user.profile.userType === userType)
       .map(([address, _]) => address);
-    
+
     return users;
   }
 
@@ -427,7 +439,9 @@ export class MockUserModule implements BaseModule {
         ethers.toUtf8Bytes(`${operationId}-${Date.now()}`)
       ),
       confirmations: 1,
-      from: this.signer ? this.signer.getAddress().then(a => a) : "0x0000000000000000000000000000000000000000",
+      from: this.signer
+        ? this.signer.getAddress().then((a) => a)
+        : "0x0000000000000000000000000000000000000000",
       to: "0x0000000000000000000000000000000000000000",
       data: "0x",
       value: BigInt(0),
@@ -448,11 +462,13 @@ export class MockUserModule implements BaseModule {
         gasUsed: BigInt(50000),
         cumulativeGasUsed: BigInt(50000),
         type: 0,
-        from: this.signer ? await this.signer.getAddress() : "0x0000000000000000000000000000000000000000",
+        from: this.signer
+          ? await this.signer.getAddress()
+          : "0x0000000000000000000000000000000000000000",
         to: "0x0000000000000000000000000000000000000000",
       }),
     } as unknown as TransactionResponse;
-    
+
     return mockTx;
   }
 }
