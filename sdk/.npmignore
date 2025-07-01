@@ -1,0 +1,30 @@
+# Source files (but keep compiled files)
+src/*.ts
+scripts/
+
+# Tests
+__tests__/
+*.spec.ts
+*.test.ts
+jest.config.js
+jest.integration.config.js
+coverage/
+
+# Examples (but keep compiled examples)
+examples/*.ts
+
+# Dev files
+.github/
+.vscode/
+.eslintrc
+.eslintignore
+.gitignore
+.env
+.env.example
+tsconfig.json
+typedoc.json
+
+# Build artifacts
+*.tgz
+.DS_Store
+.npmrc
