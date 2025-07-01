@@ -10,10 +10,7 @@ import "../storage/UserStorage.sol";
 import "../storage/ResourceStorage.sol";
 
 /**
- * @title QuikLogic
- * @dev Main logic contract for the QUIK distributed computing platform
- * @notice This contract contains all business logic and can be upgraded via proxy pattern
- * @dev Interacts with separate storage contracts for data persistence
+ * @title QuikLogic - Main logic contract for QUIK platform
  */
 contract QuikLogic is
     AccessControl,
@@ -38,7 +35,7 @@ contract QuikLogic is
     bytes32 public constant AUTH_SERVICE_ROLE = keccak256("AUTH_SERVICE_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
-    // Events
+    // Core events
     event LogicUpgraded(address indexed newLogic, uint256 version);
     event StorageContractUpdated(string contractType, address newAddress);
 
@@ -55,6 +52,18 @@ contract QuikLogic is
         uint256 hourlyRate,
         uint256 availability
     );
+    event NodeExtendedInfoUpdated(string indexed nodeId);
+    event NodeAttributeUpdated(string indexed nodeId, string key, string value);
+    event NodeCertificationAdded(
+        string indexed nodeId,
+        bytes32 indexed certificationId
+    );
+    event NodeVerificationUpdated(
+        string indexed nodeId,
+        bool isVerified,
+        uint256 expiryDate
+    );
+    event NodeSecurityBondSet(string indexed nodeId, uint256 bondAmount);
 
     // User events
     event UserRegistered(
@@ -89,40 +98,18 @@ contract QuikLogic is
         uint256 duration
     );
 
-    // Extended events for new functionality
-    event NodeExtendedInfoUpdated(string indexed nodeId);
-
-    event NodeAttributeUpdated(string indexed nodeId, string key, string value);
-
-    event NodeCertificationAdded(
-        string indexed nodeId,
-        bytes32 indexed certificationId
-    );
-
-    event NodeVerificationUpdated(
-        string indexed nodeId,
-        bool isVerified,
-        uint256 expiryDate
-    );
-
-    event NodeSecurityBondSet(string indexed nodeId, uint256 bondAmount);
-
     modifier onlyStorageContracts() {
         require(
             msg.sender == address(nodeStorage) ||
                 msg.sender == address(userStorage) ||
                 msg.sender == address(resourceStorage),
-            "Only storage contracts"
+            "Only storage"
         );
         _;
     }
 
     /**
-     * @dev Initialize the logic contract with storage addresses
-     * @param _nodeStorage Address of the node storage contract
-     * @param _userStorage Address of the user storage contract
-     * @param _resourceStorage Address of the resource storage contract
-     * @param _admin Address of the admin
+     * @dev Initialize the logic contract
      */
     function initialize(
         address _nodeStorage,
@@ -130,12 +117,12 @@ contract QuikLogic is
         address _resourceStorage,
         address _admin
     ) external {
-        require(_admin != address(0), "Invalid admin address");
-        require(_nodeStorage != address(0), "Invalid node storage address");
-        require(_userStorage != address(0), "Invalid user storage address");
         require(
-            _resourceStorage != address(0),
-            "Invalid resource storage address"
+            _admin != address(0) &&
+                _nodeStorage != address(0) &&
+                _userStorage != address(0) &&
+                _resourceStorage != address(0),
+            "Invalid address"
         );
 
         // Set up roles
@@ -154,10 +141,6 @@ contract QuikLogic is
 
     /**
      * @dev Register a new node
-     * @param nodeId Unique identifier for the node
-     * @param nodeAddress Address of the node operator
-     * @param tier Tier of the node
-     * @param providerType Type of provider (compute/storage)
      */
     function registerNode(
         string calldata nodeId,
@@ -166,7 +149,6 @@ contract QuikLogic is
         NodeStorage.ProviderType providerType
     ) external whenNotPaused onlyRole(NODE_OPERATOR_ROLE) {
         nodeStorage.registerNode(nodeId, nodeAddress, tier, providerType);
-
         emit NodeRegistered(
             nodeId,
             nodeAddress,
@@ -177,46 +159,32 @@ contract QuikLogic is
 
     /**
      * @dev Update node status
-     * @param nodeId Node identifier
-     * @param status New status
      */
     function updateNodeStatus(
         string calldata nodeId,
         NodeStorage.NodeStatus status
     ) external whenNotPaused {
-        address nodeAddress = nodeStorage.getNodeAddress(nodeId);
-        require(
-            msg.sender == nodeAddress || hasRole(ADMIN_ROLE, msg.sender),
-            "Not authorized to update node"
-        );
-
+        _isNodeAuthorized(nodeId);
         nodeStorage.updateNodeStatus(nodeId, status);
         emit NodeStatusUpdated(nodeId, uint8(status));
     }
 
     /**
      * @dev List node for provider services
-     * @param nodeId Node identifier
-     * @param hourlyRate Hourly rate for services
-     * @param availability Availability percentage (0-100)
      */
     function listNode(
         string calldata nodeId,
         uint256 hourlyRate,
         uint256 availability
     ) external whenNotPaused {
-        address nodeAddress = nodeStorage.getNodeAddress(nodeId);
-        require(msg.sender == nodeAddress, "Not node operator");
+        _onlyNodeOperator(nodeId);
         require(availability <= 100, "Invalid availability");
-
         nodeStorage.listNode(nodeId, hourlyRate, availability);
         emit NodeListed(nodeId, hourlyRate, availability);
     }
 
     /**
      * @dev Get node information
-     * @param nodeId Node identifier
-     * @return Node information struct
      */
     function getNodeInfo(
         string calldata nodeId
@@ -230,9 +198,6 @@ contract QuikLogic is
 
     /**
      * @dev Register a new user
-     * @param userAddress Address of the user
-     * @param profileHash Hash of encrypted profile data
-     * @param userType Type of user
      */
     function registerUser(
         address userAddress,
@@ -240,7 +205,6 @@ contract QuikLogic is
         UserStorage.UserType userType
     ) external whenNotPaused onlyRole(AUTH_SERVICE_ROLE) {
         userStorage.registerUser(userAddress, profileHash, userType);
-
         emit UserRegistered(
             userAddress,
             profileHash,
@@ -251,8 +215,6 @@ contract QuikLogic is
 
     /**
      * @dev Update user profile
-     * @param userAddress Address of the user
-     * @param profileHash New profile hash
      */
     function updateUserProfile(
         address userAddress,
@@ -260,17 +222,14 @@ contract QuikLogic is
     ) external whenNotPaused {
         require(
             msg.sender == userAddress || hasRole(ADMIN_ROLE, msg.sender),
-            "Not authorized to update profile"
+            "Not authorized"
         );
-
         userStorage.updateUserProfile(userAddress, profileHash);
         emit UserProfileUpdated(userAddress, profileHash, block.timestamp);
     }
 
     /**
      * @dev Get user profile
-     * @param userAddress Address of the user
-     * @return User profile struct
      */
     function getUserProfile(
         address userAddress
@@ -284,14 +243,6 @@ contract QuikLogic is
 
     /**
      * @dev Create a compute listing
-     * @param nodeId Node identifier
-     * @param tier Compute tier
-     * @param cpuCores Number of CPU cores
-     * @param memoryGB Memory in GB
-     * @param storageGB Storage in GB
-     * @param hourlyRate Hourly rate
-     * @param region Geographic region
-     * @return listingId Unique listing identifier
      */
     function createComputeListing(
         string calldata nodeId,
@@ -302,8 +253,7 @@ contract QuikLogic is
         uint256 hourlyRate,
         string calldata region
     ) external whenNotPaused returns (bytes32 listingId) {
-        address nodeAddress = nodeStorage.getNodeAddress(nodeId);
-        require(msg.sender == nodeAddress, "Not node operator");
+        address nodeAddress = _onlyNodeOperator(nodeId);
 
         listingId = resourceStorage.createComputeListing(
             nodeId,
@@ -322,12 +272,6 @@ contract QuikLogic is
 
     /**
      * @dev Create a storage listing
-     * @param nodeId Node identifier
-     * @param tier Storage tier
-     * @param storageGB Storage capacity in GB
-     * @param hourlyRate Hourly rate
-     * @param region Geographic region
-     * @return listingId Unique listing identifier
      */
     function createStorageListing(
         string calldata nodeId,
@@ -336,8 +280,7 @@ contract QuikLogic is
         uint256 hourlyRate,
         string calldata region
     ) external whenNotPaused returns (bytes32 listingId) {
-        address nodeAddress = nodeStorage.getNodeAddress(nodeId);
-        require(msg.sender == nodeAddress, "Not node operator");
+        address nodeAddress = _onlyNodeOperator(nodeId);
 
         listingId = resourceStorage.createStorageListing(
             nodeId,
@@ -354,9 +297,6 @@ contract QuikLogic is
 
     /**
      * @dev Purchase compute resources
-     * @param listingId Listing identifier
-     * @param duration Duration in hours
-     * @return allocationId Resource allocation identifier
      */
     function purchaseCompute(
         bytes32 listingId,
@@ -402,47 +342,38 @@ contract QuikLogic is
 
     /**
      * @dev Update storage contract address
-     * @param contractType Type of storage contract ("node", "user", "resource")
-     * @param newAddress New contract address
      */
     function updateStorageContract(
         string calldata contractType,
         address newAddress
     ) external onlyRole(ADMIN_ROLE) {
         require(newAddress != address(0), "Invalid address");
+        bytes32 typeHash = keccak256(bytes(contractType));
 
-        if (keccak256(bytes(contractType)) == keccak256(bytes("node"))) {
+        if (typeHash == keccak256(bytes("node"))) {
             nodeStorage = NodeStorage(newAddress);
-        } else if (keccak256(bytes(contractType)) == keccak256(bytes("user"))) {
+        } else if (typeHash == keccak256(bytes("user"))) {
             userStorage = UserStorage(newAddress);
-        } else if (
-            keccak256(bytes(contractType)) == keccak256(bytes("resource"))
-        ) {
+        } else if (typeHash == keccak256(bytes("resource"))) {
             resourceStorage = ResourceStorage(newAddress);
         } else {
-            revert("Invalid contract type");
+            revert("Invalid type");
         }
 
         emit StorageContractUpdated(contractType, newAddress);
     }
 
     /**
-     * @dev Emergency pause
+     * @dev Emergency pause/unpause and withdraw
      */
     function pause() external onlyRole(ADMIN_ROLE) {
         _pause();
     }
 
-    /**
-     * @dev Unpause
-     */
     function unpause() external onlyRole(ADMIN_ROLE) {
         _unpause();
     }
 
-    /**
-     * @dev Withdraw contract balance
-     */
     function withdraw() external onlyRole(ADMIN_ROLE) {
         payable(msg.sender).transfer(address(this).balance);
     }
@@ -453,9 +384,6 @@ contract QuikLogic is
 
     /**
      * @dev Get total statistics
-     * @return totalNodes Total number of nodes
-     * @return totalUsers Total number of users
-     * @return totalAllocations Total number of resource allocations
      */
     function getTotalStats()
         external
@@ -477,70 +405,44 @@ contract QuikLogic is
 
     /**
      * @dev Update node extended information
-     * @param nodeId Node identifier
-     * @param extended Extended information
      */
     function updateNodeExtendedInfo(
         string calldata nodeId,
         NodeStorage.NodeExtendedInfo calldata extended
     ) external whenNotPaused {
-        address nodeAddress = nodeStorage.getNodeAddress(nodeId);
-        require(
-            msg.sender == nodeAddress || hasRole(ADMIN_ROLE, msg.sender),
-            "Not authorized to update node"
-        );
-
+        _isNodeAuthorized(nodeId);
         nodeStorage.updateNodeExtendedInfo(nodeId, extended);
         emit NodeExtendedInfoUpdated(nodeId);
     }
 
     /**
      * @dev Set custom attribute for a node
-     * @param nodeId Node identifier
-     * @param key Attribute key
-     * @param value Attribute value
      */
     function setNodeCustomAttribute(
         string calldata nodeId,
         string calldata key,
         string calldata value
     ) external whenNotPaused {
-        address nodeAddress = nodeStorage.getNodeAddress(nodeId);
-        require(
-            msg.sender == nodeAddress || hasRole(ADMIN_ROLE, msg.sender),
-            "Not authorized to update node"
-        );
-
+        _isNodeAuthorized(nodeId);
         nodeStorage.setNodeCustomAttribute(nodeId, key, value);
         emit NodeAttributeUpdated(nodeId, key, value);
     }
 
     /**
      * @dev Add certification to a node
-     * @param nodeId Node identifier
-     * @param certificationId Certification identifier
-     * @param details Certification details
      */
     function addNodeCertification(
         string calldata nodeId,
         bytes32 certificationId,
         string calldata details
     ) external whenNotPaused {
-        address nodeAddress = nodeStorage.getNodeAddress(nodeId);
-        require(
-            msg.sender == nodeAddress || hasRole(ADMIN_ROLE, msg.sender),
-            "Not authorized to update node"
-        );
-
+        _isNodeAuthorized(nodeId);
         nodeStorage.addNodeCertification(nodeId, certificationId, details);
         emit NodeCertificationAdded(nodeId, certificationId);
     }
 
     /**
      * @dev Verify a node (admin only)
-     * @param nodeId Node identifier
-     * @param isVerified Verification status
-     * @param expiryDate Verification expiry date
      */
     function verifyNode(
         string calldata nodeId,
@@ -549,7 +451,7 @@ contract QuikLogic is
     ) external onlyRole(ADMIN_ROLE) {
         NodeStorage.NodeInfo memory nodeInfo = nodeStorage.getNodeInfo(nodeId);
 
-        // Update the verification status in extended info
+        // Update verification status in extended info
         NodeStorage.NodeExtendedInfo memory extended = nodeInfo.extended;
         extended.isVerified = isVerified;
         extended.verificationExpiry = expiryDate;
@@ -560,16 +462,13 @@ contract QuikLogic is
 
     /**
      * @dev Set security bond for a node
-     * @param nodeId Node identifier
-     * @param bondAmount Bond amount in wei
      */
     function setNodeSecurityBond(
         string calldata nodeId,
         uint256 bondAmount
     ) external payable whenNotPaused nonReentrant {
-        address nodeAddress = nodeStorage.getNodeAddress(nodeId);
-        require(msg.sender == nodeAddress, "Not node operator");
-        require(msg.value >= bondAmount, "Insufficient bond payment");
+        _onlyNodeOperator(nodeId);
+        require(msg.value >= bondAmount, "Insufficient bond");
 
         nodeStorage.setNodeSecurityBond(nodeId, bondAmount);
 
@@ -587,9 +486,6 @@ contract QuikLogic is
 
     /**
      * @dev Get node custom attribute
-     * @param nodeId Node identifier
-     * @param key Attribute key
-     * @return Attribute value
      */
     function getNodeCustomAttribute(
         string calldata nodeId,
@@ -600,8 +496,6 @@ contract QuikLogic is
 
     /**
      * @dev Get node certifications
-     * @param nodeId Node identifier
-     * @return Array of certification IDs
      */
     function getNodeCertifications(
         string calldata nodeId
@@ -611,10 +505,6 @@ contract QuikLogic is
 
     /**
      * @dev Get extended statistics
-     * @return totalNodes Total number of nodes
-     * @return totalUsers Total number of users
-     * @return totalAllocations Total number of resource allocations
-     * @return verifiedNodes Number of verified nodes
      */
     function getExtendedStats()
         external
@@ -627,14 +517,43 @@ contract QuikLogic is
         )
     {
         (
-            uint256 total,
-            uint256 active,
-            uint256 listed,
+            uint256 total, // active (unused) // listed (unused)
+            ,
+            ,
             uint256 verified
         ) = nodeStorage.getExtendedStats();
         totalNodes = total;
         totalUsers = userStorage.getTotalUsers();
         totalAllocations = resourceStorage.getTotalAllocations();
         verifiedNodes = verified;
+    }
+
+    // =============================================================================
+    // INTERNAL HELPER FUNCTIONS
+    // =============================================================================
+
+    /**
+     * @dev Check if caller is authorized to operate on a node
+     */
+    function _isNodeAuthorized(
+        string calldata nodeId
+    ) internal view returns (address nodeAddress) {
+        nodeAddress = nodeStorage.getNodeAddress(nodeId);
+        require(
+            msg.sender == nodeAddress || hasRole(ADMIN_ROLE, msg.sender),
+            "Not authorized"
+        );
+        return nodeAddress;
+    }
+
+    /**
+     * @dev Verify node operator is caller
+     */
+    function _onlyNodeOperator(
+        string calldata nodeId
+    ) internal view returns (address) {
+        address nodeAddress = nodeStorage.getNodeAddress(nodeId);
+        require(msg.sender == nodeAddress, "Not node operator");
+        return nodeAddress;
     }
 }

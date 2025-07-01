@@ -51,6 +51,7 @@ export interface ComputeListing {
   nodeId: string;
   nodeAddress: string;
   tier: number; // ComputeTier enum value
+  resourceType: number; // 0 for compute
   cpuCores: number;
   memoryGB: number;
   storageGB: number;
@@ -68,6 +69,7 @@ export interface StorageListing {
   nodeId: string;
   nodeAddress: string;
   tier: number; // StorageTier enum value
+  resourceType: number; // 1 for storage
   storageGB: number;
   hourlyRate: string;
   region: string;

@@ -40,6 +40,45 @@
     },
     {
       "type": "function",
+      "name": "activeAllocations",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint32",
+          "internalType": "uint32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "activeComputeListings",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint32",
+          "internalType": "uint32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "activeStorageListings",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint32",
+          "internalType": "uint32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
       "name": "allocateCompute",
       "inputs": [
         {
@@ -89,7 +128,7 @@
         {
           "name": "tier",
           "type": "uint8",
-          "internalType": "enum ResourceStorage.ComputeTier"
+          "internalType": "enum IResourceTypes.ComputeTier"
         },
         {
           "name": "cpuCores",
@@ -143,7 +182,7 @@
         {
           "name": "tier",
           "type": "uint8",
-          "internalType": "enum ResourceStorage.StorageTier"
+          "internalType": "enum IResourceTypes.StorageTier"
         },
         {
           "name": "storageGB",
@@ -184,13 +223,8 @@
         {
           "name": "",
           "type": "tuple",
-          "internalType": "struct ResourceStorage.ResourceAllocation",
+          "internalType": "struct IResourceTypes.ResourceAllocation",
           "components": [
-            {
-              "name": "allocationId",
-              "type": "bytes32",
-              "internalType": "bytes32"
-            },
             {
               "name": "listingId",
               "type": "bytes32",
@@ -214,37 +248,32 @@
             {
               "name": "status",
               "type": "uint8",
-              "internalType": "enum ResourceStorage.AllocationStatus"
+              "internalType": "enum IResourceTypes.AllocationStatus"
             },
             {
               "name": "duration",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "totalCost",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint32",
+              "internalType": "uint32"
             },
             {
               "name": "createdAt",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint32",
+              "internalType": "uint32"
             },
             {
               "name": "startedAt",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint32",
+              "internalType": "uint32"
             },
             {
               "name": "expiresAt",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint32",
+              "internalType": "uint32"
             },
             {
-              "name": "completedAt",
-              "type": "uint256",
-              "internalType": "uint256"
+              "name": "totalCost",
+              "type": "uint96",
+              "internalType": "uint96"
             },
             {
               "name": "isActive",
@@ -275,13 +304,8 @@
         {
           "name": "",
           "type": "tuple",
-          "internalType": "struct ResourceStorage.ComputeListing",
+          "internalType": "struct IResourceTypes.ComputeListing",
           "components": [
-            {
-              "name": "listingId",
-              "type": "bytes32",
-              "internalType": "bytes32"
-            },
             {
               "name": "nodeId",
               "type": "string",
@@ -293,29 +317,29 @@
               "internalType": "address"
             },
             {
-              "name": "tier",
-              "type": "uint8",
-              "internalType": "enum ResourceStorage.ComputeTier"
-            },
-            {
-              "name": "cpuCores",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "memoryGB",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "storageGB",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
               "name": "hourlyRate",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint96",
+              "internalType": "uint96"
+            },
+            {
+              "name": "createdAt",
+              "type": "uint32",
+              "internalType": "uint32"
+            },
+            {
+              "name": "expiresAt",
+              "type": "uint32",
+              "internalType": "uint32"
+            },
+            {
+              "name": "status",
+              "type": "uint8",
+              "internalType": "enum IResourceTypes.ListingStatus"
+            },
+            {
+              "name": "isActive",
+              "type": "bool",
+              "internalType": "bool"
             },
             {
               "name": "region",
@@ -323,29 +347,24 @@
               "internalType": "string"
             },
             {
-              "name": "status",
+              "name": "tier",
               "type": "uint8",
-              "internalType": "enum ResourceStorage.ListingStatus"
+              "internalType": "enum IResourceTypes.ComputeTier"
             },
             {
-              "name": "createdAt",
-              "type": "uint256",
-              "internalType": "uint256"
+              "name": "cpuCores",
+              "type": "uint32",
+              "internalType": "uint32"
             },
             {
-              "name": "updatedAt",
-              "type": "uint256",
-              "internalType": "uint256"
+              "name": "memoryGB",
+              "type": "uint32",
+              "internalType": "uint32"
             },
             {
-              "name": "expiresAt",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "isActive",
-              "type": "bool",
-              "internalType": "bool"
+              "name": "storageGB",
+              "type": "uint32",
+              "internalType": "uint32"
             },
             {
               "name": "tags",
@@ -364,7 +383,7 @@
         {
           "name": "tier",
           "type": "uint8",
-          "internalType": "enum ResourceStorage.ComputeTier"
+          "internalType": "enum IResourceTypes.ComputeTier"
         }
       ],
       "outputs": [
@@ -409,32 +428,32 @@
         {
           "name": "",
           "type": "tuple",
-          "internalType": "struct ResourceStorage.PerformanceMetrics",
+          "internalType": "struct IResourceTypes.PerformanceMetrics",
           "components": [
             {
               "name": "avgResponseTime",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint32",
+              "internalType": "uint32"
             },
             {
               "name": "uptimePercentage",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint16",
+              "internalType": "uint16"
             },
             {
               "name": "throughput",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint32",
+              "internalType": "uint32"
             },
             {
               "name": "errorRate",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint16",
+              "internalType": "uint16"
             },
             {
               "name": "lastUpdated",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint32",
+              "internalType": "uint32"
             }
           ]
         }
@@ -569,13 +588,8 @@
         {
           "name": "",
           "type": "tuple",
-          "internalType": "struct ResourceStorage.StorageListing",
+          "internalType": "struct IResourceTypes.StorageListing",
           "components": [
-            {
-              "name": "listingId",
-              "type": "bytes32",
-              "internalType": "bytes32"
-            },
             {
               "name": "nodeId",
               "type": "string",
@@ -587,19 +601,29 @@
               "internalType": "address"
             },
             {
-              "name": "tier",
-              "type": "uint8",
-              "internalType": "enum ResourceStorage.StorageTier"
-            },
-            {
-              "name": "storageGB",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
               "name": "hourlyRate",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint96",
+              "internalType": "uint96"
+            },
+            {
+              "name": "createdAt",
+              "type": "uint32",
+              "internalType": "uint32"
+            },
+            {
+              "name": "expiresAt",
+              "type": "uint32",
+              "internalType": "uint32"
+            },
+            {
+              "name": "status",
+              "type": "uint8",
+              "internalType": "enum IResourceTypes.ListingStatus"
+            },
+            {
+              "name": "isActive",
+              "type": "bool",
+              "internalType": "bool"
             },
             {
               "name": "region",
@@ -607,29 +631,14 @@
               "internalType": "string"
             },
             {
-              "name": "status",
+              "name": "tier",
               "type": "uint8",
-              "internalType": "enum ResourceStorage.ListingStatus"
+              "internalType": "enum IResourceTypes.StorageTier"
             },
             {
-              "name": "createdAt",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "updatedAt",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "expiresAt",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "isActive",
-              "type": "bool",
-              "internalType": "bool"
+              "name": "storageGB",
+              "type": "uint32",
+              "internalType": "uint32"
             },
             {
               "name": "features",
@@ -648,7 +657,7 @@
         {
           "name": "tier",
           "type": "uint8",
-          "internalType": "enum ResourceStorage.StorageTier"
+          "internalType": "enum IResourceTypes.StorageTier"
         }
       ],
       "outputs": [
@@ -785,6 +794,45 @@
     },
     {
       "type": "function",
+      "name": "totalAllocations",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint32",
+          "internalType": "uint32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "totalComputeListings",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint32",
+          "internalType": "uint32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "totalStorageListings",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint32",
+          "internalType": "uint32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
       "name": "updateAllocationStatus",
       "inputs": [
         {
@@ -795,7 +843,7 @@
         {
           "name": "status",
           "type": "uint8",
-          "internalType": "enum ResourceStorage.AllocationStatus"
+          "internalType": "enum IResourceTypes.AllocationStatus"
         }
       ],
       "outputs": [],
@@ -813,7 +861,7 @@
         {
           "name": "status",
           "type": "uint8",
-          "internalType": "enum ResourceStorage.ListingStatus"
+          "internalType": "enum IResourceTypes.ListingStatus"
         }
       ],
       "outputs": [],
@@ -831,32 +879,32 @@
         {
           "name": "metrics",
           "type": "tuple",
-          "internalType": "struct ResourceStorage.PerformanceMetrics",
+          "internalType": "struct IResourceTypes.PerformanceMetrics",
           "components": [
             {
               "name": "avgResponseTime",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint32",
+              "internalType": "uint32"
             },
             {
               "name": "uptimePercentage",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint16",
+              "internalType": "uint16"
             },
             {
               "name": "throughput",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint32",
+              "internalType": "uint32"
             },
             {
               "name": "errorRate",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint16",
+              "internalType": "uint16"
             },
             {
               "name": "lastUpdated",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint32",
+              "internalType": "uint32"
             }
           ]
         }
@@ -876,7 +924,7 @@
         {
           "name": "status",
           "type": "uint8",
-          "internalType": "enum ResourceStorage.ListingStatus"
+          "internalType": "enum IResourceTypes.ListingStatus"
         }
       ],
       "outputs": [],
@@ -893,7 +941,7 @@
           "internalType": "bytes32"
         },
         {
-          "name": "dataType",
+          "name": "action",
           "type": "string",
           "indexed": false,
           "internalType": "string"

@@ -12,9 +12,11 @@ export enum UserType {
  * User profile structure
  */
 export interface UserProfile {
+  userAddress: string;
   profileHash: string;
   userType: number;
   isActive: boolean;
+  exists: boolean;
   createdAt: number;
   updatedAt: number;
   totalSpent: string;
@@ -49,7 +51,7 @@ export interface UserStats {
  * Complete user information
  */
 export interface UserInfo {
-  address?: string;  // Optional address property, present in mock data but not in contract return
+  address?: string; // Optional address property, present in mock data but not in contract return
   profile: UserProfile;
   preferences: UserPreferences;
   stats: UserStats;

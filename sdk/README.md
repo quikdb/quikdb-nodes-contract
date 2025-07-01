@@ -1,6 +1,10 @@
 # QuikDB Nodes SDK
 
-A TypeScript SDK for interacting with QuikDB Nodes smart contracts on the Lisk blockchain. This SDK provides a simple and intuitive interface for developers to interact with NodeStorage, UserStorage, and ResourceStorage contracts.
+A TypeScript SDK for interacting with QuikDB Nodes smart contracts on the Lisk blockchain (Sepolia testnet). This SDK provides a simple and intuitive interface for developers to interact with NodeStorage, UserStorage, and ResourceStorage contracts deployed on the Lisk Sepolia blockchain.
+
+[![npm version](https://img.shields.io/npm/v/quikdb-nodes-sdk.svg?style=flat-square)](https://www.npmjs.com/package/quikdb-nodes-sdk)
+[![npm downloads](https://img.shields.io/npm/dm/quikdb-nodes-sdk.svg?style=flat-square)](https://www.npmjs.com/package/quikdb-nodes-sdk)
+[![MIT License](https://img.shields.io/npm/l/quikdb-nodes-sdk.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
 ## Features
 
@@ -8,6 +12,7 @@ A TypeScript SDK for interacting with QuikDB Nodes smart contracts on the Lisk b
 - Modern ES module and CommonJS support
 - Comprehensive API for all QuikDB Node operations
 - Built on ethers.js v6 for reliable blockchain interactions
+- Direct connection to Lisk Sepolia blockchain
 - Streamlined error handling and logging
 - Extensive documentation and examples
 - Integration with Lisk blockchain for decentralized resource management
@@ -29,13 +34,16 @@ import { QuikDBNodesSDK } from "quikdb-nodes-sdk";
 import { NodeStatus, NodeTier, ProviderType } from "quikdb-nodes-sdk/types";
 import { QuikDBUtils } from "quikdb-nodes-sdk/utils";
 
-// Initialize the SDK
+// Initialize the SDK with Lisk Sepolia network
 const sdk = new QuikDBNodesSDK({
+  // Lisk Sepolia RPC endpoint
   provider: "https://rpc.sepolia-api.lisk.com",
-  nodeStorageAddress: "0xYourNodeStorageContractAddress",
-  userStorageAddress: "0xYourUserStorageContractAddress",
-  resourceStorageAddress: "0xYourResourceStorageContractAddress",
-  privateKey: "0xYourPrivateKey", // Optional, for transactions
+  // Deployed contract addresses on Lisk Sepolia network
+  nodeStorageAddress: "0x123456789AbCdEf123456789AbCdEf123456789A", // Replace with actual contract address
+  userStorageAddress: "0x987654321FeDcBa987654321FeDcBa987654321F", // Replace with actual contract address
+  resourceStorageAddress: "0xAbCdEf123456789AbCdEf123456789AbCdEf1234", // Replace with actual contract address
+  // Optional private key for signing transactions
+  privateKey: "0xYourPrivateKey",
 });
 
 // Get node information
@@ -96,6 +104,77 @@ Each module provides a comprehensive set of methods to interact with the corresp
 ## Examples
 
 The SDK includes several example implementations to help you get started:
+
+### Connecting to Lisk Sepolia Blockchain
+
+The SDK is designed to connect to the Lisk Sepolia blockchain. Here's how to properly configure your connection:
+
+```typescript
+import { QuikDBNodesSDK } from "quikdb-nodes-sdk";
+import { ethers } from "ethers";
+
+// Option 1: Connect using RPC URL string
+const sdk = new QuikDBNodesSDK({
+  provider: "https://rpc.sepolia-api.lisk.com",
+  // Deployed contract addresses on Lisk Sepolia network
+  nodeStorageAddress: "0x123456789AbCdEf123456789AbCdEf123456789A",
+  userStorageAddress: "0x987654321FeDcBa987654321FeDcBa987654321F",
+  resourceStorageAddress: "0xAbCdEf123456789AbCdEf123456789AbCdEf1234",
+  privateKey: process.env.PRIVATE_KEY, // Load from environment variable
+});
+
+// Option 2: Connect using ethers provider with custom settings
+const provider = new ethers.JsonRpcProvider(
+  "https://rpc.sepolia-api.lisk.com",
+  {
+    name: "lisk-sepolia",
+    chainId: 4202, // Lisk Sepolia chainId
+  }
+);
+
+// Manually create wallet
+const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+
+const sdk = new QuikDBNodesSDK({
+  provider: provider,
+  nodeStorageAddress: "0x123456789AbCdEf123456789AbCdEf123456789A",
+  userStorageAddress: "0x987654321FeDcBa987654321FeDcBa987654321F",
+  resourceStorageAddress: "0xAbCdEf123456789AbCdEf123456789AbCdEf1234",
+  signer: wallet, // Directly pass a signer
+});
+```
+
+> Note: For development and testing purposes only, the SDK includes mock modules that can be imported from "quikdb-nodes-sdk/dist/mocks". These are not intended for production use.
+
+### Using Pagination
+
+The SDK supports pagination for fetching lists of nodes, users, and resources:
+
+```typescript
+// Get a paginated list of compute listings
+const listings = await sdk.resource.getComputeListings(
+  0, // page number (0-indexed)
+  10, // page size
+  {
+    // optional filters
+    region: "us-east",
+    minCpuCores: 8,
+    isActive: true,
+  }
+);
+
+console.log(`Total listings: ${listings.totalListings}`);
+console.log(
+  `Current page: ${listings.currentPage + 1} of ${listings.totalPages}`
+);
+
+// Navigate to next page if available
+if (listings.hasNextPage) {
+  const nextPage = await sdk.resource.getComputeListings(1, 10, {
+    region: "us-east",
+  });
+}
+```
 
 ### Basic Usage
 
@@ -221,6 +300,56 @@ Key Methods:
 - `calculateComputeCost(hourlyRate: string | bigint, hours: number): bigint` - Calculate compute resource cost
 - `calculateStorageCost(pricePerGBMonth: string | bigint, sizeGB: number, months: number): bigint` - Calculate storage cost
 
+## Production Use with Lisk Sepolia
+
+### Connecting to the Production Lisk Sepolia Network
+
+This SDK is specifically designed for use with the Lisk Sepolia blockchain. For production applications:
+
+```typescript
+import { QuikDBNodesSDK } from "quikdb-nodes-sdk";
+import { ethers } from "ethers";
+import * as dotenv from "dotenv";
+
+// Load environment variables securely (in production)
+dotenv.config();
+
+// Create a production-ready SDK instance
+const sdk = new QuikDBNodesSDK({
+  // Lisk Sepolia RPC endpoint (consider using an API key provider for production)
+  provider: process.env.LISK_SEPOLIA_RPC || "https://rpc.sepolia-api.lisk.com",
+
+  // Deployed contract addresses (MUST be the addresses on Lisk Sepolia)
+  nodeStorageAddress: process.env.NODE_STORAGE_ADDRESS,
+  userStorageAddress: process.env.USER_STORAGE_ADDRESS,
+  resourceStorageAddress: process.env.RESOURCE_STORAGE_ADDRESS,
+
+  // Use secure wallet management for production
+  privateKey: process.env.PRIVATE_KEY,
+});
+```
+
+### Secure Deployment Practices
+
+For production applications:
+
+1. **Never hardcode private keys** - Always use environment variables
+2. **Use secure RPC providers** - Consider using dedicated RPC endpoints with API keys
+3. **Implement proper error handling** - Network issues can occur with blockchain interactions
+4. **Consider rate limiting** - Prevent excessive contract calls
+5. **Monitor gas prices** - To ensure transactions are processed efficiently
+6. **Cache contract data** where appropriate to reduce blockchain calls
+
+### IMPORTANT: Mock Modules Usage
+
+Mock modules should **NEVER** be used in production applications. They are provided solely for:
+
+- Unit testing
+- Local development without a blockchain connection
+- Demonstration and educational purposes
+
+For production applications, always use the main SDK module with real Lisk Sepolia contract addresses.
+
 ## Advanced Usage
 
 ### Working with TypeScript Types
@@ -249,6 +378,44 @@ function processNodeInfo(node: NodeInfo) {
 }
 ```
 
+### Lisk Sepolia Blockchain Configuration
+
+This SDK is specifically designed to interact with the Lisk Sepolia blockchain:
+
+```typescript
+import { ethers } from "ethers";
+import { QuikDBNodesSDK } from "quikdb-nodes-sdk";
+import * as dotenv from "dotenv";
+
+// Load environment variables
+dotenv.config();
+
+// Lisk Sepolia network information
+const LISK_SEPOLIA_RPC =
+  process.env.LISK_SEPOLIA_RPC || "https://rpc.sepolia-api.lisk.com";
+const LISK_SEPOLIA_CHAIN_ID = 4202; // Lisk Sepolia chain ID
+
+// Connect to Lisk Sepolia
+const provider = new ethers.JsonRpcProvider(LISK_SEPOLIA_RPC, {
+  chainId: LISK_SEPOLIA_CHAIN_ID,
+  name: "lisk-sepolia",
+});
+
+// Create wallet with private key
+const wallet = new ethers.Wallet(process.env.PRIVATE_KEY || "", provider);
+
+// Initialize the SDK with Lisk Sepolia connection
+const sdk = new QuikDBNodesSDK({
+  provider: provider,
+  nodeStorageAddress: process.env.NODE_STORAGE_ADDRESS || "",
+  userStorageAddress: process.env.USER_STORAGE_ADDRESS || "",
+  resourceStorageAddress: process.env.RESOURCE_STORAGE_ADDRESS || "",
+  signer: wallet,
+});
+
+// Now all interactions will happen on the Lisk Sepolia blockchain
+```
+
 ### Custom Signers and Providers
 
 For advanced blockchain interactions:
@@ -258,14 +425,17 @@ import { ethers } from "ethers";
 import { QuikDBNodesSDK } from "quikdb-nodes-sdk";
 
 // Use a custom provider (e.g., with WebSockets)
-const wsProvider = new ethers.WebSocketProvider("wss://ws.lisk.io");
+const wsProvider = new ethers.WebSocketProvider(
+  "wss://ws.sepolia-api.lisk.com"
+);
 const sdk = new QuikDBNodesSDK({
   provider: wsProvider,
   // other config...
 });
 
-// Use MetaMask or other wallet providers
+// Use MetaMask or other wallet providers in a browser environment
 const provider = new ethers.BrowserProvider(window.ethereum);
+await provider.send("wallet_switchEthereumChain", [{ chainId: "0x106a" }]); // Switch to Lisk Sepolia (0x106a = 4202)
 const signer = await provider.getSigner();
 sdk.setSigner(signer);
 ```
@@ -303,25 +473,43 @@ npm run test:coverage
 RUN_INTEGRATION_TESTS=true npm test
 ```
 
-### Starting a Local Blockchain for Testing
+### Using the Lisk Sepolia Testnet
 
-For integration testing or local development:
-
-```bash
-# Using Anvil (Foundry)
-anvil --chain-id 31337
-
-# Using Hardhat
-npx hardhat node
-```
-
-Then deploy the contracts to your local blockchain:
+For development, testing, and production usage:
 
 ```bash
-# From the project root
+# Set up environment variables for connecting to Lisk Sepolia
+export LISK_SEPOLIA_RPC="https://rpc.sepolia-api.lisk.com"
+export LISK_SEPOLIA_CHAIN_ID=4202
+
+# Deploy contracts to Lisk Sepolia (if needed)
 cd smart-contract
-forge script script/DeployQuikDBToLisk.s.sol --broadcast --rpc-url http://localhost:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+forge script script/DeployQuikDBToLisk.s.sol --broadcast --rpc-url $LISK_SEPOLIA_RPC --chain-id $LISK_SEPOLIA_CHAIN_ID --private-key YOUR_PRIVATE_KEY
 ```
+
+### Using Mock Modules for Local Development
+
+For local development without blockchain connection, you can use the provided mock modules:
+
+```typescript
+// Import mock modules ONLY for testing/development
+import {
+  MockNodeModule,
+  MockUserModule,
+  MockResourceModule,
+} from "quikdb-nodes-sdk/mocks";
+import { ethers } from "ethers";
+
+// Test setup with mock modules
+const testProvider = new ethers.JsonRpcProvider();
+const mockNode = new MockNodeModule(testProvider, "0xDummyAddress");
+
+// Use mock module for testing
+const result = await mockNode.getNodesList();
+```
+
+> ⚠️ **Warning**: Mock modules are provided for development and testing purposes only.
+> Do not use them in production environments as they do not connect to any blockchain.
 
 ### NodeModule
 

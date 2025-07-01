@@ -38,9 +38,11 @@ async function main() {
       `  Registered: ${QuikDBUtils.formatTimestamp(nodeInfo.registeredAt)}`
     );
     console.log(
-      `  Hourly Rate: ${QuikDBUtils.fromWei(nodeInfo.listing.hourlyRate)} ETH`
+      `  Hourly Rate: ${QuikDBUtils.fromWei(
+        nodeInfo.listing?.hourlyRate || "0"
+      )} ETH`
     );
-    console.log(`  Verified: ${nodeInfo.extended.isVerified ? "Yes" : "No"}`);
+    console.log(`  Verified: ${nodeInfo.extended?.isVerified ? "Yes" : "No"}`);
     console.log();
 
     // Example 2: Register a new user
@@ -82,8 +84,8 @@ async function main() {
       "us-west-1"
     );
     console.log(`Compute listing created with ID: ${listingResult}`);
-  } catch (error) {
-    console.error("Error:", error.message);
+  } catch (error: any) {
+    console.error("Error:", error.message || error);
   }
 }
 

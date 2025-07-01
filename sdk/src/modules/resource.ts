@@ -385,17 +385,58 @@ export class ResourceModule implements BaseModule {
   }
 
   /**
-   * Get total number of compute listings
+   * Update a listing's status (active/inactive)
+   * @param listingId ID of the listing to update
+   * @param isActive New status for the listing
+   * @returns Transaction response
+   */
+  async updateListingStatus(
+    listingId: string,
+    isActive: boolean
+  ): Promise<TransactionResponse> {
+    if (!this.signer) {
+      throw new Error("Signer required for this operation");
+    }
+
+    return await this.contract.updateListingStatus(listingId, isActive);
+  }
+
+  /**
+   * Get the total number of resource listings across all types
+   * @returns Total number of listings
+   */
+  async getTotalListings(): Promise<number> {
+    // Count both compute and storage listings
+    const computeCount = await this.getTotalComputeListings();
+    const storageCount = await this.getTotalStorageListings();
+
+    return computeCount + storageCount;
+  }
+
+  /**
+   * Get the total number of compute listings
+   * @private
    * @returns Total number of compute listings
    */
-  async getTotalComputeListings(): Promise<number> {
+  private async getTotalComputeListings(): Promise<number> {
     try {
-      // Try to call contract method if it exists
-      return Number(await this.contract.getTotalComputeListings());
+      return await this.contract.getTotalComputeListings();
     } catch (error) {
-      console.warn("Failed to get total compute listings directly:", error);
+      console.error("Error in getTotalComputeListings:", error);
+      return 0;
+    }
+  }
 
-      // Return 0 as fallback
+  /**
+   * Get the total number of storage listings
+   * @private
+   * @returns Total number of storage listings
+   */
+  private async getTotalStorageListings(): Promise<number> {
+    try {
+      return await this.contract.getTotalStorageListings();
+    } catch (error) {
+      console.error("Error in getTotalStorageListings:", error);
       return 0;
     }
   }
@@ -410,7 +451,9 @@ export class ResourceModule implements BaseModule {
       // Try to call contract method if it exists
       return await this.contract.getComputeListingIdByIndex(index);
     } catch (error) {
-      throw new Error(`Failed to get compute listing ID at index ${index}: ${error}`);
+      throw new Error(
+        `Failed to get compute listing ID at index ${index}: ${error}`
+      );
     }
   }
 
@@ -467,11 +510,11 @@ export class ResourceModule implements BaseModule {
         listings = await this.getAllStorageListingIds();
       } catch (error) {
         console.warn("Failed to get all storage listing IDs directly:", error);
-        
+
         // Fallback to estimating from total count if available
         try {
           const totalCount = await this.getTotalStorageListings();
-          
+
           // Build list of IDs by index - depends on contract supporting index-based access
           for (let i = 0; i < totalCount; i++) {
             try {
@@ -581,22 +624,6 @@ export class ResourceModule implements BaseModule {
   }
 
   /**
-   * Get total number of storage listings
-   * @returns Total number of storage listings
-   */
-  async getTotalStorageListings(): Promise<number> {
-    try {
-      // Try to call contract method if it exists
-      return Number(await this.contract.getTotalStorageListings());
-    } catch (error) {
-      console.warn("Failed to get total storage listings directly:", error);
-      
-      // Return 0 as fallback
-      return 0;
-    }
-  }
-
-  /**
    * Get storage listing ID by index
    * @param index Listing index
    * @returns Listing ID
@@ -606,7 +633,9 @@ export class ResourceModule implements BaseModule {
       // Try to call contract method if it exists
       return await this.contract.getStorageListingIdByIndex(index);
     } catch (error) {
-      throw new Error(`Failed to get storage listing ID at index ${index}: ${error}`);
+      throw new Error(
+        `Failed to get storage listing ID at index ${index}: ${error}`
+      );
     }
   }
 
@@ -620,6 +649,35 @@ export class ResourceModule implements BaseModule {
       return await this.contract.getAllStorageListingIds();
     } catch (error) {
       throw new Error(`Failed to get all storage listing IDs: ${error}`);
+    }
+  }
+
+  /**
+   * Get compute listing details by ID
+   * @param listingId The ID of the compute listing
+   * @returns Compute listing details
+   */
+  async getComputeListingById(listingId: string): Promise<ComputeListing> {
+    try {
+      const listing = await this.contract.getComputeListingById(listingId);
+      return {
+        listingId,
+        nodeId: listing.nodeId,
+        nodeAddress:
+          listing.nodeAddress || "0x0000000000000000000000000000000000000000",
+        resourceType: 0, // compute type
+        tier: listing.tier,
+        cpuCores: listing.capacity.cpuCores,
+        memoryGB: listing.capacity.memoryGB,
+        storageGB: listing.capacity.storageGB,
+        hourlyRate: listing.price,
+        region: listing.region,
+        isActive: listing.isActive,
+        createdAt: listing.createdAt || Math.floor(Date.now() / 1000),
+      };
+    } catch (error) {
+      console.error(`Error fetching compute listing ${listingId}:`, error);
+      throw new Error(`Failed to fetch compute listing: ${error}`);
     }
   }
 }

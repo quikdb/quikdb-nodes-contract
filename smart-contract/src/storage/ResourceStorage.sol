@@ -2,149 +2,52 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "../interfaces/IResourceTypes.sol";
 
 /**
  * @title ResourceStorage
  * @dev Storage contract for resource-related data (listings, allocations, etc.)
  * @notice This contract is immutable and stores all resource data permanently
  */
-contract ResourceStorage is AccessControl {
+contract ResourceStorage is AccessControl, IResourceTypes {
     bytes32 public constant LOGIC_ROLE = keccak256("LOGIC_ROLE");
 
-    // Compute tier enumeration
-    enum ComputeTier {
-        NANO, // Nano tier - very minimal compute
-        MICRO, // Micro tier - minimal compute
-        BASIC, // Basic tier - basic compute
-        STANDARD, // Standard tier - general purpose
-        PREMIUM, // Premium tier - high performance
-        ENTERPRISE // Enterprise tier - maximum performance
-    }
-
-    // Storage tier enumeration
-    enum StorageTier {
-        BASIC, // Basic storage - standard HDD
-        FAST, // Fast storage - SSD
-        PREMIUM, // Premium storage - NVMe SSD
-        ARCHIVE // Archive storage - cold storage
-    }
-
-    // Listing status enumeration
-    enum ListingStatus {
-        ACTIVE, // Listing is active and available
-        INACTIVE, // Listing is temporarily inactive
-        SUSPENDED, // Listing is suspended by admin
-        EXPIRED, // Listing has expired
-        CANCELLED // Listing was cancelled by provider
-    }
-
-    // Allocation status enumeration
-    enum AllocationStatus {
-        PENDING, // Allocation requested but not confirmed
-        ACTIVE, // Allocation is active and running
-        COMPLETED, // Allocation completed successfully
-        CANCELLED, // Allocation was cancelled
-        EXPIRED, // Allocation expired
-        FAILED // Allocation failed
-    }
-
-    // Compute listing structure
-    struct ComputeListing {
-        bytes32 listingId; // Unique listing identifier
-        string nodeId; // Associated node ID
-        address provider; // Provider address
-        ComputeTier tier; // Compute tier
-        uint256 cpuCores; // Number of CPU cores
-        uint256 memoryGB; // Memory in GB
-        uint256 storageGB; // Storage in GB
-        uint256 hourlyRate; // Hourly rate in wei
-        string region; // Geographic region
-        ListingStatus status; // Current status
-        uint256 createdAt; // Creation timestamp
-        uint256 updatedAt; // Last update timestamp
-        uint256 expiresAt; // Expiration timestamp
-        bool isActive; // Quick active check
-        string[] tags; // Additional tags for filtering
-    }
-
-    // Storage listing structure
-    struct StorageListing {
-        bytes32 listingId; // Unique listing identifier
-        string nodeId; // Associated node ID
-        address provider; // Provider address
-        StorageTier tier; // Storage tier
-        uint256 storageGB; // Storage capacity in GB
-        uint256 hourlyRate; // Hourly rate per GB in wei
-        string region; // Geographic region
-        ListingStatus status; // Current status
-        uint256 createdAt; // Creation timestamp
-        uint256 updatedAt; // Last update timestamp
-        uint256 expiresAt; // Expiration timestamp
-        bool isActive; // Quick active check
-        string[] features; // Storage features (encryption, backup, etc.)
-    }
-
-    // Resource allocation structure
-    struct ResourceAllocation {
-        bytes32 allocationId; // Unique allocation identifier
-        bytes32 listingId; // Associated listing ID
-        address customer; // Customer address
-        address provider; // Provider address
-        string nodeId; // Associated node ID
-        AllocationStatus status; // Current status
-        uint256 duration; // Duration in hours
-        uint256 totalCost; // Total cost in wei
-        uint256 createdAt; // Creation timestamp
-        uint256 startedAt; // Start timestamp
-        uint256 expiresAt; // Expiration timestamp
-        uint256 completedAt; // Completion timestamp
-        bool isActive; // Quick active check
-        string containerInfo; // Container/instance information
-    }
-
-    // Performance metrics structure
-    struct PerformanceMetrics {
-        uint256 avgResponseTime; // Average response time in ms
-        uint256 uptimePercentage; // Uptime percentage (0-10000)
-        uint256 throughput; // Throughput metric
-        uint256 errorRate; // Error rate (0-10000)
-        uint256 lastUpdated; // Last metrics update
-    }
-
-    // Storage mappings
-    mapping(bytes32 => ComputeListing) private computeListings;
-    mapping(bytes32 => StorageListing) private storageListings;
-    mapping(bytes32 => ResourceAllocation) private allocations;
-    mapping(bytes32 => PerformanceMetrics) private listingMetrics;
-
-    // Indexing mappings
-    mapping(address => bytes32[]) private providerComputeListings;
-    mapping(address => bytes32[]) private providerStorageListings;
-    mapping(address => bytes32[]) private customerAllocations;
-    mapping(string => bytes32[]) private nodeListings;
-    mapping(ComputeTier => bytes32[]) private computeListingsByTier;
-    mapping(StorageTier => bytes32[]) private storageListingsByTier;
-    mapping(string => bytes32[]) private listingsByRegion;
-
-    // Statistics
-    uint256 private totalComputeListings;
-    uint256 private totalStorageListings;
-    uint256 private totalAllocations;
-    uint256 private activeComputeListings;
-    uint256 private activeStorageListings;
-    uint256 private activeAllocations;
-
-    // Counters for unique IDs
-    uint256 private nextListingId = 1;
-    uint256 private nextAllocationId = 1;
-
-    // Events
-    event ResourceDataUpdated(bytes32 indexed id, string dataType);
-
+    // Access control modifier
     modifier onlyLogic() {
-        require(hasRole(LOGIC_ROLE, msg.sender), "Only logic contract");
+        require(
+            hasRole(LOGIC_ROLE, msg.sender),
+            "Caller is not Logic contract"
+        );
         _;
     }
+
+    // Storage for listings and allocations
+    mapping(bytes32 => ComputeListing) internal computeListings;
+    mapping(bytes32 => StorageListing) internal storageListings;
+    mapping(bytes32 => ResourceAllocation) internal allocations;
+    mapping(bytes32 => PerformanceMetrics) internal listingMetrics;
+
+    // Indexes for efficient lookups
+    mapping(address => bytes32[]) internal providerComputeListings;
+    mapping(address => bytes32[]) internal providerStorageListings;
+    mapping(string => bytes32[]) internal nodeListings;
+    mapping(ComputeTier => bytes32[]) internal computeListingsByTier;
+    mapping(StorageTier => bytes32[]) internal storageListingsByTier;
+    mapping(string => bytes32[]) internal listingsByRegion;
+    mapping(address => bytes32[]) internal customerAllocations;
+
+    // Resource statistics using optimized types
+    uint32 private nextListingId;
+    uint32 private nextAllocationId;
+    uint32 public totalComputeListings;
+    uint32 public activeComputeListings;
+    uint32 public totalStorageListings;
+    uint32 public activeStorageListings;
+    uint32 public totalAllocations;
+    uint32 public activeAllocations;
+
+    // Events
+    event ResourceDataUpdated(bytes32 indexed id, string action);
 
     constructor(address admin) {
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
@@ -192,20 +95,18 @@ contract ResourceStorage is AccessControl {
         nextListingId++;
 
         ComputeListing storage listing = computeListings[listingId];
-        listing.listingId = listingId;
         listing.nodeId = nodeId;
         listing.provider = provider;
-        listing.tier = tier;
-        listing.cpuCores = cpuCores;
-        listing.memoryGB = memoryGB;
-        listing.storageGB = storageGB;
-        listing.hourlyRate = hourlyRate;
+        listing.hourlyRate = uint96(hourlyRate);
         listing.region = region;
         listing.status = ListingStatus.ACTIVE;
-        listing.createdAt = block.timestamp;
-        listing.updatedAt = block.timestamp;
-        listing.expiresAt = block.timestamp + 30 days; // Default 30 day expiration
+        listing.createdAt = uint32(block.timestamp);
+        listing.expiresAt = uint32(block.timestamp + 30 days);
         listing.isActive = true;
+        listing.tier = tier;
+        listing.cpuCores = uint32(cpuCores);
+        listing.memoryGB = uint32(memoryGB);
+        listing.storageGB = uint32(storageGB);
 
         // Update indexes
         providerComputeListings[provider].push(listingId);
@@ -230,14 +131,13 @@ contract ResourceStorage is AccessControl {
         ListingStatus status
     ) external onlyLogic {
         require(
-            computeListings[listingId].listingId != bytes32(0),
+            computeListings[listingId].provider != address(0),
             "Listing does not exist"
         );
 
         ComputeListing storage listing = computeListings[listingId];
         ListingStatus oldStatus = listing.status;
         listing.status = status;
-        listing.updatedAt = block.timestamp;
 
         bool newActive = (status == ListingStatus.ACTIVE);
         bool oldActive = (oldStatus == ListingStatus.ACTIVE);
@@ -282,18 +182,16 @@ contract ResourceStorage is AccessControl {
         nextListingId++;
 
         StorageListing storage listing = storageListings[listingId];
-        listing.listingId = listingId;
         listing.nodeId = nodeId;
         listing.provider = provider;
-        listing.tier = tier;
-        listing.storageGB = storageGB;
-        listing.hourlyRate = hourlyRate;
+        listing.hourlyRate = uint96(hourlyRate);
         listing.region = region;
         listing.status = ListingStatus.ACTIVE;
-        listing.createdAt = block.timestamp;
-        listing.updatedAt = block.timestamp;
-        listing.expiresAt = block.timestamp + 30 days; // Default 30 day expiration
+        listing.createdAt = uint32(block.timestamp);
+        listing.expiresAt = uint32(block.timestamp + 30 days);
         listing.isActive = true;
+        listing.tier = tier;
+        listing.storageGB = uint32(storageGB);
 
         // Update indexes
         providerStorageListings[provider].push(listingId);
@@ -318,14 +216,13 @@ contract ResourceStorage is AccessControl {
         ListingStatus status
     ) external onlyLogic {
         require(
-            storageListings[listingId].listingId != bytes32(0),
+            storageListings[listingId].provider != address(0),
             "Listing does not exist"
         );
 
         StorageListing storage listing = storageListings[listingId];
         ListingStatus oldStatus = listing.status;
         listing.status = status;
-        listing.updatedAt = block.timestamp;
 
         bool newActive = (status == ListingStatus.ACTIVE);
         bool oldActive = (oldStatus == ListingStatus.ACTIVE);
@@ -360,26 +257,24 @@ contract ResourceStorage is AccessControl {
         uint256 duration,
         uint256 totalCost
     ) external onlyLogic returns (bytes32 allocationId) {
-        require(computeListings[listingId].isActive, "Listing not active");
+        ComputeListing memory listing = computeListings[listingId];
+        require(listing.isActive, "Listing not active");
 
         allocationId = keccak256(
             abi.encodePacked("allocation", nextAllocationId, block.timestamp)
         );
         nextAllocationId++;
 
-        ComputeListing memory listing = computeListings[listingId];
-
         ResourceAllocation storage allocation = allocations[allocationId];
-        allocation.allocationId = allocationId;
         allocation.listingId = listingId;
         allocation.customer = customer;
         allocation.provider = listing.provider;
         allocation.nodeId = listing.nodeId;
         allocation.status = AllocationStatus.PENDING;
-        allocation.duration = duration;
-        allocation.totalCost = totalCost;
-        allocation.createdAt = block.timestamp;
-        allocation.expiresAt = block.timestamp + (duration * 1 hours);
+        allocation.duration = uint32(duration);
+        allocation.totalCost = uint96(totalCost);
+        allocation.createdAt = uint32(block.timestamp);
+        allocation.expiresAt = uint32(block.timestamp + (duration * 1 hours));
         allocation.isActive = true;
 
         // Update indexes
@@ -402,7 +297,7 @@ contract ResourceStorage is AccessControl {
         AllocationStatus status
     ) external onlyLogic {
         require(
-            allocations[allocationId].allocationId != bytes32(0),
+            allocations[allocationId].customer != address(0),
             "Allocation does not exist"
         );
 
@@ -414,13 +309,12 @@ contract ResourceStorage is AccessControl {
             status == AllocationStatus.ACTIVE &&
             oldStatus == AllocationStatus.PENDING
         ) {
-            allocation.startedAt = block.timestamp;
+            allocation.startedAt = uint32(block.timestamp);
         } else if (
             status == AllocationStatus.COMPLETED ||
             status == AllocationStatus.CANCELLED ||
             status == AllocationStatus.FAILED
         ) {
-            allocation.completedAt = block.timestamp;
             allocation.isActive = false;
             if (
                 oldStatus == AllocationStatus.ACTIVE ||
@@ -446,7 +340,7 @@ contract ResourceStorage is AccessControl {
         bytes32 listingId
     ) external view returns (ComputeListing memory) {
         require(
-            computeListings[listingId].listingId != bytes32(0),
+            computeListings[listingId].provider != address(0),
             "Listing does not exist"
         );
         return computeListings[listingId];
@@ -461,7 +355,7 @@ contract ResourceStorage is AccessControl {
         bytes32 listingId
     ) external view returns (StorageListing memory) {
         require(
-            storageListings[listingId].listingId != bytes32(0),
+            storageListings[listingId].provider != address(0),
             "Listing does not exist"
         );
         return storageListings[listingId];
@@ -476,7 +370,7 @@ contract ResourceStorage is AccessControl {
         bytes32 allocationId
     ) external view returns (ResourceAllocation memory) {
         require(
-            allocations[allocationId].allocationId != bytes32(0),
+            allocations[allocationId].customer != address(0),
             "Allocation does not exist"
         );
         return allocations[allocationId];
@@ -614,4 +508,6 @@ contract ResourceStorage is AccessControl {
     ) external view returns (PerformanceMetrics memory) {
         return listingMetrics[listingId];
     }
+
+    // =============================================================================
 }

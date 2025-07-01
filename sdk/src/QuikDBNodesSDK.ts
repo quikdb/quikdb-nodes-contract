@@ -9,6 +9,7 @@ export interface SDKConfig {
   userStorageAddress: string;
   resourceStorageAddress: string;
   privateKey?: string;
+  signer?: ethers.Signer; // Alternative to privateKey
 }
 
 export class QuikDBNodesSDK {
@@ -23,14 +24,21 @@ export class QuikDBNodesSDK {
    * @param config SDK configuration
    */
   constructor(config: SDKConfig) {
-    // Initialize provider
-    this.provider =
-      typeof config.provider === "string"
-        ? new ethers.JsonRpcProvider(config.provider)
-        : config.provider;
+    // Initialize provider with Lisk Sepolia network settings
+    if (typeof config.provider === "string") {
+      // Default to Lisk Sepolia if string provider is given
+      this.provider = new ethers.JsonRpcProvider(config.provider, {
+        chainId: 4202, // Lisk Sepolia chain ID
+        name: "lisk-sepolia",
+      });
+    } else {
+      this.provider = config.provider;
+    }
 
-    // Initialize signer if privateKey provided
-    if (config.privateKey) {
+    // Initialize signer if provided directly or through privateKey
+    if (config.signer) {
+      this.signer = config.signer;
+    } else if (config.privateKey) {
       this.signer = new ethers.Wallet(config.privateKey, this.provider);
     }
 
@@ -68,12 +76,17 @@ export class QuikDBNodesSDK {
   /**
    * Connect to a new provider
    * @param provider Ethers provider or RPC URL
+   * @param chainId Optional chain ID (defaults to Lisk Sepolia 4202)
    */
-  connect(provider: string | ethers.Provider): void {
-    this.provider =
-      typeof provider === "string"
-        ? new ethers.JsonRpcProvider(provider)
-        : provider;
+  connect(provider: string | ethers.Provider, chainId: number = 4202): void {
+    if (typeof provider === "string") {
+      this.provider = new ethers.JsonRpcProvider(provider, {
+        chainId: chainId,
+        name: chainId === 4202 ? "lisk-sepolia" : `chain-${chainId}`,
+      });
+    } else {
+      this.provider = provider;
+    }
 
     // Reconnect signer if it exists
     if (this.signer) {

@@ -89,9 +89,11 @@ export class MockUserModule implements BaseModule {
       const reputationScore = 50 + (i % 50); // 50-99
 
       const profile: UserProfile = {
+        userAddress: userAddress,
         profileHash,
         userType,
         isActive,
+        exists: true,
         createdAt,
         updatedAt,
         totalSpent,
@@ -200,9 +202,11 @@ export class MockUserModule implements BaseModule {
 
     // Create a new user
     const profile: UserProfile = {
+      userAddress: userAddress,
       profileHash,
       userType,
       isActive: true,
+      exists: true,
       createdAt: now,
       updatedAt: now,
       totalSpent: "0",

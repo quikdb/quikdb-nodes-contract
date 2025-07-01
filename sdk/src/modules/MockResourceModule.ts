@@ -85,6 +85,7 @@ export class MockResourceModule implements BaseModule {
         listingId,
         nodeId,
         nodeAddress: ethers.Wallet.createRandom().address,
+        resourceType: 0, // Compute resource type
         tier,
         cpuCores,
         memoryGB,
@@ -126,6 +127,7 @@ export class MockResourceModule implements BaseModule {
         listingId,
         nodeId,
         nodeAddress: ethers.Wallet.createRandom().address,
+        resourceType: 1, // Storage resource type
         tier,
         storageGB,
         hourlyRate,
@@ -220,6 +222,7 @@ export class MockResourceModule implements BaseModule {
       listingId,
       nodeId,
       nodeAddress: await this.signer.getAddress(),
+      resourceType: 0, // 0 for compute
       tier,
       cpuCores,
       memoryGB,
@@ -265,6 +268,7 @@ export class MockResourceModule implements BaseModule {
       listingId,
       nodeId,
       nodeAddress: await this.signer.getAddress(),
+      resourceType: 1, // 1 for storage
       tier,
       storageGB,
       hourlyRate,
