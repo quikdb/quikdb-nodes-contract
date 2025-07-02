@@ -2,6 +2,8 @@
 
 This directory contains a modular deployment system for the QuikDB smart contracts, organized into logical stages for better maintainability and flexibility.
 
+> **🔧 Yarn Workflow**: All build, test, and deployment tasks should be performed using yarn scripts (see `package.json`). Direct forge commands are not recommended for normal usage.
+
 ## Architecture
 
 ### Base Contracts
@@ -14,8 +16,11 @@ This directory contains a modular deployment system for the QuikDB smart contrac
 - **`stages/ConfigurationSetup.sol`** - Handles final configuration and access control
 
 ### Orchestrator
-- **`QuikDBDeploymentOrchestrator.sol`** - Main orchestrator that coordinates all deployment stages
-- **`QuikDBSimpleDeployments.sol`** - Simplified entry points for common deployment scenarios
+- **`DeploymentOrchestrator.sol`** - Main orchestrator that coordinates all deployment stages
+- **`DeploymentScenarios.sol`** - Simplified entry points for common deployment scenarios
+
+### TypeScript Deployment
+- **`deploy.ts`** - TypeScript deployment script that wraps Forge and automatically saves contract addresses
 
 ## Deployment Stages
 
@@ -30,52 +35,124 @@ This directory contains a modular deployment system for the QuikDB smart contrac
 9. **SETUP_ACCESS_CONTROL** - Setup access control roles
 10. **VERIFY_DEPLOYMENT** - Verify complete deployment
 
+## Quick Start
+
+### Prerequisites
+1. Install dependencies: `yarn install`
+2. Set environment variables:
+   - `PRIVATE_KEY` - Deployer private key
+   - `RPC_URL` - Network RPC URL (optional, defaults provided for Lisk networks)
+
+### Build and Test
+```bash
+yarn build    # Compile all contracts
+yarn test     # Run test suite
+yarn clean    # Clean build artifacts
+```
+
+### Deploy to Lisk Networks
+```bash
+yarn deploy:lsk:testnet   # Deploy to Lisk Sepolia testnet
+yarn deploy:lsk:mainnet   # Deploy to Lisk mainnet
+```
+
+### Deploy Locally or Custom Networks
+```bash
+yarn deploy:complete                    # Local simulation
+yarn deploy:broadcast                   # Local with broadcast
+RPC_URL=<your-rpc> yarn deploy:broadcast # Custom network
+```
+
 ## Usage
 
-### Complete Deployment
-Deploy the entire QuikDB system in one transaction:
+### TypeScript Deployment (Recommended)
+
+#### Lisk Networks
+Deploy to Lisk Sepolia testnet:
 ```bash
-forge script script/QuikDBSimpleDeployments.sol:DeployCompleteQuikDB --broadcast --rpc-url $RPC_URL
+yarn deploy:lsk:testnet
 ```
 
-### Staged Deployment
-Deploy in logical groups:
-
-1. **Storage Layer**:
+Deploy to Lisk mainnet:
 ```bash
-forge script script/QuikDBSimpleDeployments.sol:DeployStorage --broadcast --rpc-url $RPC_URL
+yarn deploy:lsk:mainnet
 ```
 
-2. **Logic Layer**:
+#### Local/Custom Networks
 ```bash
-forge script script/QuikDBSimpleDeployments.sol:DeployLogic --broadcast --rpc-url $RPC_URL
+yarn deploy:complete                    # Local simulation
+yarn deploy:broadcast                   # Local with broadcast
+RPC_URL=<your-rpc> yarn deploy:broadcast # Custom network
 ```
 
-3. **Proxy Layer**:
+#### Staged Deployment
 ```bash
-forge script script/QuikDBSimpleDeployments.sol:DeployProxies --broadcast --rpc-url $RPC_URL
+yarn deploy:storage    # Deploy storage contracts only
+yarn deploy:logic      # Deploy logic implementations only  
+yarn deploy:proxies    # Deploy proxy contracts only
+yarn deploy:config     # Setup configuration only
 ```
 
-4. **Configuration**:
+**Benefits of TypeScript Deployment:**
+- ✅ Automatically saves contract addresses to `deployments/addresses.json`
+- ✅ Handles terminal errors gracefully
+- ✅ Provides deployment summary with gas usage
+- ✅ Maintains deployment history (last 10 deployments)
+
+### Building and Testing
+
+#### Build All Contracts
 ```bash
-forge script script/QuikDBSimpleDeployments.sol:SetupConfiguration --broadcast --rpc-url $RPC_URL
+yarn build
 ```
 
-### Individual Stage Deployment
-For fine-grained control, deploy individual stages:
+#### Run Tests
 ```bash
-# Deploy only storage contracts
-forge script script/QuikDBDeploymentOrchestrator.sol --sig "deploySingleStage(uint8)" 0 --broadcast --rpc-url $RPC_URL
+yarn test
+```
 
-# Deploy only logic implementations
-forge script script/QuikDBDeploymentOrchestrator.sol --sig "deploySingleStage(uint8)" 1 --broadcast --rpc-url $RPC_URL
+#### Clean Build Artifacts
+```bash
+yarn clean
+```
+
+### Deployment Status and Verification
+
+View deployment history and addresses:
+```bash
+cat deployments/latest.json      # Latest deployment
+cat deployments/addresses.json   # All deployment history
 ```
 
 ## Environment Variables
 
 Ensure these environment variables are set:
-- `PRIVATE_KEY` - Deployer private key
-- `RPC_URL` - Network RPC URL
+- `PRIVATE_KEY` - Deployer private key (required)
+- `RPC_URL` - Network RPC URL (optional for yarn scripts, they have defaults)
+
+## Network Configuration
+
+### Lisk Networks
+- **Lisk Sepolia (Testnet)**: `https://rpc.sepolia-api.lisk.com`
+- **Lisk Mainnet**: `https://rpc.api.lisk.com`
+
+### Contract Addresses
+
+#### Lisk Sepolia Testnet (Latest Deployment)
+```json
+{
+  "deployer": "0xaBeBC6283d1b32298D67c745da88DAD288A35c06",
+  "timestamp": "2025-07-02T06:07:50.536Z",
+  "proxies": {
+    "facade": "0x114C61A1d7D95340D7ACb83aB9AAe26A5dcAc2AD",
+    "nodeLogic": "0x010D285126f497cEaBA16B2c3e3B1258a19c1679",
+    "userLogic": "0x9B135fB590b5545DD43517142d9B0E44eA222f1d",
+    "resourceLogic": "0xfF1Ef0c1933DA7d90bf5BB6e20ed8e0331ad3e53"
+  }
+}
+```
+
+**Main Entry Point**: `0x114C61A1d7D95340D7ACb83aB9AAe26A5dcAc2AD` (QuikFacade Proxy)
 
 ## Configuration
 

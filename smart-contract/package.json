@@ -4,7 +4,13 @@
   "description": "QuikDB Smart Contract Deployment Scripts",
   "main": "index.js",
   "scripts": {
+    "build": "forge build",
+    "test": "forge test",
+    "clean": "forge clean",
+    "format": "forge fmt",
+    "snapshot": "forge snapshot",
     "deploy": "tsx scripts/deploy.ts",
+    "deploy:broadcast": "tsx scripts/deploy.ts --broadcast",
     "deploy:storage": "tsx scripts/deploy.ts --stage=storage",
     "deploy:logic": "tsx scripts/deploy.ts --stage=logic",
     "deploy:proxies": "tsx scripts/deploy.ts --stage=proxies",

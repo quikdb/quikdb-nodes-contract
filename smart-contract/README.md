@@ -18,49 +18,105 @@ https://book.getfoundry.sh/
 ### Build
 
 ```shell
-$ forge build
+yarn build
 ```
 
 ### Test
 
 ```shell
-$ forge test
+yarn test
 ```
 
 ### Format
 
 ```shell
-$ forge fmt
+yarn format
+```
+
+### Clean
+
+```shell
+yarn clean
 ```
 
 ### Gas Snapshots
 
 ```shell
-$ forge snapshot
+yarn snapshot
 ```
 
-### Anvil
+## QuikDB Deployment
+
+### Prerequisites
 
 ```shell
-$ anvil
+yarn install
 ```
 
-### Deploy
+### Deployment Scripts
 
+Deploy QuikDB smart contracts using the automated TypeScript deployment scripts:
+
+#### Local/Simulation Deployment
 ```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+yarn deploy:complete          # Local simulation (no broadcast)
 ```
 
-### Cast
-
+#### Lisk Testnet Deployment
 ```shell
-$ cast <subcommand>
+yarn deploy:lsk:testnet       # Deploy to Lisk Sepolia testnet
 ```
+
+#### Lisk Mainnet Deployment
+```shell
+yarn deploy:lsk:mainnet       # Deploy to Lisk mainnet
+```
+
+#### Staged Deployment
+```shell
+yarn deploy:storage           # Deploy only storage contracts
+yarn deploy:logic             # Deploy only logic implementations
+yarn deploy:proxies           # Deploy proxy infrastructure
+yarn deploy:config            # Setup configuration and access control
+```
+
+### Deployment Output
+
+All deployments automatically:
+- ✅ Save contract addresses to `deployments/addresses.json`
+- ✅ Create deployment logs
+- ✅ Show deployment summary with all contract addresses
+- ✅ Save latest deployment to `deployments/latest.json`
+
+### Main Contract Addresses
+
+After deployment, use the **proxy addresses** for your applications:
+- **QuikFacade Proxy** - Main entry point for the QuikDB system
+- **QuikNodeLogic Proxy** - Node management interface
+- **QuikUserLogic Proxy** - User management interface  
+- **QuikResourceLogic Proxy** - Resource management interface
+
+See `deployments/latest.json` for the complete list of deployed contract addresses.
 
 ### Help
 
 ```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+yarn --help           # Yarn commands
+forge --help          # Forge-specific options (advanced usage)
+anvil --help          # Local node options
+cast --help           # Ethereum interaction tool
 ```
+
+### Available Yarn Scripts
+
+View all available scripts:
+```shell
+yarn run
+```
+
+Key scripts include:
+- `yarn build` - Compile contracts
+- `yarn test` - Run tests
+- `yarn deploy:lsk:testnet` - Deploy to Lisk Sepolia
+- `yarn deploy:lsk:mainnet` - Deploy to Lisk mainnet
+- `yarn deploy:complete` - Local deployment simulation
