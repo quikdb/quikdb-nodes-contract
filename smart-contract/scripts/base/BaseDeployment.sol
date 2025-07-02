@@ -4,16 +4,22 @@ pragma solidity ^0.8.20;
 import {Script} from "forge-std/Script.sol";
 import {console} from "forge-std/console.sol";
 import "../DeploymentConfig.sol";
+import "./Create2Deployer.sol";
+import "../utils/AddressPredictor.sol";
 
 /**
  * @title BaseDeployment
- * @notice Base contract for all QuikDB deployment scripts
+ * @notice Base contract for all QuikDB deployment scripts with CREATE2 support
  * @dev Provides common functionality and state management for staged deployments
  */
 abstract contract BaseDeployment is Script, DeploymentConfig {
+    using AddressPredictor for *;
     // =============================================================
     //                         STORAGE
     // =============================================================
+    
+    /// @notice CREATE2 deployer instance
+    Create2Deployer public create2Deployer;
     
     /// @notice Storage contract addresses
     address public nodeStorageAddress;
@@ -34,6 +40,16 @@ abstract contract BaseDeployment is Script, DeploymentConfig {
     address public userLogicProxyAddress;
     address public resourceLogicProxyAddress;
     address public facadeProxyAddress;
+    
+    /// @notice Deployment salts for deterministic addresses
+    bytes32 public nodeStorageSalt;
+    bytes32 public userStorageSalt;
+    bytes32 public resourceStorageSalt;
+    bytes32 public nodeLogicSalt;
+    bytes32 public userLogicSalt;
+    bytes32 public resourceLogicSalt;
+    bytes32 public facadeSalt;
+    bytes32 public proxyAdminSalt;
 
     // =============================================================
     //                         EVENTS
@@ -47,13 +63,70 @@ abstract contract BaseDeployment is Script, DeploymentConfig {
     // =============================================================
     
     /**
-     * @notice Initialize deployment configuration
-     * @dev Should be called at the start of deployment to set role addresses
+     * @notice Initialize deployment configuration with CREATE2 support
+     * @dev Should be called at the start of deployment to set role addresses and salts
      */
     function initializeDeployment() internal {
         (, address deployerAddress) = getDeployerInfo();
         initializeRoleAddresses(deployerAddress);
+        _initializeSalts();
+        _deployCreate2Deployer();
         console.log("Deployment initialized with deployer as all role holders:", deployerAddress);
+        console.log("CREATE2 Deployer deployed at:", address(create2Deployer));
+    }
+    
+    /**
+     * @notice Initialize salts for deterministic deployments
+     */
+    function _initializeSalts() private {
+        (
+            nodeStorageSalt,
+            userStorageSalt,
+            resourceStorageSalt,
+            nodeLogicSalt,
+            userLogicSalt,
+            resourceLogicSalt,
+            facadeSalt,
+            proxyAdminSalt
+        ) = AddressPredictor.getQuikDBSalts();
+    }
+    
+    /**
+     * @notice Deploy the CREATE2 deployer contract
+     */
+    function _deployCreate2Deployer() private {
+        create2Deployer = new Create2Deployer();
+    }
+    
+    /**
+     * @notice Deploy a contract using CREATE2
+     * @param salt The salt for deterministic deployment
+     * @param bytecode The creation bytecode
+     * @return deployed The deployed contract address
+     */
+    function deployWithCreate2(
+        bytes32 salt,
+        bytes memory bytecode
+    ) internal returns (address deployed) {
+        deployed = create2Deployer.deploy(salt, bytecode);
+        return deployed;
+    }
+    
+    /**
+     * @notice Predict the address of a CREATE2 deployment
+     * @param salt The salt to use
+     * @param bytecode The creation bytecode
+     * @return predicted The predicted address
+     */
+    function predictCreate2Address(
+        bytes32 salt,
+        bytes memory bytecode
+    ) internal view returns (address predicted) {
+        return create2Deployer.predictAddress(
+            address(create2Deployer),
+            salt,
+            bytecode
+        );
     }
     
     /**

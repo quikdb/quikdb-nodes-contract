@@ -83,7 +83,7 @@ contract DeploymentOrchestrator is BaseDeployment {
         console.log("=== QUIKDB COMPLETE DEPLOYMENT STARTED ===");
         console.log("Deployer address:", deployerAddress);
         
-        // Initialize deployment configuration
+        // Initialize deployment configuration for main orchestrator only
         initializeDeployment();
         
         vm.startBroadcast(deployerPrivateKey);

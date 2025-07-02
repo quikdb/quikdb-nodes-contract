@@ -27,7 +27,21 @@ contract ProxyDeployment is BaseDeployment {
     function deployProxyAdmin(address deployerAddress) external {
         console.log("=== DEPLOYING PROXY ADMIN ===");
         
-        ProxyAdmin proxyAdmin = new ProxyAdmin(deployerAddress);
+        // Initialize deployment configuration if not already done
+        if (address(create2Deployer) == address(0)) {
+            initializeDeployment();
+        }
+        
+        bytes32 salt = keccak256(abi.encodePacked("QuikDB.ProxyAdmin"));
+        bytes memory bytecode = abi.encodePacked(
+            type(ProxyAdmin).creationCode,
+            abi.encode(deployerAddress)
+        );
+        
+        address predictedAddress = predictCreate2Address(salt, bytecode);
+        console.log("Predicted ProxyAdmin address:", predictedAddress);
+        
+        ProxyAdmin proxyAdmin = ProxyAdmin(deployWithCreate2(salt, bytecode));
         proxyAdminAddress = address(proxyAdmin);
         logDeployment("ProxyAdmin", proxyAdminAddress);
         
@@ -57,6 +71,11 @@ contract ProxyDeployment is BaseDeployment {
     ) external {
         console.log("=== DEPLOYING NODE LOGIC PROXY ===");
         
+        // Initialize deployment configuration if not already done
+        if (address(create2Deployer) == address(0)) {
+            initializeDeployment();
+        }
+        
         // Validate required addresses
         address[] memory addresses = new address[](5);
         addresses[0] = _nodeStorageAddress;
@@ -83,11 +102,18 @@ contract ProxyDeployment is BaseDeployment {
             deployerAddress
         );
         
-        // Deploy proxy
-        TransparentUpgradeableProxy nodeLogicProxy = new TransparentUpgradeableProxy(
-            _nodeLogicImplAddress,
-            _proxyAdminAddress,
-            initData
+        // Deploy proxy using CREATE2
+        bytes32 salt = keccak256(abi.encodePacked("QuikDB.NodeLogic.Proxy"));
+        bytes memory bytecode = abi.encodePacked(
+            type(TransparentUpgradeableProxy).creationCode,
+            abi.encode(_nodeLogicImplAddress, _proxyAdminAddress, initData)
+        );
+        
+        address predictedAddress = predictCreate2Address(salt, bytecode);
+        console.log("Predicted NodeLogic Proxy address:", predictedAddress);
+        
+        TransparentUpgradeableProxy nodeLogicProxy = TransparentUpgradeableProxy(
+            payable(deployWithCreate2(salt, bytecode))
         );
         
         nodeLogicProxyAddress = address(nodeLogicProxy);
@@ -141,11 +167,18 @@ contract ProxyDeployment is BaseDeployment {
             deployerAddress
         );
         
-        // Deploy proxy
-        TransparentUpgradeableProxy userLogicProxy = new TransparentUpgradeableProxy(
-            _userLogicImplAddress,
-            _proxyAdminAddress,
-            initData
+        // Deploy proxy using CREATE2
+        bytes32 salt = keccak256(abi.encodePacked("QuikDB.UserLogic.Proxy"));
+        bytes memory bytecode = abi.encodePacked(
+            type(TransparentUpgradeableProxy).creationCode,
+            abi.encode(_userLogicImplAddress, _proxyAdminAddress, initData)
+        );
+        
+        address predictedAddress = predictCreate2Address(salt, bytecode);
+        console.log("Predicted UserLogic Proxy address:", predictedAddress);
+        
+        TransparentUpgradeableProxy userLogicProxy = TransparentUpgradeableProxy(
+            payable(deployWithCreate2(salt, bytecode))
         );
         
         userLogicProxyAddress = address(userLogicProxy);
@@ -199,11 +232,18 @@ contract ProxyDeployment is BaseDeployment {
             deployerAddress
         );
         
-        // Deploy proxy
-        TransparentUpgradeableProxy resourceLogicProxy = new TransparentUpgradeableProxy(
-            _resourceLogicImplAddress,
-            _proxyAdminAddress,
-            initData
+        // Deploy proxy using CREATE2
+        bytes32 salt = keccak256(abi.encodePacked("QuikDB.ResourceLogic.Proxy"));
+        bytes memory bytecode = abi.encodePacked(
+            type(TransparentUpgradeableProxy).creationCode,
+            abi.encode(_resourceLogicImplAddress, _proxyAdminAddress, initData)
+        );
+        
+        address predictedAddress = predictCreate2Address(salt, bytecode);
+        console.log("Predicted ResourceLogic Proxy address:", predictedAddress);
+        
+        TransparentUpgradeableProxy resourceLogicProxy = TransparentUpgradeableProxy(
+            payable(deployWithCreate2(salt, bytecode))
         );
         
         resourceLogicProxyAddress = address(resourceLogicProxy);
@@ -257,11 +297,18 @@ contract ProxyDeployment is BaseDeployment {
             deployerAddress
         );
         
-        // Deploy proxy
-        TransparentUpgradeableProxy facadeProxy = new TransparentUpgradeableProxy(
-            _facadeImplAddress,
-            _proxyAdminAddress,
-            initData
+        // Deploy proxy using CREATE2
+        bytes32 salt = keccak256(abi.encodePacked("QuikDB.Facade.Proxy"));
+        bytes memory bytecode = abi.encodePacked(
+            type(TransparentUpgradeableProxy).creationCode,
+            abi.encode(_facadeImplAddress, _proxyAdminAddress, initData)
+        );
+        
+        address predictedAddress = predictCreate2Address(salt, bytecode);
+        console.log("Predicted Facade Proxy address:", predictedAddress);
+        
+        TransparentUpgradeableProxy facadeProxy = TransparentUpgradeableProxy(
+            payable(deployWithCreate2(salt, bytecode))
         );
         
         facadeProxyAddress = address(facadeProxy);
@@ -300,5 +347,112 @@ contract ProxyDeployment is BaseDeployment {
             resourceLogicProxyAddress,
             facadeProxyAddress
         );
+    }
+    
+    // =============================================================
+    //                    ADDRESS PREDICTION
+    // =============================================================
+    
+    /**
+     * @notice Predict proxy addresses using CREATE2
+     * @param deployerAddress Address for initialization
+     * @param nodeLogicImplAddress Address of NodeLogic implementation
+     * @param userLogicImplAddress Address of UserLogic implementation 
+     * @param resourceLogicImplAddress Address of ResourceLogic implementation
+     * @param facadeImplAddress Address of Facade implementation
+     * @param proxyAdminAddress Address of ProxyAdmin
+     * @param nodeStorageAddress Address of NodeStorage contract
+     * @param userStorageAddress Address of UserStorage contract
+     * @param resourceStorageAddress Address of ResourceStorage contract
+     * @return proxyAdmin Predicted ProxyAdmin address
+     * @return nodeProxy Predicted NodeLogic proxy address
+     * @return userProxy Predicted UserLogic proxy address
+     * @return resourceProxy Predicted ResourceLogic proxy address
+     * @return facadeProxy Predicted Facade proxy address
+     */
+    function predictProxyAddresses(
+        address deployerAddress,
+        address nodeLogicImplAddress,
+        address userLogicImplAddress,
+        address resourceLogicImplAddress,
+        address facadeImplAddress,
+        address proxyAdminAddress,
+        address nodeStorageAddress,
+        address userStorageAddress,
+        address resourceStorageAddress
+    ) external view returns (
+        address proxyAdmin,
+        address nodeProxy,
+        address userProxy,
+        address resourceProxy,
+        address facadeProxy
+    ) {
+        // Predict ProxyAdmin address
+        bytes32 proxyAdminSalt = keccak256(abi.encodePacked("QuikDB.ProxyAdmin"));
+        bytes memory proxyAdminBytecode = abi.encodePacked(
+            type(ProxyAdmin).creationCode,
+            abi.encode(deployerAddress)
+        );
+        proxyAdmin = predictCreate2Address(proxyAdminSalt, proxyAdminBytecode);
+        
+        // Predict NodeLogic Proxy address
+        bytes memory nodeInitData = abi.encodeWithSelector(
+            QuikNodeLogic.initialize.selector,
+            nodeStorageAddress,
+            userStorageAddress,
+            resourceStorageAddress,
+            deployerAddress
+        );
+        bytes32 nodeSalt = keccak256(abi.encodePacked("QuikDB.NodeLogic.Proxy"));
+        bytes memory nodeBytecode = abi.encodePacked(
+            type(TransparentUpgradeableProxy).creationCode,
+            abi.encode(nodeLogicImplAddress, proxyAdminAddress, nodeInitData)
+        );
+        nodeProxy = predictCreate2Address(nodeSalt, nodeBytecode);
+        
+        // Predict UserLogic Proxy address
+        bytes memory userInitData = abi.encodeWithSelector(
+            QuikUserLogic.initialize.selector,
+            nodeStorageAddress,
+            userStorageAddress,
+            resourceStorageAddress,
+            deployerAddress
+        );
+        bytes32 userSalt = keccak256(abi.encodePacked("QuikDB.UserLogic.Proxy"));
+        bytes memory userBytecode = abi.encodePacked(
+            type(TransparentUpgradeableProxy).creationCode,
+            abi.encode(userLogicImplAddress, proxyAdminAddress, userInitData)
+        );
+        userProxy = predictCreate2Address(userSalt, userBytecode);
+        
+        // Predict ResourceLogic Proxy address
+        bytes memory resourceInitData = abi.encodeWithSelector(
+            QuikResourceLogic.initialize.selector,
+            nodeStorageAddress,
+            userStorageAddress,
+            resourceStorageAddress,
+            deployerAddress
+        );
+        bytes32 resourceSalt = keccak256(abi.encodePacked("QuikDB.ResourceLogic.Proxy"));
+        bytes memory resourceBytecode = abi.encodePacked(
+            type(TransparentUpgradeableProxy).creationCode,
+            abi.encode(resourceLogicImplAddress, proxyAdminAddress, resourceInitData)
+        );
+        resourceProxy = predictCreate2Address(resourceSalt, resourceBytecode);
+        
+        // Predict Facade Proxy address
+        bytes memory facadeInitData = abi.encodeWithSelector(
+            QuikFacade.initialize.selector,
+            nodeProxy,
+            userProxy,
+            resourceProxy,
+            deployerAddress
+        );
+        bytes32 facadeSalt = keccak256(abi.encodePacked("QuikDB.Facade.Proxy"));
+        bytes memory facadeBytecode = abi.encodePacked(
+            type(TransparentUpgradeableProxy).creationCode,
+            abi.encode(facadeImplAddress, proxyAdminAddress, facadeInitData)
+        );
+        facadeProxy = predictCreate2Address(facadeSalt, facadeBytecode);
     }
 }
