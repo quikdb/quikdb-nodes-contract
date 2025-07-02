@@ -13,6 +13,10 @@
     "deploy:broadcast": "tsx scripts/deploy.ts --broadcast",
     "deploy:lsk:testnet": "RPC_URL=https://rpc.sepolia-api.lisk.com tsx scripts/deploy.ts --broadcast",
     "deploy:lsk:mainnet": "RPC_URL=https://rpc.api.lisk.com tsx scripts/deploy.ts --broadcast",
+    "upgrade": "tsx scripts/upgrade.ts",
+    "upgrade:broadcast": "tsx scripts/upgrade.ts --broadcast",
+    "upgrade:lsk:testnet": "RPC_URL=https://rpc.sepolia-api.lisk.com tsx scripts/upgrade.ts --broadcast",
+    "upgrade:lsk:mainnet": "RPC_URL=https://rpc.api.lisk.com tsx scripts/upgrade.ts --broadcast",
     "validate": "echo 'Please specify network: yarn validate:lsk:testnet or yarn validate:lsk:mainnet' && exit 1",
     "validate:lsk:testnet": "RPC_URL=https://rpc.sepolia-api.lisk.com tsx scripts/validateDeployment.ts lisk-sepolia",
     "validate:lsk:mainnet": "RPC_URL=https://rpc.api.lisk.com tsx scripts/validateDeployment.ts lisk-mainnet"

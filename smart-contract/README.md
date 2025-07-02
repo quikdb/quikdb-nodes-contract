@@ -148,6 +148,25 @@ The validation script performs comprehensive testing:
 - ✅ **Cleanup & Safety** - Handles existing test data gracefully
 - ✅ **Blockchain Explorer Links** - Provides verification links for all contracts
 
+### Upgrade Features
+
+The upgrade system provides seamless contract updates:
+- ✅ **Proxy Addresses Preserved** - Users continue using the same addresses
+- ✅ **Data Integrity** - All storage contracts and data remain unchanged
+- ✅ **Zero Downtime** - Upgrades happen atomically
+- ✅ **Version Tracking** - All upgrades are logged in `deployments/upgrades.json`
+- ✅ **Rollback Support** - Previous implementations can be restored if needed
+- ✅ **CREATE2 New Implementations** - Deterministic addresses for new logic contracts
+
+**Upgrade Process:**
+1. Deploy new implementation contracts with incremented salt
+2. Upgrade all proxies to point to new implementations
+3. Verify upgrades completed successfully
+4. Update deployment records with new implementation addresses
+
+**What gets upgraded:** Logic contracts (NodeLogic, UserLogic, ResourceLogic, Facade)
+**What stays the same:** Proxy addresses, storage contracts, all user data
+
 ### Blockchain Explorer Integration
 
 After deployment and validation, you'll receive direct links to verify contracts on:
@@ -191,6 +210,8 @@ Key scripts include:
 - `yarn deploy:lsk:testnet` - Deploy to Lisk Sepolia testnet
 - `yarn deploy:lsk:mainnet` - Deploy to Lisk mainnet
 - `yarn deploy:complete` - Local deployment simulation
+- `yarn upgrade:lsk:testnet` - Upgrade Lisk Sepolia deployment
+- `yarn upgrade:lsk:mainnet` - Upgrade Lisk mainnet deployment
 - `yarn validate:lsk:testnet` - Validate Lisk Sepolia deployment
 - `yarn validate:lsk:mainnet` - Validate Lisk mainnet deployment
 
@@ -227,3 +248,22 @@ Proxy contracts use derived salts to avoid collisions:
 - `keccak256(abi.encodePacked(SALT, "UserLogicProxy"))`
 - `keccak256(abi.encodePacked(SALT, "ResourceLogicProxy"))`
 - `keccak256(abi.encodePacked(SALT, "FacadeProxy"))`
+
+### Upgrade Scripts
+
+Upgrade QuikDB logic contracts while preserving proxy addresses:
+
+#### Lisk Testnet Upgrade
+```shell
+yarn upgrade:lsk:testnet      # Upgrade logic contracts on Lisk Sepolia
+```
+
+#### Lisk Mainnet Upgrade
+```shell
+yarn upgrade:lsk:mainnet      # Upgrade logic contracts on Lisk mainnet
+```
+
+#### Local/Simulation Upgrade
+```shell
+yarn upgrade                  # Local upgrade simulation (no broadcast)
+```

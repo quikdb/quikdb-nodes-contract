@@ -1,0 +1,56 @@
+[
+  {
+    "timestamp": "2025-07-02T09:51:04.964Z",
+    "deployer": "",
+    "previousImplementations": {
+      "nodeLogic": "0x1825423111bEf46f3bC6802DdaC5a04ec3016376",
+      "userLogic": "0x428fD41c7d0aF853F729A9B766149E6145B9B8c7",
+      "resourceLogic": "0xE2c4a38C2E7174D807538d8C257f0B4597E6458d",
+      "facade": "0xa25906C855De80a53f4C1E4DB6B1eb5c26a74159"
+    },
+    "newImplementations": {},
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.api.lisk.com\nError: Compiler run failed:\nError (2333): Identifier already declared.\n  --> scripts/QuikDBUpgrade.sol:13:1:\n   |\n13 | interface ITransparentUpgradeableProxy {\n   | ^ (Relevant source part starts here and spans across multiple lines).\nNote: The previous declaration is here:\n --> scripts/QuikDBUpgrade.sol:9:1:\n  |\n9 | import \"@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol\";\n  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nError (2333): Identifier already declared.\n  --> scripts/QuikDBUpgrade.sol:13:1:\n   |\n13 | interface ITransparentUpgradeableProxy {\n   | ^ (Relevant source part starts here and spans across multiple lines).\nNote: The previous declaration is here:\n  --> scripts/QuikDBUpgrade.sol:10:1:\n   |\n10 | import \"@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol\";\n   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-02T09:52:08.423Z",
+    "deployer": "",
+    "previousImplementations": {},
+    "newImplementations": {},
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.api.lisk.com\nError: failed to resolve file: \"/Users/tempadmin/Documents/github/quikdb/quikdb-nodes-contract/smart-contract/lib/openzeppelin-contracts/proxy/transparent/ITransparentUpgradeableProxy.sol\": No such file or directory (os error 2); check configured remappings\n\t--> /Users/tempadmin/Documents/github/quikdb/quikdb-nodes-contract/smart-contract/scripts/QuikDBUpgrade.sol\n\t@openzeppelin/contracts/proxy/transparent/ITransparentUpgradeableProxy.sol\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-02T09:53:20.477Z",
+    "deployer": "",
+    "previousImplementations": {},
+    "newImplementations": {},
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.api.lisk.com\nError: Compiler run failed:\nError (9582): Member \"upgrade\" not found or not visible after argument-dependent lookup in contract ProxyAdmin.\n  --> scripts/QuikDBUpgrade.sol:76:13:\n   |\n76 |         try proxyAdmin.upgrade(\n   |             ^^^^^^^^^^^^^^^^^^\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-02T09:55:13.143Z",
+    "deployer": "0xaBeBC6283d1b32298D67c745da88DAD288A35c06",
+    "previousImplementations": {},
+    "newImplementations": {
+      "nodeLogic": "0x11cfa2612EAC6Bc57A5405d396c625b75edB4C7d",
+      "userLogic": "0x7C1CBa7aBDA4C76eb9b7BE046227DB30a83fA14d",
+      "resourceLogic": "0xcCa38C55b8A4fb7F48Da65DCEeEEf93A2C70C0cd",
+      "facade": "0x6Fe3033519106543691211CB712f8E58FFec9e25"
+    },
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.api.lisk.com\nError: script failed: <empty revert data>\n"
+    ]
+  }
+]
