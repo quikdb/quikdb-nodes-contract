@@ -10,8 +10,8 @@
     "deploy:proxies": "tsx scripts/deploy.ts --stage=proxies",
     "deploy:config": "tsx scripts/deploy.ts --stage=config",
     "deploy:complete": "tsx scripts/deploy.ts --stage=complete",
-    "deploy:broadcast": "tsx scripts/deploy.ts --stage=complete --broadcast",
-    "deploy:mainnet": "tsx scripts/deploy.ts --stage=complete --broadcast"
+    "deploy:lsk:testnet": "FORGE_PATH=$HOME/.foundry/bin/forge RPC_URL=https://rpc.sepolia-api.lisk.com tsx scripts/deploy.ts --stage=complete --broadcast",
+    "deploy:lsk:mainnet": "FORGE_PATH=$HOME/.foundry/bin/forge RPC_URL=https://rpc.api.lisk.com tsx scripts/deploy.ts --stage=complete --broadcast"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

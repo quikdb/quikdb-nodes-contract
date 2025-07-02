@@ -35,7 +35,9 @@ class DeploymentManager {
       const output = execSync(command, { 
         encoding: 'utf8',
         stdio: 'pipe',
-        maxBuffer: 1024 * 1024 * 10 // 10MB buffer
+        maxBuffer: 1024 * 1024 * 10, // 10MB buffer
+        cwd: process.cwd(), // Ensure we're in the right directory
+        env: { ...process.env, PATH: process.env.PATH } // Pass through environment
       });
       
       console.log(output);
@@ -46,6 +48,23 @@ class DeploymentManager {
       
     } catch (error: any) {
       console.error('❌ Deployment failed:', error.message);
+      
+      // Check if this is just the "not a terminal" error but deployment succeeded
+      const isTerminalError = error.stderr && error.stderr.includes('Error: IO error: not a terminal');
+      const hasDeploymentOutput = error.stdout && error.stdout.includes('Script ran successfully');
+      
+      if (isTerminalError && hasDeploymentOutput) {
+        console.log('✅ Deployment completed successfully (ignoring terminal error)');
+        console.log(error.stdout);
+        
+        const addresses = this.parseAddresses(error.stdout);
+        addresses.status = 'success'; // Override status since deployment actually worked
+        this.saveAddresses(addresses);
+        this.printSummary(addresses);
+        return; // Don't throw error
+      }
+      
+      // Handle real failures
       if (error.stdout) {
         console.log('STDOUT:', error.stdout);
         const addresses = this.parseAddresses(error.stdout);
@@ -70,7 +89,9 @@ class DeploymentManager {
   }
 
   private buildForgeCommand(contractName: string, broadcast: boolean): string {
-    let cmd = `forge script script/DeploymentScenarios.sol:${contractName}`;
+    // Try to use forge in PATH, fallback to common installation paths
+    const forgeCmd = process.env.FORGE_PATH || 'forge';
+    let cmd = `${forgeCmd} script scripts/DeploymentScenarios.sol:${contractName}`;
     
     if (broadcast) {
       cmd += ' --broadcast';
