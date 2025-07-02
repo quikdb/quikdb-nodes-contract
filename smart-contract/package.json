@@ -11,13 +11,11 @@
     "snapshot": "forge snapshot",
     "deploy": "tsx scripts/deploy.ts",
     "deploy:broadcast": "tsx scripts/deploy.ts --broadcast",
-    "deploy:storage": "tsx scripts/deploy.ts --stage=storage",
-    "deploy:logic": "tsx scripts/deploy.ts --stage=logic",
-    "deploy:proxies": "tsx scripts/deploy.ts --stage=proxies",
-    "deploy:config": "tsx scripts/deploy.ts --stage=config",
-    "deploy:complete": "tsx scripts/deploy.ts --stage=complete",
-    "deploy:lsk:testnet": "RPC_URL=https://rpc.sepolia-api.lisk.com tsx scripts/deploy.ts --stage=complete --broadcast",
-    "deploy:lsk:mainnet": "RPC_URL=https://rpc.api.lisk.com tsx scripts/deploy.ts --stage=complete --broadcast"
+    "deploy:lsk:testnet": "RPC_URL=https://rpc.sepolia-api.lisk.com tsx scripts/deploy.ts --broadcast",
+    "deploy:lsk:mainnet": "RPC_URL=https://rpc.api.lisk.com tsx scripts/deploy.ts --broadcast",
+    "validate": "echo 'Please specify network: yarn validate:lsk:testnet or yarn validate:lsk:mainnet' && exit 1",
+    "validate:lsk:testnet": "RPC_URL=https://rpc.sepolia-api.lisk.com tsx scripts/validateDeployment.ts lisk-sepolia",
+    "validate:lsk:mainnet": "RPC_URL=https://rpc.api.lisk.com tsx scripts/validateDeployment.ts lisk-mainnet"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

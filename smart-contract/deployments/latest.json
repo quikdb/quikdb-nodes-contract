@@ -1,23 +1,23 @@
 {
-  "timestamp": "2025-07-02T06:52:17.849Z",
+  "timestamp": "2025-07-02T08:31:54.387Z",
   "deployer": "0xaBeBC6283d1b32298D67c745da88DAD288A35c06",
   "storage": {
-    "nodeStorage": "0x6f23B9722D61b1640e18437dE3CefbB944E18315",
-    "userStorage": "0xD278666fd5e03774245c34335486EFDb3822e7Ca",
-    "resourceStorage": "0xe7b0240aAe843EA5B8A4b7771041f0D2411BdeFC"
+    "nodeStorage": "0x6323695A047D1c7E33dD5e0b5c825aFD70aee6d3",
+    "userStorage": "0x094af4beB7078Ce650C88d0b9Ef9Cc580B027d87",
+    "resourceStorage": "0xDeAeD84eb7cde510Bec5d2e4e1cf321FB33982F2"
   },
   "implementations": {
-    "nodeLogic": "0x6E5E1fEB38d762351671Bde67814A8175BdF59d8",
-    "userLogic": "0x5ED9B79eE88f45c6CB973E6E6E31A8E5FBF7f0Dc",
-    "resourceLogic": "0x1979F3976b0a4FAF60bb46ce11C82A4BBc39B06b",
-    "facade": "0x983D9825486A36C610E3B862f76c80674e633b24"
+    "nodeLogic": "0x7325aa0b4d056e8624F7Fa891DDC571beD59AA9D",
+    "userLogic": "0x9CB91e7b3C49CA5DF85072CCA9384Cb86953DC9b",
+    "resourceLogic": "0x80358961aea44a6cdc890E042854fB25222C3eA9",
+    "facade": "0x0F04ef2836E9c2ba0D76054147f7E3fbFF883FE8"
   },
   "proxies": {
-    "proxyAdmin": "0x83907F74b4bAeb0e44A980E6220925dCfDC5083E",
-    "nodeLogic": "0xd331e6aAf0b57EAEe44Ac9819f08B64E67f58Cfb",
-    "userLogic": "0x0d6998DF7BEB77fB1A7e09fB00aFa6981ff1e05F",
-    "resourceLogic": "0x170633D0a286dF6E2F8c07942964ff7504f85828",
-    "facade": "0x332d9c31b69E5e489790721a9faF6fcBBc2f9e9C"
+    "proxyAdmin": "0x52db6Fad1dc3f120B30A01fE0dfbbe5A389f0994",
+    "nodeLogic": "0x8313F0d9a410741d2476b2C722A43C9280318Fe2",
+    "userLogic": "0x1F3058021FE3a0e07E2b3AA36bf142D62DE28a5B",
+    "resourceLogic": "0x7be8da4867b3e53463dB0cF39a19960cD62bEeC7",
+    "facade": "0x20AB6291691805AD49C7390D704a5ba11605C3C0"
   },
   "status": "success",
   "errors": []
