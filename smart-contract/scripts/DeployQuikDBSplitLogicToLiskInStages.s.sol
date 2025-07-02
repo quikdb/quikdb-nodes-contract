@@ -12,9 +12,9 @@ import "../src/proxy/QuikResourceLogic.sol";
 import "../src/proxy/QuikFacade.sol";
 import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
-import "./QuikDBConfig.sol";
+import "./DeploymentConfig.sol";
 
-contract DeployQuikDBSplitLogicToLiskInStages is Script, QuikDBConfig {
+contract DeployQuikDBSplitLogicToLiskInStages is Script, DeploymentConfig {
     // Storage for contract addresses deployed in previous stages
     // These can be set manually between stages to continue deployment
     address public nodeStorageAddress;

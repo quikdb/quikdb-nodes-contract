@@ -2,10 +2,10 @@
 pragma solidity ^0.8.20;
 
 /**
- * @title QuikDBConfig
+ * @title DeploymentConfig
  * @dev Configuration values for QuikDB deployment
  */
-contract QuikDBConfig {
+contract DeploymentConfig {
     // Important addresses
     address internal constant NODE_OPERATOR_ADDRESS =
         0x0000000000000000000000000000000000000002;
