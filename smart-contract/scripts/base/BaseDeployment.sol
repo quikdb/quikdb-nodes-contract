@@ -47,6 +47,16 @@ abstract contract BaseDeployment is Script, DeploymentConfig {
     // =============================================================
     
     /**
+     * @notice Initialize deployment configuration
+     * @dev Should be called at the start of deployment to set role addresses
+     */
+    function initializeDeployment() internal {
+        (, address deployerAddress) = getDeployerInfo();
+        initializeRoleAddresses(deployerAddress);
+        console.log("Deployment initialized with deployer as all role holders:", deployerAddress);
+    }
+    
+    /**
      * @notice Get deployer private key and address from environment
      * @return privateKey The deployer's private key
      * @return deployerAddress The deployer's address

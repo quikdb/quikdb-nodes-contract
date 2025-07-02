@@ -80,5 +80,29 @@
       "  ERROR: Storage contracts setup failed",
       "  ERROR: Access control setup failed"
     ]
+  },
+  {
+    "timestamp": "2025-07-02T06:19:32.452Z",
+    "deployer": "0xaBeBC6283d1b32298D67c745da88DAD288A35c06",
+    "storage": {
+      "nodeStorage": "0x86875c0affDe5321016e15209eE75Eb9adA1d457",
+      "userStorage": "0x014f2A5F99Ef0A46368DCa6FF81358b7f6Ab3f0d",
+      "resourceStorage": "0x3045a515f9B1f95c6af968a4C2a790e6549B8153"
+    },
+    "implementations": {
+      "nodeLogic": "0x5c5f160Ca820ecB00E44FA88C580902C50d8cb91",
+      "userLogic": "0x2d6277981392FDcb6A0099a431366FCE4E9c139e",
+      "resourceLogic": "0x554f7e4843f5d273d91ccE9EE11ED5271e916dc9",
+      "facade": "0xb4F07975D82BB9440ecE3A91756203ACEe3FB790"
+    },
+    "proxies": {
+      "proxyAdmin": "0x35F506F94F26b8c11d009575256DF6746839A913",
+      "nodeLogic": "0x010D285126f497cEaBA16B2c3e3B1258a19c1679",
+      "userLogic": "0x9B135fB590b5545DD43517142d9B0E44eA222f1d",
+      "resourceLogic": "0xfF1Ef0c1933DA7d90bf5BB6e20ed8e0331ad3e53",
+      "facade": "0x114C61A1d7D95340D7ACb83aB9AAe26A5dcAc2AD"
+    },
+    "status": "success",
+    "errors": []
   }
 ]

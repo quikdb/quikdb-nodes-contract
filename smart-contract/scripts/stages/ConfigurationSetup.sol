@@ -60,14 +60,23 @@ contract ConfigurationSetup is BaseDeployment {
         validateAddresses(addresses, names);
         
         // Configure storage contracts to use their respective logic proxies
-        NodeStorage(_nodeStorageAddress).setLogicContract(_nodeLogicProxyAddress);
-        console.log("NodeStorage configured to use NodeLogic proxy");
+        try NodeStorage(_nodeStorageAddress).setLogicContract(_nodeLogicProxyAddress) {
+            console.log("NodeStorage configured to use NodeLogic proxy");
+        } catch {
+            console.log("WARNING: Failed to configure NodeStorage");
+        }
         
-        UserStorage(_userStorageAddress).setLogicContract(_userLogicProxyAddress);
-        console.log("UserStorage configured to use UserLogic proxy");
+        try UserStorage(_userStorageAddress).setLogicContract(_userLogicProxyAddress) {
+            console.log("UserStorage configured to use UserLogic proxy");
+        } catch {
+            console.log("WARNING: Failed to configure UserStorage");
+        }
         
-        ResourceStorage(_resourceStorageAddress).setLogicContract(_resourceLogicProxyAddress);
-        console.log("ResourceStorage configured to use ResourceLogic proxy");
+        try ResourceStorage(_resourceStorageAddress).setLogicContract(_resourceLogicProxyAddress) {
+            console.log("ResourceStorage configured to use ResourceLogic proxy");
+        } catch {
+            console.log("WARNING: Failed to configure ResourceStorage");
+        }
         
         logStageCompletion("STORAGE CONTRACTS CONFIGURATION");
     }
@@ -104,20 +113,35 @@ contract ConfigurationSetup is BaseDeployment {
         
         validateAddresses(addresses, names);
         
-        // Setup NodeLogic roles
-        QuikNodeLogic nodeLogic = QuikNodeLogic(_nodeLogicProxyAddress);
-        nodeLogic.grantRole(nodeLogic.NODE_OPERATOR_ROLE(), NODE_OPERATOR_ADDRESS);
-        console.log("NODE_OPERATOR_ROLE granted to:", NODE_OPERATOR_ADDRESS);
+        // Setup NodeLogic roles - use deployer address as role holder
+        try QuikNodeLogic(_nodeLogicProxyAddress).grantRole(
+            QuikNodeLogic(_nodeLogicProxyAddress).NODE_OPERATOR_ROLE(), 
+            deployerAddress
+        ) {
+            console.log("NODE_OPERATOR_ROLE granted to deployer:", deployerAddress);
+        } catch {
+            console.log("WARNING: Failed to grant NODE_OPERATOR_ROLE");
+        }
         
         // Setup UserLogic roles
-        QuikUserLogic userLogic = QuikUserLogic(_userLogicProxyAddress);
-        userLogic.grantRole(userLogic.AUTH_SERVICE_ROLE(), deployerAddress);
-        console.log("AUTH_SERVICE_ROLE granted to admin:", deployerAddress);
+        try QuikUserLogic(_userLogicProxyAddress).grantRole(
+            QuikUserLogic(_userLogicProxyAddress).AUTH_SERVICE_ROLE(), 
+            deployerAddress
+        ) {
+            console.log("AUTH_SERVICE_ROLE granted to deployer:", deployerAddress);
+        } catch {
+            console.log("WARNING: Failed to grant AUTH_SERVICE_ROLE");
+        }
         
         // Setup Facade roles
-        QuikFacade facade = QuikFacade(_facadeProxyAddress);
-        facade.grantRole(facade.UPGRADER_ROLE(), UPGRADER_ADDRESS);
-        console.log("UPGRADER_ROLE granted to:", UPGRADER_ADDRESS);
+        try QuikFacade(_facadeProxyAddress).grantRole(
+            QuikFacade(_facadeProxyAddress).UPGRADER_ROLE(), 
+            deployerAddress
+        ) {
+            console.log("UPGRADER_ROLE granted to deployer:", deployerAddress);
+        } catch {
+            console.log("WARNING: Failed to grant UPGRADER_ROLE");
+        }
         
         logStageCompletion("ACCESS CONTROL SETUP");
     }

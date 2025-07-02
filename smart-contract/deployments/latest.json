@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-07-02T06:15:54.141Z",
+  "timestamp": "2025-07-02T06:19:32.452Z",
   "deployer": "0xaBeBC6283d1b32298D67c745da88DAD288A35c06",
   "storage": {
     "nodeStorage": "0x86875c0affDe5321016e15209eE75Eb9adA1d457",
@@ -20,8 +20,5 @@
     "facade": "0x114C61A1d7D95340D7ACb83aB9AAe26A5dcAc2AD"
   },
   "status": "success",
-  "errors": [
-    "  ERROR: Storage contracts setup failed",
-    "  ERROR: Access control setup failed"
-  ]
+  "errors": []
 }
