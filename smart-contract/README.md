@@ -61,7 +61,7 @@ RPC_URL=https://rpc.sepolia-api.lisk.com  # For Lisk Sepolia testnet
 
 ### Deployment Scripts
 
-Deploy QuikDB smart contracts using the modern TypeScript deployment controller:
+Deploy QuikDB smart contracts using the modern TypeScript deployment controller with **CREATE2 deterministic addresses**:
 
 #### Lisk Testnet Deployment
 ```shell
@@ -77,6 +77,35 @@ yarn deploy:lsk:mainnet       # Deploy to Lisk mainnet
 ```shell
 yarn deploy:complete          # Local simulation (no broadcast)
 ```
+
+### 🔒 Deterministic Addresses (CREATE2)
+
+All contracts are deployed using **CREATE2** with a fixed salt (`keccak256("QuikDB.v1.2025")`), ensuring:
+- ✅ **Same addresses across all networks** (testnet, mainnet, etc.)
+- ✅ **Predictable addresses** before deployment
+- ✅ **Easy integration** for frontend/SDK (hardcode addresses)
+- ✅ **Multi-chain compatibility** for future expansion
+
+### CREATE2 Deterministic Deployment
+
+QuikDB uses CREATE2 for deterministic contract addresses, providing:
+
+**🎯 Predictable Addresses:**
+- Same contract addresses across all networks (testnet/mainnet)
+- Addresses can be calculated before deployment
+- Simplified multi-chain integration
+
+**🔧 Developer Benefits:**
+- Frontend/SDK can use hardcoded addresses
+- No need to update addresses between networks
+- Easier testing and validation workflows
+
+**🌐 Multi-Chain Ready:**
+- Deploy to any EVM-compatible network with identical addresses
+- Consistent addresses enable seamless cross-chain operations
+- Professional deployment standard
+
+**Salt Used:** `keccak256("QuikDB.v1.2025")`
 
 ### Validation Scripts
 
@@ -182,5 +211,19 @@ The QuikDB system uses a modern proxy-based architecture:
 
 **Infrastructure:**
 - `ProxyAdmin` - Proxy upgrade management
+- **CREATE2 deterministic deployment** - Same addresses across networks
 - Direct, reliable deployment with TypeScript controller
 - Comprehensive validation with real contract operations
+
+### CREATE2 Salt Configuration
+
+The deployment uses a fixed salt: `keccak256("QuikDB.v1.2025")` for:
+- Storage contracts (NodeStorage, UserStorage, ResourceStorage)
+- Logic implementations (NodeLogic, UserLogic, ResourceLogic, Facade)
+- ProxyAdmin
+
+Proxy contracts use derived salts to avoid collisions:
+- `keccak256(abi.encodePacked(SALT, "NodeLogicProxy"))`
+- `keccak256(abi.encodePacked(SALT, "UserLogicProxy"))`
+- `keccak256(abi.encodePacked(SALT, "ResourceLogicProxy"))`
+- `keccak256(abi.encodePacked(SALT, "FacadeProxy"))`

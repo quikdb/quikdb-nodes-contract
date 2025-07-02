@@ -36,8 +36,8 @@ class DeploymentController {
     console.log('============================');
     
     const command = broadcast 
-      ? `forge script scripts/SimpleDeployment.sol:QuikDBDeployment --broadcast --rpc-url ${process.env.RPC_URL}`
-      : `forge script scripts/SimpleDeployment.sol:QuikDBDeployment --rpc-url ${process.env.RPC_URL || 'http://localhost:8545'}`;
+      ? `forge script scripts/QuikDBDeployment.sol:QuikDBDeployment --broadcast --rpc-url ${process.env.RPC_URL}`
+      : `forge script scripts/QuikDBDeployment.sol:QuikDBDeployment --rpc-url ${process.env.RPC_URL || 'http://localhost:8545'}`;
     
     try {
       console.log(`Running: ${command}`);

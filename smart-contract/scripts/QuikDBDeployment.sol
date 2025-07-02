@@ -14,48 +14,53 @@ import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.so
 
 /**
  * @title QuikDBDeployment
- * @notice Direct deployment of all QuikDB contracts
+ * @notice CREATE2 deterministic deployment of all QuikDB contracts
+ * @dev Uses CREATE2 for predictable addresses across networks
  */
 contract QuikDBDeployment is Script {
+    
+    // CREATE2 salt for deterministic addresses - Updated for fresh deployment
+    bytes32 public constant SALT = keccak256("QuikDB.v1.2025.CREATE2");
     
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address deployer = vm.addr(deployerPrivateKey);
         
-        console.log("=== QUIKDB DEPLOYMENT STARTED ===");
+        console.log("=== QUIKDB CREATE2 DEPLOYMENT STARTED ===");
         console.log("Deployer address:", deployer);
+        console.log("CREATE2 Salt:", vm.toString(SALT));
         
         vm.startBroadcast(deployerPrivateKey);
         
-        // 1. Deploy storage contracts
-        console.log("=== DEPLOYING STORAGE CONTRACTS ===");
-        NodeStorage nodeStorage = new NodeStorage(deployer);
-        UserStorage userStorage = new UserStorage(deployer);
-        ResourceStorage resourceStorage = new ResourceStorage(deployer);
+        // 1. Deploy storage contracts using CREATE2
+        console.log("=== DEPLOYING STORAGE CONTRACTS (CREATE2) ===");
+        NodeStorage nodeStorage = new NodeStorage{salt: SALT}(deployer);
+        UserStorage userStorage = new UserStorage{salt: SALT}(deployer);
+        ResourceStorage resourceStorage = new ResourceStorage{salt: SALT}(deployer);
         
         console.log("NodeStorage deployed at:", address(nodeStorage));
         console.log("UserStorage deployed at:", address(userStorage));
         console.log("ResourceStorage deployed at:", address(resourceStorage));
         
-        // 2. Deploy logic implementation contracts
-        console.log("=== DEPLOYING LOGIC IMPLEMENTATIONS ===");
-        NodeLogic nodeLogicImpl = new NodeLogic();
-        UserLogic userLogicImpl = new UserLogic();
-        ResourceLogic resourceLogicImpl = new ResourceLogic();
-        Facade facadeImpl = new Facade();
+        // 2. Deploy logic implementation contracts using CREATE2
+        console.log("=== DEPLOYING LOGIC IMPLEMENTATIONS (CREATE2) ===");
+        NodeLogic nodeLogicImpl = new NodeLogic{salt: SALT}();
+        UserLogic userLogicImpl = new UserLogic{salt: SALT}();
+        ResourceLogic resourceLogicImpl = new ResourceLogic{salt: SALT}();
+        Facade facadeImpl = new Facade{salt: SALT}();
         
         console.log("NodeLogic Implementation deployed at:", address(nodeLogicImpl));
         console.log("UserLogic Implementation deployed at:", address(userLogicImpl));
         console.log("ResourceLogic Implementation deployed at:", address(resourceLogicImpl));
         console.log("Facade Implementation deployed at:", address(facadeImpl));
         
-        // 3. Deploy ProxyAdmin
-        console.log("=== DEPLOYING PROXY ADMIN ===");
-        ProxyAdmin proxyAdmin = new ProxyAdmin(deployer);
+        // 3. Deploy ProxyAdmin using CREATE2
+        console.log("=== DEPLOYING PROXY ADMIN (CREATE2) ===");
+        ProxyAdmin proxyAdmin = new ProxyAdmin{salt: SALT}(deployer);
         console.log("ProxyAdmin deployed at:", address(proxyAdmin));
         
-        // 4. Deploy proxy contracts
-        console.log("=== DEPLOYING PROXY CONTRACTS ===");
+        // 4. Deploy proxy contracts using CREATE2
+        console.log("=== DEPLOYING PROXY CONTRACTS (CREATE2) ===");
         
         // Initialize data for logic contracts
         bytes memory nodeLogicInitData = abi.encodeWithSelector(
@@ -82,20 +87,26 @@ contract QuikDBDeployment is Script {
             deployer
         );
         
-        // Deploy proxies
-        TransparentUpgradeableProxy nodeLogicProxy = new TransparentUpgradeableProxy(
+        // Deploy proxies using CREATE2 with different salts for each
+        TransparentUpgradeableProxy nodeLogicProxy = new TransparentUpgradeableProxy{
+            salt: keccak256(abi.encodePacked(SALT, "NodeLogicProxy"))
+        }(
             address(nodeLogicImpl),
             address(proxyAdmin),
             nodeLogicInitData
         );
         
-        TransparentUpgradeableProxy userLogicProxy = new TransparentUpgradeableProxy(
+        TransparentUpgradeableProxy userLogicProxy = new TransparentUpgradeableProxy{
+            salt: keccak256(abi.encodePacked(SALT, "UserLogicProxy"))
+        }(
             address(userLogicImpl),
             address(proxyAdmin),
             userLogicInitData
         );
         
-        TransparentUpgradeableProxy resourceLogicProxy = new TransparentUpgradeableProxy(
+        TransparentUpgradeableProxy resourceLogicProxy = new TransparentUpgradeableProxy{
+            salt: keccak256(abi.encodePacked(SALT, "ResourceLogicProxy"))
+        }(
             address(resourceLogicImpl),
             address(proxyAdmin),
             resourceLogicInitData
@@ -110,7 +121,9 @@ contract QuikDBDeployment is Script {
             deployer
         );
         
-        TransparentUpgradeableProxy facadeProxy = new TransparentUpgradeableProxy(
+        TransparentUpgradeableProxy facadeProxy = new TransparentUpgradeableProxy{
+            salt: keccak256(abi.encodePacked(SALT, "FacadeProxy"))
+        }(
             address(facadeImpl),
             address(proxyAdmin),
             facadeInitData
