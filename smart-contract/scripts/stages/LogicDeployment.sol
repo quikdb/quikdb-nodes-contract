@@ -2,10 +2,10 @@
 pragma solidity ^0.8.20;
 
 import "../base/BaseDeployment.sol";
-import "../../src/proxy/QuikNodeLogic.sol";
-import "../../src/proxy/QuikUserLogic.sol";
-import "../../src/proxy/QuikResourceLogic.sol";
-import "../../src/proxy/QuikFacade.sol";
+import "../../src/proxy/NodeLogic.sol";
+import "../../src/proxy/UserLogic.sol";
+import "../../src/proxy/ResourceLogic.sol";
+import "../../src/proxy/Facade.sol";
 
 /**
  * @title LogicDeployment
@@ -26,35 +26,35 @@ contract LogicDeployment is BaseDeployment {
             initializeDeployment();
         }
         
-        // Deploy QuikNodeLogic implementation with CREATE2
-        bytes memory nodeLogicBytecode = type(QuikNodeLogic).creationCode;
+        // Deploy NodeLogic implementation with CREATE2
+        bytes memory nodeLogicBytecode = type(NodeLogic).creationCode;
         nodeLogicImplAddress = deployWithCreate2(nodeLogicSalt, nodeLogicBytecode);
-        logDeployment("QuikNodeLogic Implementation", nodeLogicImplAddress);
+        logDeployment("NodeLogic Implementation", nodeLogicImplAddress);
         
-        // Deploy QuikUserLogic implementation with CREATE2
-        bytes memory userLogicBytecode = type(QuikUserLogic).creationCode;
+        // Deploy UserLogic implementation with CREATE2
+        bytes memory userLogicBytecode = type(UserLogic).creationCode;
         userLogicImplAddress = deployWithCreate2(userLogicSalt, userLogicBytecode);
-        logDeployment("QuikUserLogic Implementation", userLogicImplAddress);
+        logDeployment("UserLogic Implementation", userLogicImplAddress);
         
-        // Deploy QuikResourceLogic implementation with CREATE2
-        bytes memory resourceLogicBytecode = type(QuikResourceLogic).creationCode;
+        // Deploy ResourceLogic implementation with CREATE2
+        bytes memory resourceLogicBytecode = type(ResourceLogic).creationCode;
         resourceLogicImplAddress = deployWithCreate2(resourceLogicSalt, resourceLogicBytecode);
-        logDeployment("QuikResourceLogic Implementation", resourceLogicImplAddress);
+        logDeployment("ResourceLogic Implementation", resourceLogicImplAddress);
         
-        // Deploy QuikFacade implementation with CREATE2
-        bytes memory facadeBytecode = type(QuikFacade).creationCode;
+        // Deploy Facade implementation with CREATE2
+        bytes memory facadeBytecode = type(Facade).creationCode;
         facadeImplAddress = deployWithCreate2(facadeSalt, facadeBytecode);
-        logDeployment("QuikFacade Implementation", facadeImplAddress);
+        logDeployment("Facade Implementation", facadeImplAddress);
         
         logStageCompletion("CREATE2 LOGIC IMPLEMENTATIONS DEPLOYMENT");
     }
     
     /**
      * @notice Get all deployed logic implementation addresses
-     * @return nodeLogic Address of QuikNodeLogic implementation
-     * @return userLogic Address of QuikUserLogic implementation
-     * @return resourceLogic Address of QuikResourceLogic implementation
-     * @return facade Address of QuikFacade implementation
+     * @return nodeLogic Address of NodeLogic implementation
+     * @return userLogic Address of UserLogic implementation
+     * @return resourceLogic Address of ResourceLogic implementation
+     * @return facade Address of Facade implementation
      */
     function getLogicAddresses() 
         external 

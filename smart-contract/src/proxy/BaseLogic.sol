@@ -9,9 +9,9 @@ import "../storage/UserStorage.sol";
 import "../storage/ResourceStorage.sol";
 
 /**
- * @title QuikBaseLogic - Base contract with common functionality
+ * @title BaseLogic - Base contract with common functionality
  */
-abstract contract QuikBaseLogic is AccessControl, Pausable, ReentrancyGuard {
+abstract contract BaseLogic is AccessControl, Pausable, ReentrancyGuard {
     // Version for upgrade tracking
     uint256 public constant VERSION = 1;
 

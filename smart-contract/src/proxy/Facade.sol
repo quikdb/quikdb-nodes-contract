@@ -4,14 +4,14 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "./QuikNodeLogic.sol";
-import "./QuikUserLogic.sol";
-import "./QuikResourceLogic.sol";
+import "./NodeLogic.sol";
+import "./UserLogic.sol";
+import "./ResourceLogic.sol";
 
 /**
- * @title QuikFacade - Facade to coordinate between specialized logic contracts
+ * @title Facade - Facade to coordinate between specialized logic contracts
  */
-contract QuikFacade is AccessControl, Pausable, ReentrancyGuard {
+contract Facade is AccessControl, Pausable, ReentrancyGuard {
     // Version for upgrade tracking
     uint256 public constant VERSION = 1;
 
@@ -100,9 +100,9 @@ contract QuikFacade is AccessControl, Pausable, ReentrancyGuard {
             uint256 totalAllocations
         )
     {
-        (totalNodes, , , ) = QuikNodeLogic(nodeLogicAddress).getNodeStats();
-        totalUsers = QuikUserLogic(userLogicAddress).getUserStats();
-        totalAllocations = QuikResourceLogic(resourceLogicAddress)
+        (totalNodes, , , ) = NodeLogic(nodeLogicAddress).getNodeStats();
+        totalUsers = UserLogic(userLogicAddress).getUserStats();
+        totalAllocations = ResourceLogic(resourceLogicAddress)
             .getResourceStats();
     }
 
@@ -119,10 +119,10 @@ contract QuikFacade is AccessControl, Pausable, ReentrancyGuard {
             uint256 verifiedNodes
         )
     {
-        (totalNodes, , , verifiedNodes) = QuikNodeLogic(nodeLogicAddress)
+        (totalNodes, , , verifiedNodes) = NodeLogic(nodeLogicAddress)
             .getNodeStats();
-        totalUsers = QuikUserLogic(userLogicAddress).getUserStats();
-        totalAllocations = QuikResourceLogic(resourceLogicAddress)
+        totalUsers = UserLogic(userLogicAddress).getUserStats();
+        totalAllocations = ResourceLogic(resourceLogicAddress)
             .getResourceStats();
     }
 }

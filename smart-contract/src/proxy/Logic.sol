@@ -10,9 +10,9 @@ import "../storage/UserStorage.sol";
 import "../storage/ResourceStorage.sol";
 
 /**
- * @title QuikLogic - Main logic contract for QUIK platform
+ * @title Logic - Main logic contract for the platform
  */
-contract QuikLogic is
+contract Logic is
     AccessControl,
     Pausable,
     ReentrancyGuard,

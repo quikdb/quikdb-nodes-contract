@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./QuikBaseLogic.sol";
+import "./BaseLogic.sol";
 import "../interfaces/IResourceTrackingEvents.sol";
 
 /**
- * @title QuikResourceLogic - Resource management logic
+ * @title ResourceLogic - Resource management logic
  */
-contract QuikResourceLogic is QuikBaseLogic, IResourceTrackingEvents {
+contract ResourceLogic is BaseLogic, IResourceTrackingEvents {
     // Resource events
     event ComputeListingCreated(
         bytes32 indexed listingId,

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./QuikBaseLogic.sol";
+import "./BaseLogic.sol";
 
 /**
- * @title QuikUserLogic - User management logic
+ * @title UserLogic - User management logic
  */
-contract QuikUserLogic is QuikBaseLogic {
+contract UserLogic is BaseLogic {
     // User events
     event UserRegistered(
         address indexed userAddress,

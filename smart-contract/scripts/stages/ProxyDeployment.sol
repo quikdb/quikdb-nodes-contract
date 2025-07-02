@@ -4,10 +4,10 @@ pragma solidity ^0.8.20;
 import "../base/BaseDeployment.sol";
 import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
-import "../../src/proxy/QuikNodeLogic.sol";
-import "../../src/proxy/QuikUserLogic.sol";
-import "../../src/proxy/QuikResourceLogic.sol";
-import "../../src/proxy/QuikFacade.sol";
+import "../../src/proxy/NodeLogic.sol";
+import "../../src/proxy/UserLogic.sol";
+import "../../src/proxy/ResourceLogic.sol";
+import "../../src/proxy/Facade.sol";
 
 /**
  * @title ProxyDeployment
@@ -95,7 +95,7 @@ contract ProxyDeployment is BaseDeployment {
         
         // Prepare initialization data
         bytes memory initData = abi.encodeWithSelector(
-            QuikNodeLogic.initialize.selector,
+            NodeLogic.initialize.selector,
             _nodeStorageAddress,
             _userStorageAddress,
             _resourceStorageAddress,
@@ -117,7 +117,7 @@ contract ProxyDeployment is BaseDeployment {
         );
         
         nodeLogicProxyAddress = address(nodeLogicProxy);
-        logDeployment("QuikNodeLogic Proxy", nodeLogicProxyAddress);
+        logDeployment("NodeLogic Proxy", nodeLogicProxyAddress);
         
         logStageCompletion("NODE LOGIC PROXY DEPLOYMENT");
     }
@@ -160,7 +160,7 @@ contract ProxyDeployment is BaseDeployment {
         
         // Prepare initialization data
         bytes memory initData = abi.encodeWithSelector(
-            QuikUserLogic.initialize.selector,
+            UserLogic.initialize.selector,
             _nodeStorageAddress,
             _userStorageAddress,
             _resourceStorageAddress,
@@ -182,7 +182,7 @@ contract ProxyDeployment is BaseDeployment {
         );
         
         userLogicProxyAddress = address(userLogicProxy);
-        logDeployment("QuikUserLogic Proxy", userLogicProxyAddress);
+        logDeployment("UserLogic Proxy", userLogicProxyAddress);
         
         logStageCompletion("USER LOGIC PROXY DEPLOYMENT");
     }
@@ -225,7 +225,7 @@ contract ProxyDeployment is BaseDeployment {
         
         // Prepare initialization data
         bytes memory initData = abi.encodeWithSelector(
-            QuikResourceLogic.initialize.selector,
+            ResourceLogic.initialize.selector,
             _nodeStorageAddress,
             _userStorageAddress,
             _resourceStorageAddress,
@@ -247,7 +247,7 @@ contract ProxyDeployment is BaseDeployment {
         );
         
         resourceLogicProxyAddress = address(resourceLogicProxy);
-        logDeployment("QuikResourceLogic Proxy", resourceLogicProxyAddress);
+        logDeployment("ResourceLogic Proxy", resourceLogicProxyAddress);
         
         logStageCompletion("RESOURCE LOGIC PROXY DEPLOYMENT");
     }
@@ -290,7 +290,7 @@ contract ProxyDeployment is BaseDeployment {
         
         // Prepare initialization data
         bytes memory initData = abi.encodeWithSelector(
-            QuikFacade.initialize.selector,
+            Facade.initialize.selector,
             _nodeLogicProxyAddress,
             _userLogicProxyAddress,
             _resourceLogicProxyAddress,
@@ -312,7 +312,7 @@ contract ProxyDeployment is BaseDeployment {
         );
         
         facadeProxyAddress = address(facadeProxy);
-        logDeployment("QuikFacade Proxy", facadeProxyAddress);
+        logDeployment("Facade Proxy", facadeProxyAddress);
         
         logStageCompletion("FACADE PROXY DEPLOYMENT");
     }
@@ -397,7 +397,7 @@ contract ProxyDeployment is BaseDeployment {
         
         // Predict NodeLogic Proxy address
         bytes memory nodeInitData = abi.encodeWithSelector(
-            QuikNodeLogic.initialize.selector,
+            NodeLogic.initialize.selector,
             nodeStorageAddress,
             userStorageAddress,
             resourceStorageAddress,
@@ -412,7 +412,7 @@ contract ProxyDeployment is BaseDeployment {
         
         // Predict UserLogic Proxy address
         bytes memory userInitData = abi.encodeWithSelector(
-            QuikUserLogic.initialize.selector,
+            UserLogic.initialize.selector,
             nodeStorageAddress,
             userStorageAddress,
             resourceStorageAddress,
@@ -427,7 +427,7 @@ contract ProxyDeployment is BaseDeployment {
         
         // Predict ResourceLogic Proxy address
         bytes memory resourceInitData = abi.encodeWithSelector(
-            QuikResourceLogic.initialize.selector,
+            ResourceLogic.initialize.selector,
             nodeStorageAddress,
             userStorageAddress,
             resourceStorageAddress,
@@ -442,7 +442,7 @@ contract ProxyDeployment is BaseDeployment {
         
         // Predict Facade Proxy address
         bytes memory facadeInitData = abi.encodeWithSelector(
-            QuikFacade.initialize.selector,
+            Facade.initialize.selector,
             nodeProxy,
             userProxy,
             resourceProxy,

@@ -5,10 +5,10 @@ import "../base/BaseDeployment.sol";
 import "../../src/storage/NodeStorage.sol";
 import "../../src/storage/UserStorage.sol";
 import "../../src/storage/ResourceStorage.sol";
-import "../../src/proxy/QuikNodeLogic.sol";
-import "../../src/proxy/QuikUserLogic.sol";
-import "../../src/proxy/QuikResourceLogic.sol";
-import "../../src/proxy/QuikFacade.sol";
+import "../../src/proxy/NodeLogic.sol";
+import "../../src/proxy/UserLogic.sol";
+import "../../src/proxy/ResourceLogic.sol";
+import "../../src/proxy/Facade.sol";
 
 /**
  * @title ConfigurationSetup
@@ -114,8 +114,8 @@ contract ConfigurationSetup is BaseDeployment {
         validateAddresses(addresses, names);
         
         // Setup NodeLogic roles - use deployer address as role holder
-        try QuikNodeLogic(_nodeLogicProxyAddress).grantRole(
-            QuikNodeLogic(_nodeLogicProxyAddress).NODE_OPERATOR_ROLE(), 
+        try NodeLogic(_nodeLogicProxyAddress).grantRole(
+            NodeLogic(_nodeLogicProxyAddress).NODE_OPERATOR_ROLE(), 
             deployerAddress
         ) {
             console.log("NODE_OPERATOR_ROLE granted to deployer:", deployerAddress);
@@ -124,8 +124,8 @@ contract ConfigurationSetup is BaseDeployment {
         }
         
         // Setup UserLogic roles
-        try QuikUserLogic(_userLogicProxyAddress).grantRole(
-            QuikUserLogic(_userLogicProxyAddress).AUTH_SERVICE_ROLE(), 
+        try UserLogic(_userLogicProxyAddress).grantRole(
+            UserLogic(_userLogicProxyAddress).AUTH_SERVICE_ROLE(), 
             deployerAddress
         ) {
             console.log("AUTH_SERVICE_ROLE granted to deployer:", deployerAddress);
@@ -134,8 +134,8 @@ contract ConfigurationSetup is BaseDeployment {
         }
         
         // Setup Facade roles
-        try QuikFacade(_facadeProxyAddress).grantRole(
-            QuikFacade(_facadeProxyAddress).UPGRADER_ROLE(), 
+        try Facade(_facadeProxyAddress).grantRole(
+            Facade(_facadeProxyAddress).UPGRADER_ROLE(), 
             deployerAddress
         ) {
             console.log("UPGRADER_ROLE granted to deployer:", deployerAddress);
@@ -169,19 +169,19 @@ contract ConfigurationSetup is BaseDeployment {
         console.log("Role recipient:", roleRecipient);
         
         if (grantNodeOperator) {
-            QuikNodeLogic nodeLogic = QuikNodeLogic(_nodeLogicProxyAddress);
+            NodeLogic nodeLogic = NodeLogic(_nodeLogicProxyAddress);
             nodeLogic.grantRole(nodeLogic.NODE_OPERATOR_ROLE(), roleRecipient);
             console.log("NODE_OPERATOR_ROLE granted to:", roleRecipient);
         }
         
         if (grantAuthService) {
-            QuikUserLogic userLogic = QuikUserLogic(_userLogicProxyAddress);
+            UserLogic userLogic = UserLogic(_userLogicProxyAddress);
             userLogic.grantRole(userLogic.AUTH_SERVICE_ROLE(), roleRecipient);
             console.log("AUTH_SERVICE_ROLE granted to:", roleRecipient);
         }
         
         if (grantUpgrader) {
-            QuikFacade facade = QuikFacade(_facadeProxyAddress);
+            Facade facade = Facade(_facadeProxyAddress);
             facade.grantRole(facade.UPGRADER_ROLE(), roleRecipient);
             console.log("UPGRADER_ROLE granted to:", roleRecipient);
         }

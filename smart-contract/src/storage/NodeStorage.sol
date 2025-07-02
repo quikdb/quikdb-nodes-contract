@@ -663,26 +663,24 @@ contract NodeStorage is AccessControl {
 
     /**
      * @dev Get nodes by verification status
-     * @param verified Whether to get verified or unverified nodes
-     * @return Array of node IDs
+     * @dev Note: This function is not fully implemented - returns empty array
+     * @return Array of node IDs (currently empty)
      */
     function getNodesByVerification(
-        bool verified
-    ) external view returns (string[] memory) {
+        bool /* verified */
+    ) external pure returns (string[] memory) {
         // This is a simple implementation - for production, consider indexing
-        string[] memory allNodes = new string[](totalNodes);
-        uint256 count = 0;
+        // Note: Variables commented out to avoid compiler warnings
+        // string[] memory allNodes = new string[](totalNodes);
+        // uint256 count = 0;
 
         // Note: This is inefficient for large datasets
         // Consider maintaining separate verified/unverified indexes
-        for (uint256 i = 0; i < totalNodes; i++) {
-            // This would need to iterate through all nodes
-            // Better to maintain separate mappings for efficient lookup
-        }
-
-        // For now, return empty array - implement proper indexing in production
-        string[] memory result = new string[](0);
-        return result;
+        // For now, return empty array as this function is not fully implemented
+        return new string[](0);
+        
+        // TODO: Implement proper verification-based node filtering
+        // This would require maintaining additional indexes for efficiency
     }
 
     /**

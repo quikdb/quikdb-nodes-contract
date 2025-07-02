@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./QuikBaseLogic.sol";
+import "./BaseLogic.sol";
 
 /**
- * @title QuikNodeLogic - Node management logic
+ * @title NodeLogic - Node management logic
  */
-contract QuikNodeLogic is QuikBaseLogic {
+contract NodeLogic is BaseLogic {
     // Node events
     event NodeRegistered(
         string indexed nodeId,
