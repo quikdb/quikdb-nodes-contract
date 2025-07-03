@@ -20,7 +20,7 @@ import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.so
 contract QuikDBDeployment is Script {
     
     // CREATE2 salt for deterministic addresses - Updated for fresh deployment
-    bytes32 public constant SALT = keccak256("QuikDB.v1.2025.CREATE2");
+    bytes32 public constant SALT = keccak256("QuikDB.v2.2025.CREATE2");
     
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
