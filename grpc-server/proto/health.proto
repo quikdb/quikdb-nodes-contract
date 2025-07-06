@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package quikdb.health;
+
+option go_package = "github.com/quikdb/contracts-grpc/pkg/proto/health";
+
+// Health check and system status
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  bool healthy = 1;
+  string version = 2;
+  uint64 timestamp = 3;
+  string blockchain_status = 4;
+  uint64 last_block_number = 5;
+  repeated string connected_contracts = 6;
+}
+
+// Health service
+service HealthService {
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+}

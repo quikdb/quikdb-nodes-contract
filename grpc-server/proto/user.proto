@@ -1,0 +1,106 @@
+syntax = "proto3";
+
+package quikdb.user;
+
+import "common.proto";
+
+option go_package = "github.com/quikdb/contracts-grpc/pkg/proto/user";
+
+// User related messages
+message UserProfile {
+  string profile_hash = 1;
+  UserType user_type = 2;
+  bool is_active = 3;
+  uint64 created_at = 4;
+  uint64 updated_at = 5;
+  string total_spent = 6; // BigNumber as string
+  string total_earned = 7; // BigNumber as string
+  uint64 reputation_score = 8;
+  bool is_verified = 9;
+}
+
+enum UserType {
+  USER_TYPE_CONSUMER = 0;
+  USER_TYPE_PROVIDER = 1;
+  USER_TYPE_HYBRID = 2;
+  USER_TYPE_ENTERPRISE = 3;
+}
+
+message UserStats {
+  uint64 total_users = 1;
+}
+
+// Request/Response messages for User operations
+message RegisterUserRequest {
+  string user_address = 1;
+  string profile_hash = 2;
+  UserType user_type = 3;
+}
+
+message RegisterUserResponse {
+  bool success = 1;
+  string transaction_hash = 2;
+  string message = 3;
+}
+
+message GetUserProfileRequest {
+  string user_address = 1;
+}
+
+message GetUserProfileResponse {
+  UserProfile profile = 1;
+}
+
+message UpdateUserProfileRequest {
+  string user_address = 1;
+  string profile_hash = 2;
+}
+
+message UpdateUserProfileResponse {
+  bool success = 1;
+  string transaction_hash = 2;
+  string message = 3;
+}
+
+message GetUserStatsRequest {}
+
+message GetUserStatsResponse {
+  UserStats stats = 1;
+}
+
+message GetUsersRequest {
+  quikdb.common.PaginationRequest pagination = 1;
+  UserType type_filter = 2;
+  bool verified_only = 3;
+  bool active_only = 4;
+}
+
+message GetUsersResponse {
+  repeated UserProfile users = 1;
+  quikdb.common.PaginationResponse pagination = 2;
+}
+
+message StreamUsersRequest {
+  UserType type_filter = 1;
+  bool verified_only = 2;
+  bool active_only = 3;
+  uint32 batch_size = 4;
+}
+
+message StreamUsersResponse {
+  repeated UserProfile users = 1;
+  bool is_final_batch = 2;
+  uint64 total_sent = 3;
+}
+
+// User service
+service UserService {
+  rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse);
+  rpc GetUserProfile(GetUserProfileRequest) returns (GetUserProfileResponse);
+  rpc UpdateUserProfile(UpdateUserProfileRequest) returns (UpdateUserProfileResponse);
+  rpc GetUserStats(GetUserStatsRequest) returns (GetUserStatsResponse);
+  
+  // User listing and streaming
+  rpc GetUsers(GetUsersRequest) returns (GetUsersResponse);
+  rpc StreamUsers(StreamUsersRequest) returns (stream StreamUsersResponse);
+}

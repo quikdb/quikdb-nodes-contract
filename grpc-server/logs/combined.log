@@ -1,0 +1,51 @@
+{"level":"warn","message":"Contract manager initialized without signer - read-only mode","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.268Z"}
+{"level":"info","message":"Loaded proto file: common.proto","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.283Z"}
+{"level":"info","message":"Loaded proto file: user.proto","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.288Z"}
+{"level":"info","message":"Loaded proto file: node.proto","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.292Z"}
+{"level":"info","message":"Loaded proto file: health.proto","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.292Z"}
+{"level":"info","message":"Loaded proto file: events.proto","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.294Z"}
+{"level":"info","message":"Loaded proto file: stats.proto","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.301Z"}
+{"level":"info","message":"Setting up gRPC services...","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.301Z"}
+{"level":"info","message":"UserService configured","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.301Z"}
+{"level":"info","message":"StatsService configured","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.301Z"}
+{"level":"info","message":"All gRPC services configured successfully","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.301Z"}
+{"level":"info","message":"Initializing QuikDB gRPC server...","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.302Z"}
+{"level":"info","message":"Loaded deployment addresses from: /Users/tempadmin/Documents/github/quikdb/quikdb-nodes-contract/smart-contract/deployments/latest.json","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.302Z"}
+{"level":"info","message":"Contract addresses validated successfully","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.305Z"}
+{"level":"info","message":"Contract instances created successfully","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.321Z"}
+{"level":"info","message":"Contract manager initialized successfully","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.321Z"}
+{"level":"info","message":"Contract manager initialized","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.321Z"}
+{"level":"info","message":"Metrics collection started","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.321Z"}
+{"level":"info","message":"Metrics server listening on port 3001","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.325Z"}
+{"level":"info","message":"Health check: http://localhost:3001/health","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.326Z"}
+{"level":"info","message":"Metrics endpoint: http://localhost:3001/metrics","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:16.326Z"}
+{"facadeStats":{"allocations":"0","nodes":"0","users":"0"},"level":"info","message":"Contract connectivity test passed","nodeCount":"0","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:17.445Z","userCount":"0"}
+{"level":"info","message":"Contract connectivity verified","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:17.445Z"}
+{"level":"info","message":"QuikDB gRPC server listening on 0.0.0.0:50051 (port 50051)","service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:17.453Z"}
+{"blockchain":{"chainId":4202,"network":"lisk-sepolia","rpcUrl":"https://rpc.sepolia-api.lisk.com"},"cache":{"enabled":true,"ttl":300},"level":"info","message":"Server configuration:","monitoring":{"enabled":true,"port":3001},"service":"quikdb-grpc-server","timestamp":"2025-07-06T16:57:17.453Z"}
+{"level":"warn","message":"Contract manager initialized without signer - read-only mode","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.218Z"}
+{"level":"info","message":"Loaded proto file: common.proto","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.237Z"}
+{"level":"info","message":"Loaded proto file: user.proto","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.242Z"}
+{"level":"info","message":"Loaded proto file: node.proto","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.246Z"}
+{"level":"info","message":"Loaded proto file: health.proto","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.247Z"}
+{"level":"info","message":"Loaded proto file: events.proto","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.249Z"}
+{"level":"info","message":"Loaded proto file: stats.proto","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.254Z"}
+{"level":"info","message":"Setting up gRPC services...","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.254Z"}
+{"level":"info","message":"UserService configured","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.254Z"}
+{"level":"info","message":"StatsService configured","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.254Z"}
+{"level":"info","message":"All gRPC services configured successfully","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.254Z"}
+{"level":"info","message":"Initializing QuikDB gRPC server...","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.255Z"}
+{"level":"info","message":"Loaded deployment addresses from: /Users/tempadmin/Documents/github/quikdb/quikdb-nodes-contract/smart-contract/deployments/latest.json","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.255Z"}
+{"level":"info","message":"Contract addresses validated successfully","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.258Z"}
+{"level":"info","message":"Contract instances created successfully","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.272Z"}
+{"level":"info","message":"Contract manager initialized successfully","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.272Z"}
+{"level":"info","message":"Contract manager initialized","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.272Z"}
+{"level":"info","message":"Metrics collection started","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.273Z"}
+{"level":"info","message":"Metrics server listening on port 3001","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.276Z"}
+{"level":"info","message":"Health check: http://localhost:3001/health","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.276Z"}
+{"level":"info","message":"Metrics endpoint: http://localhost:3001/metrics","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:39.276Z"}
+{"facadeStats":{"allocations":"0","nodes":"0","users":"0"},"level":"info","message":"Contract connectivity test passed","nodeCount":"0","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:40.157Z","userCount":"0"}
+{"level":"info","message":"Contract connectivity verified","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:40.157Z"}
+{"level":"info","message":"QuikDB gRPC server listening on 0.0.0.0:50051 (port 50051)","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:40.163Z"}
+{"blockchain":{"chainId":4202,"network":"lisk-sepolia","rpcUrl":"https://rpc.sepolia-api.lisk.com"},"cache":{"enabled":true,"ttl":300},"level":"info","message":"Server configuration:","monitoring":{"enabled":true,"port":3001},"service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:40.163Z"}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown...","service":"quikdb-grpc-server","timestamp":"2025-07-06T17:01:49.386Z"}
