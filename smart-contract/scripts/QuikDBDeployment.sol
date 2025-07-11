@@ -20,7 +20,7 @@ import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.so
 contract QuikDBDeployment is Script {
     
     // CREATE2 salt for deterministic addresses - Updated for fresh deployment
-    bytes32 public constant SALT = keccak256("QuikDB.v3.2025.CREATE2");
+    bytes32 public constant SALT = keccak256("QuikDB.v3.2025.CREATE28");
     
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
@@ -92,7 +92,7 @@ contract QuikDBDeployment is Script {
             salt: keccak256(abi.encodePacked(SALT, "NodeLogicProxy"))
         }(
             address(nodeLogicImpl),
-            address(proxyAdmin),
+            deployer,
             nodeLogicInitData
         );
         
@@ -100,7 +100,7 @@ contract QuikDBDeployment is Script {
             salt: keccak256(abi.encodePacked(SALT, "UserLogicProxy"))
         }(
             address(userLogicImpl),
-            address(proxyAdmin),
+            deployer,
             userLogicInitData
         );
         
@@ -108,7 +108,7 @@ contract QuikDBDeployment is Script {
             salt: keccak256(abi.encodePacked(SALT, "ResourceLogicProxy"))
         }(
             address(resourceLogicImpl),
-            address(proxyAdmin),
+            deployer,
             resourceLogicInitData
         );
         
@@ -125,7 +125,7 @@ contract QuikDBDeployment is Script {
             salt: keccak256(abi.encodePacked(SALT, "FacadeProxy"))
         }(
             address(facadeImpl),
-            address(proxyAdmin),
+            deployer,
             facadeInitData
         );
         
@@ -147,12 +147,12 @@ contract QuikDBDeployment is Script {
         
         // Grant NODE_OPERATOR_ROLE to deployer for testing
         bytes32 NODE_OPERATOR_ROLE = keccak256("NODE_OPERATOR_ROLE");
-        NodeLogic nodeLogicContract = NodeLogic(address(nodeLogicProxy));
+        NodeLogic nodeLogicContract = NodeLogic(payable(address(nodeLogicProxy)));
         nodeLogicContract.grantRole(NODE_OPERATOR_ROLE, deployer);
         
         // Grant AUTH_SERVICE_ROLE to deployer for user registration  
         bytes32 AUTH_SERVICE_ROLE = keccak256("AUTH_SERVICE_ROLE");
-        UserLogic userLogicContract = UserLogic(address(userLogicProxy));
+        UserLogic userLogicContract = UserLogic(payable(address(userLogicProxy)));
         userLogicContract.grantRole(AUTH_SERVICE_ROLE, deployer);
         
         console.log("Roles configured for testing");
