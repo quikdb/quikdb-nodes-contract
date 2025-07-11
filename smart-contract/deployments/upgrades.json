@@ -30,5 +30,364 @@
     "errors": [
       "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.sepolia-api.lisk.com\nError: script failed: NodeLogic upgrade failed: unknown error\n"
     ]
+  },
+  {
+    "timestamp": "2025-07-04T18:53:38.295Z",
+    "deployer": "0x744cDf77b3bb55aDb00D608d9EE35C8B43d4b0C8",
+    "previousImplementations": {
+      "nodeLogic": "0xBFD4b053191b56E2b4134FBE142a2019DbE0Eaf0",
+      "userLogic": "0x3F20706F5184D5B81D1509920D41b8B7E162e873",
+      "resourceLogic": "0x23AF4461E3b74161cE89fE9065922Aff7f5E3Ec1",
+      "facade": "0xD81D50E59ae6EBa6a9a558c6039b2CD05ACd8e01"
+    },
+    "newImplementations": {
+      "nodeLogic": "0xC4Fac55a92688cba3d45102ce335e8C73028DB24",
+      "userLogic": "0x8a1Ba4F410D95365dca2C1B4078dFBA9c5039F3C",
+      "resourceLogic": "0xe35C8B6af3BBA8Bf752d3d7A3eff87c00520e163",
+      "facade": "0x5E8BE3dff90ea736A971CA877213E6fcfeEb4dAd"
+    },
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.sepolia-api.lisk.com\nError: script failed: revert: NodeLogic upgrade failed: Transaction reverted silently\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-05T10:38:25.225Z",
+    "deployer": "0x744cDf77b3bb55aDb00D608d9EE35C8B43d4b0C8",
+    "previousImplementations": {
+      "nodeLogic": "0x6dB363c33DebcA2d825DAdAFc09eac58B5E39e7B",
+      "userLogic": "0x0451e5aE890BcDb514C21805978DdF2a266Ead04",
+      "resourceLogic": "0x3251219E75dF7883647002aE816bd61F5428d8F7",
+      "facade": "0x92A7b6015e466896E0e890De5c5512F136c902Ab"
+    },
+    "newImplementations": {
+      "nodeLogic": "0xdF373dd2d0B4fc04bD353aa4fB45237329D6AE02",
+      "userLogic": "0xc92652f5bBabD23d493c19e867fBB5B3E38c8928",
+      "resourceLogic": "0x49EF8F740644641111d08a98e029D381877c8277",
+      "facade": "0x2d31Fd5b20422995602633a52641B391f0C32a08"
+    },
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.sepolia-api.lisk.com\nError: script failed: revert: Facade upgrade failed: unknown error\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-05T10:42:50.238Z",
+    "deployer": "0x744cDf77b3bb55aDb00D608d9EE35C8B43d4b0C8",
+    "previousImplementations": {
+      "nodeLogic": "0xDC20533076c28276884DDEed869CBb6a0c7B84c8",
+      "userLogic": "0x9dAebb0810Cb623FB5a4f954965CE9d3C1790FD9",
+      "resourceLogic": "0xa84B9EF61973BdFAffc52290B5Fbd7D2E266a343",
+      "facade": "0x6f08B2F8b54E0897E11DC1ACEc04cd5DaEFc39Fb"
+    },
+    "newImplementations": {
+      "nodeLogic": "0x283E42A16177b2fAAD680a6935D92103b9FdA9ca",
+      "userLogic": "0x2fEB219A150c8e3b80a2B603FAcAa86C1496ceC9",
+      "resourceLogic": "0xdc8f5260510AEF48d07672c86D05b8248650D6A3",
+      "facade": "0x5CAE74e270A76ebC57C9DF9b7488f176397D76bF"
+    },
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.sepolia-api.lisk.com\nError: script failed: revert: NodeLogic upgrade verification failed: implementation mismatch\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-05T12:44:40.338Z",
+    "deployer": "0x744cDf77b3bb55aDb00D608d9EE35C8B43d4b0C8",
+    "previousImplementations": {
+      "nodeLogic": "0x283E42A16177b2fAAD680a6935D92103b9FdA9ca",
+      "userLogic": "0x2fEB219A150c8e3b80a2B603FAcAa86C1496ceC9",
+      "resourceLogic": "0xdc8f5260510AEF48d07672c86D05b8248650D6A3",
+      "facade": "0x5CAE74e270A76ebC57C9DF9b7488f176397D76bF"
+    },
+    "newImplementations": {
+      "nodeLogic": "0x283E42A16177b2fAAD680a6935D92103b9FdA9ca",
+      "userLogic": "0x2fEB219A150c8e3b80a2B603FAcAa86C1496ceC9",
+      "resourceLogic": "0xdc8f5260510AEF48d07672c86D05b8248650D6A3",
+      "facade": "0x5CAE74e270A76ebC57C9DF9b7488f176397D76bF"
+    },
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.sepolia-api.lisk.com\nError: script failed: revert: NodeLogic upgrade verification failed: implementation mismatch\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-05T12:46:54.271Z",
+    "deployer": "",
+    "previousImplementations": {
+      "nodeLogic": "0x283E42A16177b2fAAD680a6935D92103b9FdA9ca",
+      "userLogic": "0x2fEB219A150c8e3b80a2B603FAcAa86C1496ceC9",
+      "resourceLogic": "0xdc8f5260510AEF48d07672c86D05b8248650D6A3",
+      "facade": "0x5CAE74e270A76ebC57C9DF9b7488f176397D76bF"
+    },
+    "newImplementations": {},
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.sepolia-api.lisk.com\nError: Compiler run failed:\nError (9429): This looks like an address but has an invalid checksum. Correct checksummed address: \"0x4C5cB1aC48Ee1E215f5097a3D5D483256660c207\". If this is not used as an address, please prepend '00'. For more information please see https://docs.soliditylang.org/en/develop/types.html#address-literals\nSyntaxError: This looks like an address but has an invalid checksum. Correct checksummed address: \"0x4C5cB1aC48Ee1E215f5097a3D5D483256660c207\". If this is not used as an address, please prepend '00'. For more information please see https://docs.soliditylang.org/en/develop/types.html#address-literals\n   --> scripts/QuikDBUpgrade.sol:111:61:\n    |\n111 |         (bool nodeSuccess, bytes memory nodeData) = address(0x4c5cb1ac48ee1e215f5097a3d5d483256660c207).call(\n    |                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-05T12:48:46.067Z",
+    "deployer": "",
+    "previousImplementations": {},
+    "newImplementations": {},
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.sepolia-api.lisk.com\nError: Compiler run failed:\nError (9640): Explicit type conversion not allowed from \"literal_string \"0x4c5cb1ac48ee1e215f5097a3d5d483256660c207\"\" to \"address\".\n   --> scripts/QuikDBUpgrade.sol:111:53:\n    |\n111 |         (bool nodeSuccess, bytes memory nodeData) = address('0x4c5cb1ac48ee1e215f5097a3d5d483256660c207').call(\n    |                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-05T12:49:16.850Z",
+    "deployer": "",
+    "previousImplementations": {},
+    "newImplementations": {},
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.sepolia-api.lisk.com\nError: Compiler run failed:\nError (9429): This looks like an address but has an invalid checksum. Correct checksummed address: \"0x4C5cB1aC48Ee1E215f5097a3D5D483256660c207\". If this is not used as an address, please prepend '00'. For more information please see https://docs.soliditylang.org/en/develop/types.html#address-literals\nSyntaxError: This looks like an address but has an invalid checksum. Correct checksummed address: \"0x4C5cB1aC48Ee1E215f5097a3D5D483256660c207\". If this is not used as an address, please prepend '00'. For more information please see https://docs.soliditylang.org/en/develop/types.html#address-literals\n   --> scripts/QuikDBUpgrade.sol:111:53:\n    |\n111 |         (bool nodeSuccess, bytes memory nodeData) = 0x4c5cb1ac48ee1e215f5097a3d5d483256660c207.call(\n    |                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-07T18:35:14.192Z",
+    "deployer": "0x744cDf77b3bb55aDb00D608d9EE35C8B43d4b0C8",
+    "previousImplementations": {},
+    "newImplementations": {
+      "nodeLogic": "0xEd923f4D69a0C272E16416bec2C121Fe41850753",
+      "userLogic": "0x51226C7223F1f60f6E8320b5C30F35fB9072D74D",
+      "resourceLogic": "0xC3Bc704181b11783F80849b7aA9230294d2B15AC",
+      "facade": "0x6083B7A445a881e9ea48dB100C54Af00976ea112"
+    },
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.sepolia-api.lisk.com\nError: script failed: revert: NodeLogic upgrade verification failed: implementation mismatch\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-07T18:45:51.894Z",
+    "deployer": "0x744cDf77b3bb55aDb00D608d9EE35C8B43d4b0C8",
+    "previousImplementations": {
+      "nodeLogic": "0xDC20533076c28276884DDEed869CBb6a0c7B84c8",
+      "userLogic": "0x51226C7223F1f60f6E8320b5C30F35fB9072D74D",
+      "resourceLogic": "0xC3Bc704181b11783F80849b7aA9230294d2B15AC",
+      "facade": "0x6083B7A445a881e9ea48dB100C54Af00976ea112"
+    },
+    "newImplementations": {
+      "nodeLogic": "0xEd923f4D69a0C272E16416bec2C121Fe41850753",
+      "userLogic": "0x51226C7223F1f60f6E8320b5C30F35fB9072D74D",
+      "resourceLogic": "0xC3Bc704181b11783F80849b7aA9230294d2B15AC",
+      "facade": "0x6083B7A445a881e9ea48dB100C54Af00976ea112"
+    },
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.sepolia-api.lisk.com\nError: script failed: revert: NodeLogic upgrade verification failed: implementation mismatch\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-07T18:47:43.309Z",
+    "deployer": "",
+    "previousImplementations": {
+      "nodeLogic": "0xEd923f4D69a0C272E16416bec2C121Fe41850753",
+      "userLogic": "0x51226C7223F1f60f6E8320b5C30F35fB9072D74D",
+      "resourceLogic": "0xC3Bc704181b11783F80849b7aA9230294d2B15AC",
+      "facade": "0x6083B7A445a881e9ea48dB100C54Af00976ea112"
+    },
+    "newImplementations": {},
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.sepolia-api.lisk.com\nError: Compiler run failed:\nError (9553): Invalid type for argument in function call. Invalid implicit conversion from literal_string \"0xDC20533076c28276884DDEed869CBb6a0c7B84c8\" to address requested.\n   --> scripts/QuikDBUpgrade.sol:217:29:\n    |\n217 |             nodeLogicProxy: \"0xDC20533076c28276884DDEed869CBb6a0c7B84c8\",\n    |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-07T18:48:26.806Z",
+    "deployer": "0x744cDf77b3bb55aDb00D608d9EE35C8B43d4b0C8",
+    "previousImplementations": {},
+    "newImplementations": {
+      "nodeLogic": "0xEd923f4D69a0C272E16416bec2C121Fe41850753",
+      "userLogic": "0x51226C7223F1f60f6E8320b5C30F35fB9072D74D",
+      "resourceLogic": "0xC3Bc704181b11783F80849b7aA9230294d2B15AC",
+      "facade": "0x6083B7A445a881e9ea48dB100C54Af00976ea112"
+    },
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.sepolia-api.lisk.com\nError: script failed: revert: UserLogic upgrade verification failed: implementation mismatch\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-07T18:53:12.974Z",
+    "deployer": "0x744cDf77b3bb55aDb00D608d9EE35C8B43d4b0C8",
+    "previousImplementations": {
+      "nodeLogic": "0x0881681384D35C41937c73F7d62AdA12fe84440F",
+      "userLogic": "0x3BfB51CFBb5459DFF8D58b58118252095e439Ce4",
+      "resourceLogic": "0xDC4cC6b5D9018a594E8d1186261a3ac8b94fa1cf",
+      "facade": "0x98cbd00a3de00c8749E59A542268E196AC7280fF"
+    },
+    "newImplementations": {
+      "nodeLogic": "0xEd923f4D69a0C272E16416bec2C121Fe41850753",
+      "userLogic": "0x51226C7223F1f60f6E8320b5C30F35fB9072D74D",
+      "resourceLogic": "0xC3Bc704181b11783F80849b7aA9230294d2B15AC",
+      "facade": "0x6083B7A445a881e9ea48dB100C54Af00976ea112"
+    },
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.sepolia-api.lisk.com\nError: script failed: revert: NodeLogic upgrade verification failed: implementation mismatch\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-07T19:06:44.284Z",
+    "deployer": "0x744cDf77b3bb55aDb00D608d9EE35C8B43d4b0C8",
+    "previousImplementations": {
+      "nodeLogic": "0xEd923f4D69a0C272E16416bec2C121Fe41850753",
+      "userLogic": "0x51226C7223F1f60f6E8320b5C30F35fB9072D74D",
+      "resourceLogic": "0xC3Bc704181b11783F80849b7aA9230294d2B15AC",
+      "facade": "0x6083B7A445a881e9ea48dB100C54Af00976ea112"
+    },
+    "newImplementations": {
+      "nodeLogic": "0xEd923f4D69a0C272E16416bec2C121Fe41850753",
+      "userLogic": "0x51226C7223F1f60f6E8320b5C30F35fB9072D74D",
+      "resourceLogic": "0xC3Bc704181b11783F80849b7aA9230294d2B15AC",
+      "facade": "0x6083B7A445a881e9ea48dB100C54Af00976ea112"
+    },
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.sepolia-api.lisk.com\nError: script failed: revert: NodeLogic upgrade failed: Transaction reverted silently\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-11T16:14:24.726Z",
+    "deployer": "0x744cDf77b3bb55aDb00D608d9EE35C8B43d4b0C8",
+    "previousImplementations": {
+      "nodeLogic": "0xe1737dc8C854b38a0D2cCe6eDA7DA3E9E0Af6F06",
+      "userLogic": "0x78d415D482ADf876f5501841D519Bf460505cF0f",
+      "resourceLogic": "0x0bC628a49A5907d97B9f1fAAf7035b7188FF26bD",
+      "facade": "0x8429AC6545610aC51D8130E898A74eBeE2061b96"
+    },
+    "newImplementations": {
+      "nodeLogic": "0x41132C036647aBeAa39eC07F423812F0C5F62b84",
+      "userLogic": "0x04db254Fa688Cd9b83ecEB2FaDB50D5e187C124E",
+      "resourceLogic": "0x24f7a371E24B088d4Fffe99ab13eEF67Af9dB594",
+      "facade": "0x48465305f505a6481b637413F3634a828338f7d2"
+    },
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.sepolia-api.lisk.com\nError: script failed: revert: NodeLogic upgrade verification failed: implementation mismatch\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-11T16:35:11.814Z",
+    "deployer": "0x744cDf77b3bb55aDb00D608d9EE35C8B43d4b0C8",
+    "previousImplementations": {
+      "nodeLogic": "0x41132C036647aBeAa39eC07F423812F0C5F62b84",
+      "userLogic": "0x04db254Fa688Cd9b83ecEB2FaDB50D5e187C124E",
+      "resourceLogic": "0x24f7a371E24B088d4Fffe99ab13eEF67Af9dB594",
+      "facade": "0x48465305f505a6481b637413F3634a828338f7d2"
+    },
+    "newImplementations": {
+      "nodeLogic": "0x41132C036647aBeAa39eC07F423812F0C5F62b84",
+      "userLogic": "0x04db254Fa688Cd9b83ecEB2FaDB50D5e187C124E",
+      "resourceLogic": "0x24f7a371E24B088d4Fffe99ab13eEF67Af9dB594",
+      "facade": "0x48465305f505a6481b637413F3634a828338f7d2"
+    },
+    "proxyAddresses": {
+      "nodeLogic": "0x80Dba15c21260c81BEcfD3379E2d3477B6a7103E",
+      "userLogic": "0x889e3c1C98d477689d04276eBaC4729eB1604345",
+      "resourceLogic": "0x802d9E1B6d9CFb87fDc2E80307d20dD094f5f1D0",
+      "facade": "0x1973356ce1Ba206aBCE8AdF84d2C8db3f7D4Eb30"
+    },
+    "status": "success",
+    "errors": []
+  },
+  {
+    "timestamp": "2025-07-11T18:36:09.916Z",
+    "deployer": "",
+    "previousImplementations": {
+      "nodeLogic": "0x41132C036647aBeAa39eC07F423812F0C5F62b84",
+      "userLogic": "0x04db254Fa688Cd9b83ecEB2FaDB50D5e187C124E",
+      "resourceLogic": "0x24f7a371E24B088d4Fffe99ab13eEF67Af9dB594",
+      "facade": "0x48465305f505a6481b637413F3634a828338f7d2"
+    },
+    "newImplementations": {},
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.sepolia-api.lisk.com\nError: Compiler run failed:\nError (7407): Type int_const 5122...(68 digits omitted)...4382 is not implicitly convertible to expected type bytes32.\n  --> scripts/QuikDBUpgrade.sol:24:35:\n   |\n24 |     bytes32 constant ADMIN_SLOT = 0xb53127684a568b3173ae13b9f8a6016e019eac8a3d1f36a0e96f6ab0d0f2f3e;\n   |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-11T18:37:17.119Z",
+    "deployer": "",
+    "previousImplementations": {},
+    "newImplementations": {},
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.sepolia-api.lisk.com\nError: Compiler run failed:\nError (8936): Expected even number of hex-nibbles.\n  --> scripts/QuikDBUpgrade.sol:24:35:\n   |\n24 |     bytes32 constant ADMIN_SLOT = hex\"b53127684a568b3173ae13b9f8a6016e019eac8a3d1f36a0e96f6ab0d0f2f3e\";\n   |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-11T18:38:16.663Z",
+    "deployer": "0x744cDf77b3bb55aDb00D608d9EE35C8B43d4b0C8",
+    "previousImplementations": {},
+    "newImplementations": {
+      "nodeLogic": "0xb1FcE4ad332F859CC96FF1256029cf86c14E46e6",
+      "userLogic": "0xf8A6D046516dfe66784103EB5DcbA2dD5B41180a",
+      "resourceLogic": "0x1Ea5B1b6D95b4d537E5D8d43c428D75f6f360a44",
+      "facade": "0xa5167a8970d8eF876575CFA18BdcA62BBf382D46"
+    },
+    "proxyAddresses": {
+      "nodeLogic": "0x80Dba15c21260c81BEcfD3379E2d3477B6a7103E",
+      "userLogic": "0x889e3c1C98d477689d04276eBaC4729eB1604345",
+      "resourceLogic": "0x802d9E1B6d9CFb87fDc2E80307d20dD094f5f1D0",
+      "facade": "0x1973356ce1Ba206aBCE8AdF84d2C8db3f7D4Eb30"
+    },
+    "status": "success",
+    "errors": []
+  },
+  {
+    "timestamp": "2025-07-11T18:39:49.655Z",
+    "deployer": "0x744cDf77b3bb55aDb00D608d9EE35C8B43d4b0C8",
+    "previousImplementations": {
+      "nodeLogic": "0xb1FcE4ad332F859CC96FF1256029cf86c14E46e6",
+      "userLogic": "0xf8A6D046516dfe66784103EB5DcbA2dD5B41180a",
+      "resourceLogic": "0x1Ea5B1b6D95b4d537E5D8d43c428D75f6f360a44",
+      "facade": "0xa5167a8970d8eF876575CFA18BdcA62BBf382D46"
+    },
+    "newImplementations": {},
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.sepolia-api.lisk.com\nError: script failed: <empty revert data>\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-11T18:40:51.722Z",
+    "deployer": "0x744cDf77b3bb55aDb00D608d9EE35C8B43d4b0C8",
+    "previousImplementations": {},
+    "newImplementations": {
+      "nodeLogic": "0xE9C91a79b5ea71F159bc9D4b9efDAA3ed6a4cd7f",
+      "userLogic": "0x78598F4f8f13B6EEae4d1FF875C5a9b1BBA9293E",
+      "resourceLogic": "0x2A9c102ee8432eac63Bb010dCa21889fd00668B3",
+      "facade": "0x6cE4052D864d73E721C9aDA7f7B9f972632654fF"
+    },
+    "proxyAddresses": {
+      "nodeLogic": "0x80Dba15c21260c81BEcfD3379E2d3477B6a7103E",
+      "userLogic": "0x889e3c1C98d477689d04276eBaC4729eB1604345",
+      "resourceLogic": "0x802d9E1B6d9CFb87fDc2E80307d20dD094f5f1D0",
+      "facade": "0x1973356ce1Ba206aBCE8AdF84d2C8db3f7D4Eb30"
+    },
+    "status": "success",
+    "errors": []
   }
 ]
