@@ -145,10 +145,10 @@ abstract contract BaseTest is Test {
         vm.startPrank(admin);
         
         // Get proxied contracts
-        nodeLogic = NodeLogic(address(nodeLogicProxy));
-        userLogic = UserLogic(address(userLogicProxy));
-        resourceLogic = ResourceLogic(address(resourceLogicProxy));
-        facade = Facade(address(facadeProxy));
+        nodeLogic = NodeLogic(payable(address(nodeLogicProxy)));
+        userLogic = UserLogic(payable(address(userLogicProxy)));
+        resourceLogic = ResourceLogic(payable(address(resourceLogicProxy)));
+        facade = Facade(payable(address(facadeProxy)));
 
         // Set up storage contracts to use the proxies
         nodeStorage.setLogicContract(address(nodeLogicProxy));
