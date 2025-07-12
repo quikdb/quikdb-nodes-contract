@@ -142,7 +142,7 @@ async function registerUser(): Promise<void> {
   console.log("\n=== Register User ===");
 
   const request = {
-    user_address: "0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA",
+    user_address: "0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474",
     profile_hash:
       "0x3508905298109c1c1e2c93bbe3a0491ee882bf99f2b3a109222a555b0113d3b1", // 32-byte hash
     user_type: 2,
@@ -334,7 +334,7 @@ async function streamUsers(): Promise<void> {
   console.log("\n=== Stream Users ===");
 
   const request = {
-    type_filter: 0, // USER_TYPE_CONSUMER
+    type_filter: 2, // USER_TYPE_MARKETPLACE_ADMIN (matches our registered user)
     verified_only: false,
     active_only: true,
     batch_size: 5,
@@ -346,12 +346,18 @@ async function streamUsers(): Promise<void> {
 
     stream.on("data", (response: any) => {
       console.log("Received user batch:", {
-        usersInBatch: response.users_list?.length || 0,
+        usersInBatch: response.users?.length || 0,
         isFinalBatch: response.is_final_batch,
         totalSent: response.total_sent,
       });
 
-      totalReceived += response.users_list?.length || 0;
+      // Display some user details for the first few users
+      if (response.users && response.users.length > 0) {
+        console.log("Sample users in batch:");
+        console.log(response, "Sample users in batch:");
+      }
+
+      totalReceived += response.users?.length || 0;
     });
 
     stream.on("end", () => {
@@ -433,14 +439,14 @@ async function runExamples(): Promise<void> {
     console.log("\n🔐 Testing write operations with configured signer...");
     // await registerUser();
     // await getUserProfile();
-    await updateUserProfile();
+    // await updateUserProfile();
     // Test getting profile again to see the updated profile hash
-    await getUserProfile();
-    await getUsers();
+    // await getUserProfile();
+    // await getUsers();
 
     // Streaming examples
-    // await streamUsers();
-    // await streamEvents();
+    await streamUsers();
+    // await streamEvents(); // Temporarily disabled - EventService not fully implemented
 
     console.log("✅ All systems working correctly!");
     console.log("📊 Summary:");

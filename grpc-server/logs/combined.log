@@ -2041,3 +2041,588 @@
 {"level":"info","message":"Getting user profile","service":"quikdb-grpc-server","timestamp":"2025-07-12T09:00:56.426Z","userAddress":"0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA"}
 {"activeOnly":true,"level":"info","limit":10,"message":"Getting users","page":0,"service":"quikdb-grpc-server","timestamp":"2025-07-12T09:00:57.468Z","typeFilter":"USER_TYPE_CONSUMER","verifiedOnly":false}
 {"level":"info","message":"Received SIGINT, starting graceful shutdown...","service":"quikdb-grpc-server","timestamp":"2025-07-12T09:07:09.708Z"}
+{"level":"info","message":"Contract manager initialized with signer","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.082Z"}
+{"level":"info","message":"Loaded proto file: common.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.130Z"}
+{"level":"info","message":"Loaded proto file: user.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.153Z"}
+{"level":"info","message":"Loaded proto file: node.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.167Z"}
+{"level":"info","message":"Loaded proto file: health.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.169Z"}
+{"level":"info","message":"Loaded proto file: events.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.176Z"}
+{"level":"info","message":"Loaded proto file: stats.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.204Z"}
+{"level":"info","message":"Setting up gRPC services...","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.205Z"}
+{"level":"info","message":"UserService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.205Z"}
+{"level":"info","message":"StatsService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.206Z"}
+{"level":"info","message":"All gRPC services configured successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.206Z"}
+{"level":"info","message":"Initializing QuikDB gRPC server...","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.207Z"}
+{"level":"info","message":"Loaded deployment addresses from: /Users/mac/Documents/2025/quikdb-nodes-contract/smart-contract/deployments/latest.json","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.211Z"}
+{"level":"info","message":"Contract addresses validated successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.228Z"}
+{"level":"info","message":"Contract instances created successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.267Z"}
+{"level":"info","message":"Contract manager initialized successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.269Z"}
+{"level":"info","message":"Contract manager initialized","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.269Z"}
+{"level":"info","message":"Metrics collection started","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.270Z"}
+{"level":"info","message":"Metrics server listening on port 3001","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.291Z"}
+{"level":"info","message":"Health check: http://localhost:3001/health","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.292Z"}
+{"level":"info","message":"Metrics endpoint: http://localhost:3001/metrics","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:32:40.293Z"}
+{"level":"info","message":"Contract manager initialized with signer","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:40.993Z"}
+{"level":"info","message":"Loaded proto file: common.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.118Z"}
+{"level":"info","message":"Loaded proto file: user.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.184Z"}
+{"level":"info","message":"Loaded proto file: node.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.276Z"}
+{"level":"info","message":"Loaded proto file: health.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.279Z"}
+{"level":"info","message":"Loaded proto file: events.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.285Z"}
+{"level":"info","message":"Loaded proto file: stats.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.372Z"}
+{"level":"info","message":"Setting up gRPC services...","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.375Z"}
+{"level":"info","message":"UserService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.377Z"}
+{"level":"info","message":"StatsService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.391Z"}
+{"level":"info","message":"All gRPC services configured successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.394Z"}
+{"level":"info","message":"Initializing QuikDB gRPC server...","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.395Z"}
+{"level":"info","message":"Loaded deployment addresses from: /Users/mac/Documents/2025/quikdb-nodes-contract/smart-contract/deployments/latest.json","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.396Z"}
+{"level":"info","message":"Contract addresses validated successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.407Z"}
+{"level":"info","message":"Contract instances created successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.464Z"}
+{"level":"info","message":"Contract manager initialized successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.465Z"}
+{"level":"info","message":"Contract manager initialized","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.465Z"}
+{"level":"info","message":"Metrics collection started","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.465Z"}
+{"level":"info","message":"Metrics server listening on port 3001","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.485Z"}
+{"level":"info","message":"Health check: http://localhost:3001/health","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.485Z"}
+{"level":"info","message":"Metrics endpoint: http://localhost:3001/metrics","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:41.486Z"}
+{"facadeStats":{"allocations":"0","nodes":"0","users":"16"},"level":"info","message":"Contract connectivity test passed","nodeCount":"0","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:43.646Z","userCount":"16"}
+{"level":"info","message":"Contract connectivity verified","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:43.647Z"}
+{"level":"info","message":"QuikDB gRPC server listening on 0.0.0.0:50051 (port 50051)","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:43.656Z"}
+{"blockchain":{"chainId":4202,"network":"lisk-sepolia","rpcUrl":"https://rpc.sepolia-api.lisk.com"},"cache":{"enabled":true,"ttl":300},"level":"info","message":"Server configuration:","monitoring":{"enabled":true,"port":3001},"service":"quikdb-grpc-server","timestamp":"2025-07-12T10:34:43.657Z"}
+{"level":"info","message":"Getting user stats","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:35:11.085Z"}
+{"level":"info","message":"Updating user profile","profileHash":"0x9876543210abcdef9876543210abcdef9876543210abcdef9876543210abcdef","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:35:11.663Z","userAddress":"0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA"}
+{"action":"estimateGas","code":"CALL_EXCEPTION","data":"0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000e4e6f7420617574686f72697a6564000000000000000000000000000000000000","info":{"error":{"code":3,"data":"0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000e4e6f7420617574686f72697a6564000000000000000000000000000000000000","message":"execution reverted: Not authorized"},"payload":{"id":11,"jsonrpc":"2.0","method":"eth_estimateGas","params":[{"data":"0x3469a4e30000000000000000000000002308f94fa9af7e8467a7caa4b1d73a4d083013ea9876543210abcdef9876543210abcdef9876543210abcdef9876543210abcdef","from":"0x6f1b6ac175e2cf9436d7478e6d08e22c415eb474","nonce":"0x46","to":"0xf3d39530015fc6bba4f79fd0a36680a1654128c5"}]}},"invocation":null,"level":"error","message":"Failed to update user profile: execution reverted: \"Not authorized\" (action=\"estimateGas\", data=\"0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000e4e6f7420617574686f72697a6564000000000000000000000000000000000000\", reason=\"Not authorized\", transaction={ \"data\": \"0x3469a4e30000000000000000000000002308f94fa9af7e8467a7caa4b1d73a4d083013ea9876543210abcdef9876543210abcdef9876543210abcdef9876543210abcdef\", \"from\": \"0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474\", \"to\": \"0xF3D39530015FC6BbA4f79fD0A36680a1654128c5\" }, invocation=null, revert={ \"args\": [ \"Not authorized\" ], \"name\": \"Error\", \"signature\": \"Error(string)\" }, code=CALL_EXCEPTION, version=6.15.0)","reason":"Not authorized","revert":{"args":["Not authorized"],"name":"Error","signature":"Error(string)"},"service":"quikdb-grpc-server","shortMessage":"execution reverted: \"Not authorized\"","stack":"Error: execution reverted: \"Not authorized\" (action=\"estimateGas\", data=\"0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000e4e6f7420617574686f72697a6564000000000000000000000000000000000000\", reason=\"Not authorized\", transaction={ \"data\": \"0x3469a4e30000000000000000000000002308f94fa9af7e8467a7caa4b1d73a4d083013ea9876543210abcdef9876543210abcdef9876543210abcdef9876543210abcdef\", \"from\": \"0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474\", \"to\": \"0xF3D39530015FC6BbA4f79fD0A36680a1654128c5\" }, invocation=null, revert={ \"args\": [ \"Not authorized\" ], \"name\": \"Error\", \"signature\": \"Error(string)\" }, code=CALL_EXCEPTION, version=6.15.0)\n    at makeError (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/utils/errors.js:137:21)\n    at getBuiltinCallException (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/abi-coder.js:105:37)\n    at AbiCoder.getBuiltinCallException (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/abi-coder.js:206:16)\n    at JsonRpcProvider.getRpcError (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/providers/provider-jsonrpc.js:695:43)\n    at /Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/providers/provider-jsonrpc.js:302:45\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2025-07-12T10:35:12.644Z","transaction":{"data":"0x3469a4e30000000000000000000000002308f94fa9af7e8467a7caa4b1d73a4d083013ea9876543210abcdef9876543210abcdef9876543210abcdef9876543210abcdef","from":"0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474","to":"0xF3D39530015FC6BbA4f79fD0A36680a1654128c5"}}
+{"level":"info","message":"Contract manager initialized with signer","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.674Z"}
+{"level":"info","message":"Loaded proto file: common.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.724Z"}
+{"level":"info","message":"Loaded proto file: user.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.757Z"}
+{"level":"info","message":"Loaded proto file: node.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.776Z"}
+{"level":"info","message":"Loaded proto file: health.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.779Z"}
+{"level":"info","message":"Loaded proto file: events.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.788Z"}
+{"level":"info","message":"Loaded proto file: stats.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.819Z"}
+{"level":"info","message":"Setting up gRPC services...","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.820Z"}
+{"level":"info","message":"UserService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.820Z"}
+{"level":"info","message":"StatsService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.821Z"}
+{"level":"info","message":"All gRPC services configured successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.821Z"}
+{"level":"info","message":"Initializing QuikDB gRPC server...","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.822Z"}
+{"level":"info","message":"Loaded deployment addresses from: /Users/mac/Documents/2025/quikdb-nodes-contract/smart-contract/deployments/latest.json","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.825Z"}
+{"level":"info","message":"Contract addresses validated successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.830Z"}
+{"level":"info","message":"Contract instances created successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.883Z"}
+{"level":"info","message":"Contract manager initialized successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.883Z"}
+{"level":"info","message":"Contract manager initialized","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.884Z"}
+{"level":"info","message":"Metrics collection started","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.884Z"}
+{"level":"info","message":"Metrics server listening on port 3001","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.899Z"}
+{"level":"info","message":"Health check: http://localhost:3001/health","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.900Z"}
+{"level":"info","message":"Metrics endpoint: http://localhost:3001/metrics","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:32.900Z"}
+{"facadeStats":{"allocations":"0","nodes":"0","users":"0"},"level":"info","message":"Contract connectivity test passed","nodeCount":"0","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:34.769Z","userCount":"0"}
+{"level":"info","message":"Contract connectivity verified","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:34.770Z"}
+{"level":"info","message":"QuikDB gRPC server listening on 0.0.0.0:50051 (port 50051)","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:34.783Z"}
+{"blockchain":{"chainId":4202,"network":"lisk-sepolia","rpcUrl":"https://rpc.sepolia-api.lisk.com"},"cache":{"enabled":true,"ttl":300},"level":"info","message":"Server configuration:","monitoring":{"enabled":true,"port":3001},"service":"quikdb-grpc-server","timestamp":"2025-07-12T10:44:34.783Z"}
+{"level":"info","message":"Getting user stats","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:45:04.956Z"}
+{"level":"info","message":"Updating user profile","profileHash":"0x9876543210abcdef9876543210abcdef9876543210abcdef9876543210abcdef","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:45:05.479Z","userAddress":"0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA"}
+{"action":"estimateGas","code":"CALL_EXCEPTION","data":"0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001355736572206e6f74207265676973746572656400000000000000000000000000","info":{"error":{"code":3,"data":"0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001355736572206e6f74207265676973746572656400000000000000000000000000","message":"execution reverted: User not registered"},"payload":{"id":11,"jsonrpc":"2.0","method":"eth_estimateGas","params":[{"data":"0x3469a4e30000000000000000000000002308f94fa9af7e8467a7caa4b1d73a4d083013ea9876543210abcdef9876543210abcdef9876543210abcdef9876543210abcdef","from":"0x6f1b6ac175e2cf9436d7478e6d08e22c415eb474","nonce":"0x57","to":"0x3425bed37488bd45d1c6b52d9695e26166a145bd"}]}},"invocation":null,"level":"error","message":"Failed to update user profile: execution reverted: \"User not registered\" (action=\"estimateGas\", data=\"0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001355736572206e6f74207265676973746572656400000000000000000000000000\", reason=\"User not registered\", transaction={ \"data\": \"0x3469a4e30000000000000000000000002308f94fa9af7e8467a7caa4b1d73a4d083013ea9876543210abcdef9876543210abcdef9876543210abcdef9876543210abcdef\", \"from\": \"0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474\", \"to\": \"0x3425bEd37488bD45d1C6b52d9695e26166a145Bd\" }, invocation=null, revert={ \"args\": [ \"User not registered\" ], \"name\": \"Error\", \"signature\": \"Error(string)\" }, code=CALL_EXCEPTION, version=6.15.0)","reason":"User not registered","revert":{"args":["User not registered"],"name":"Error","signature":"Error(string)"},"service":"quikdb-grpc-server","shortMessage":"execution reverted: \"User not registered\"","stack":"Error: execution reverted: \"User not registered\" (action=\"estimateGas\", data=\"0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001355736572206e6f74207265676973746572656400000000000000000000000000\", reason=\"User not registered\", transaction={ \"data\": \"0x3469a4e30000000000000000000000002308f94fa9af7e8467a7caa4b1d73a4d083013ea9876543210abcdef9876543210abcdef9876543210abcdef9876543210abcdef\", \"from\": \"0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474\", \"to\": \"0x3425bEd37488bD45d1C6b52d9695e26166a145Bd\" }, invocation=null, revert={ \"args\": [ \"User not registered\" ], \"name\": \"Error\", \"signature\": \"Error(string)\" }, code=CALL_EXCEPTION, version=6.15.0)\n    at makeError (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/utils/errors.js:137:21)\n    at getBuiltinCallException (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/abi-coder.js:105:37)\n    at AbiCoder.getBuiltinCallException (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/abi-coder.js:206:16)\n    at JsonRpcProvider.getRpcError (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/providers/provider-jsonrpc.js:695:43)\n    at /Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/providers/provider-jsonrpc.js:302:45\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2025-07-12T10:45:06.576Z","transaction":{"data":"0x3469a4e30000000000000000000000002308f94fa9af7e8467a7caa4b1d73a4d083013ea9876543210abcdef9876543210abcdef9876543210abcdef9876543210abcdef","from":"0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474","to":"0x3425bEd37488bD45d1C6b52d9695e26166a145Bd"}}
+{"level":"info","message":"Registering user","profileHash":"0x3508905298109c1c1e2c93bbe3a0491ee882bf99f2b3a109222a555b0113d3b1","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:46:46.570Z","userAddress":"0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA","userType":2}
+{"level":"info","message":"Updating user profile","profileHash":"0x9876543210abcdef9876543210abcdef9876543210abcdef9876543210abcdef","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:46:56.102Z","userAddress":"0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA"}
+{"level":"info","message":"User profile update successful User profile updated successfully","service":"quikdb-grpc-server","success":true,"timestamp":"2025-07-12T10:47:05.381Z","transaction_hash":"0x308d21fe6a730b97db745aaaafbacbbb96de66213347bd24e4784465cf333bcc"}
+{"level":"info","message":"Getting user profile","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:47:05.396Z","userAddress":"0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA"}
+{"activeOnly":true,"level":"info","limit":10,"message":"Getting users","page":0,"service":"quikdb-grpc-server","timestamp":"2025-07-12T10:47:05.941Z","typeFilter":"USER_TYPE_CONSUMER","verifiedOnly":false}
+{"level":"info","message":"Getting user stats","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:52:38.797Z"}
+{"level":"info","message":"Registering user","profileHash":"0x3508905298109c1c1e2c93bbe3a0491ee882bf99f2b3a109222a555b0113d3b1","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:52:39.381Z","userAddress":"0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA","userType":2}
+{"action":"estimateGas","code":"CALL_EXCEPTION","data":"0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000175573657220616c72656164792072656769737465726564000000000000000000","info":{"error":{"code":3,"data":"0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000175573657220616c72656164792072656769737465726564000000000000000000","message":"execution reverted: User already registered"},"payload":{"id":60,"jsonrpc":"2.0","method":"eth_estimateGas","params":[{"data":"0xeffc83700000000000000000000000002308f94fa9af7e8467a7caa4b1d73a4d083013ea3508905298109c1c1e2c93bbe3a0491ee882bf99f2b3a109222a555b0113d3b10000000000000000000000000000000000000000000000000000000000000002","from":"0x6f1b6ac175e2cf9436d7478e6d08e22c415eb474","nonce":"0x59","to":"0x3425bed37488bd45d1c6b52d9695e26166a145bd"}]}},"invocation":null,"level":"error","message":"Failed to register user: execution reverted: \"User already registered\" (action=\"estimateGas\", data=\"0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000175573657220616c72656164792072656769737465726564000000000000000000\", reason=\"User already registered\", transaction={ \"data\": \"0xeffc83700000000000000000000000002308f94fa9af7e8467a7caa4b1d73a4d083013ea3508905298109c1c1e2c93bbe3a0491ee882bf99f2b3a109222a555b0113d3b10000000000000000000000000000000000000000000000000000000000000002\", \"from\": \"0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474\", \"to\": \"0x3425bEd37488bD45d1C6b52d9695e26166a145Bd\" }, invocation=null, revert={ \"args\": [ \"User already registered\" ], \"name\": \"Error\", \"signature\": \"Error(string)\" }, code=CALL_EXCEPTION, version=6.15.0)","reason":"User already registered","revert":{"args":["User already registered"],"name":"Error","signature":"Error(string)"},"service":"quikdb-grpc-server","shortMessage":"execution reverted: \"User already registered\"","stack":"Error: execution reverted: \"User already registered\" (action=\"estimateGas\", data=\"0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000175573657220616c72656164792072656769737465726564000000000000000000\", reason=\"User already registered\", transaction={ \"data\": \"0xeffc83700000000000000000000000002308f94fa9af7e8467a7caa4b1d73a4d083013ea3508905298109c1c1e2c93bbe3a0491ee882bf99f2b3a109222a555b0113d3b10000000000000000000000000000000000000000000000000000000000000002\", \"from\": \"0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474\", \"to\": \"0x3425bEd37488bD45d1C6b52d9695e26166a145Bd\" }, invocation=null, revert={ \"args\": [ \"User already registered\" ], \"name\": \"Error\", \"signature\": \"Error(string)\" }, code=CALL_EXCEPTION, version=6.15.0)\n    at makeError (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/utils/errors.js:137:21)\n    at getBuiltinCallException (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/abi-coder.js:105:37)\n    at AbiCoder.getBuiltinCallException (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/abi-coder.js:206:16)\n    at JsonRpcProvider.getRpcError (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/providers/provider-jsonrpc.js:695:43)\n    at /Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/providers/provider-jsonrpc.js:302:45\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2025-07-12T10:52:40.409Z","transaction":{"data":"0xeffc83700000000000000000000000002308f94fa9af7e8467a7caa4b1d73a4d083013ea3508905298109c1c1e2c93bbe3a0491ee882bf99f2b3a109222a555b0113d3b10000000000000000000000000000000000000000000000000000000000000002","from":"0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474","to":"0x3425bEd37488bD45d1C6b52d9695e26166a145Bd"}}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:53:00.698Z","typeFilter":"USER_TYPE_CONSUMER","verifiedOnly":false}
+{"level":"info","message":"Finished streaming 0 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:53:01.189Z"}
+{"level":"info","message":"Getting user stats","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:58:00.320Z"}
+{"level":"info","message":"Registering user","profileHash":"0x3508905298109c1c1e2c93bbe3a0491ee882bf99f2b3a109222a555b0113d3b1","service":"quikdb-grpc-server","timestamp":"2025-07-12T10:58:01.078Z","userAddress":"0x6F1b6ac175E2cf9436D7478E6d08E22C415eb574","userType":2}
+{"argument":"address","code":"INVALID_ARGUMENT","level":"error","message":"Failed to register user: bad address checksum (argument=\"address\", value=\"0x6F1b6ac175E2cf9436D7478E6d08E22C415eb574\", code=INVALID_ARGUMENT, version=6.15.0)","service":"quikdb-grpc-server","shortMessage":"bad address checksum","stack":"TypeError: bad address checksum (argument=\"address\", value=\"0x6F1b6ac175E2cf9436D7478E6d08E22C415eb574\", code=INVALID_ARGUMENT, version=6.15.0)\n    at makeError (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/utils/errors.js:130:21)\n    at assert (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/utils/errors.js:157:15)\n    at assertArgument (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/utils/errors.js:169:5)\n    at getAddress (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/address/address.js:118:39)\n    at resolveAddress (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/address/checks.js:106:48)\n    at /Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/contract/contract.js:122:54\n    at #walkAsync (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/fragments.js:582:24)\n    at ParamType.walkAsync (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/fragments.js:600:24)\n    at /Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/contract/contract.js:119:22\n    at Array.map (<anonymous>)","timestamp":"2025-07-12T10:58:01.079Z","value":"0x6F1b6ac175E2cf9436D7478E6d08E22C415eb574"}
+{"level":"info","message":"Contract manager initialized with signer","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:13.853Z"}
+{"level":"info","message":"Loaded proto file: common.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:13.968Z"}
+{"level":"info","message":"Loaded proto file: user.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:13.991Z"}
+{"level":"info","message":"Loaded proto file: node.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:14.035Z"}
+{"level":"info","message":"Loaded proto file: health.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:14.042Z"}
+{"level":"info","message":"Loaded proto file: events.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:14.117Z"}
+{"level":"info","message":"Loaded proto file: stats.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:14.249Z"}
+{"level":"info","message":"Setting up gRPC services...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:14.250Z"}
+{"level":"info","message":"UserService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:14.255Z"}
+{"level":"info","message":"StatsService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:14.321Z"}
+{"level":"info","message":"All gRPC services configured successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:14.327Z"}
+{"level":"info","message":"Initializing QuikDB gRPC server...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:14.336Z"}
+{"level":"info","message":"Loaded deployment addresses from: /Users/mac/Documents/2025/quikdb-nodes-contract/smart-contract/deployments/latest.json","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:14.346Z"}
+{"level":"info","message":"Contract addresses validated successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:14.366Z"}
+{"level":"info","message":"Contract instances created successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:14.498Z"}
+{"level":"info","message":"Contract manager initialized successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:14.500Z"}
+{"level":"info","message":"Contract manager initialized","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:14.500Z"}
+{"level":"info","message":"Metrics collection started","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:14.500Z"}
+{"level":"info","message":"Metrics server listening on port 3001","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:14.536Z"}
+{"level":"info","message":"Health check: http://localhost:3001/health","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:14.537Z"}
+{"level":"info","message":"Metrics endpoint: http://localhost:3001/metrics","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:14.537Z"}
+{"facadeStats":{"allocations":"0","nodes":"0","users":"1"},"level":"info","message":"Contract connectivity test passed","nodeCount":"0","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:17.172Z","userCount":"1"}
+{"level":"info","message":"Contract connectivity verified","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:17.173Z"}
+{"level":"info","message":"QuikDB gRPC server listening on 0.0.0.0:50051 (port 50051)","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:17.209Z"}
+{"blockchain":{"chainId":4202,"network":"lisk-sepolia","rpcUrl":"https://rpc.sepolia-api.lisk.com"},"cache":{"enabled":true,"ttl":300},"level":"info","message":"Server configuration:","monitoring":{"enabled":true,"port":3001},"service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:17.209Z"}
+{"level":"info","message":"Getting user stats","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:55.407Z"}
+{"level":"info","message":"Registering user","profileHash":"0x3508905298109c1c1e2c93bbe3a0491ee882bf99f2b3a109222a555b0113d3b1","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:00:56.082Z","userAddress":"0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474","userType":2}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:01:06.043Z","typeFilter":"USER_TYPE_CONSUMER","verifiedOnly":false}
+{"level":"info","message":"Finished streaming 0 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:01:06.626Z"}
+{"level":"info","message":"Getting user stats","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:10:51.784Z"}
+{"level":"info","message":"Registering user","profileHash":"0x3508905298109c1c1e2c93bbe3a0491ee882bf99f2b3a109222a555b0113d3b1","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:10:52.332Z","userAddress":"0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474","userType":2}
+{"action":"estimateGas","code":"CALL_EXCEPTION","data":"0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000175573657220616c72656164792072656769737465726564000000000000000000","info":{"error":{"code":3,"data":"0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000175573657220616c72656164792072656769737465726564000000000000000000","message":"execution reverted: User already registered"},"payload":{"id":35,"jsonrpc":"2.0","method":"eth_estimateGas","params":[{"data":"0xeffc83700000000000000000000000006f1b6ac175e2cf9436d7478e6d08e22c415eb4743508905298109c1c1e2c93bbe3a0491ee882bf99f2b3a109222a555b0113d3b10000000000000000000000000000000000000000000000000000000000000002","from":"0x6f1b6ac175e2cf9436d7478e6d08e22c415eb474","nonce":"0x5a","to":"0x3425bed37488bd45d1c6b52d9695e26166a145bd"}]}},"invocation":null,"level":"error","message":"Failed to register user: execution reverted: \"User already registered\" (action=\"estimateGas\", data=\"0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000175573657220616c72656164792072656769737465726564000000000000000000\", reason=\"User already registered\", transaction={ \"data\": \"0xeffc83700000000000000000000000006f1b6ac175e2cf9436d7478e6d08e22c415eb4743508905298109c1c1e2c93bbe3a0491ee882bf99f2b3a109222a555b0113d3b10000000000000000000000000000000000000000000000000000000000000002\", \"from\": \"0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474\", \"to\": \"0x3425bEd37488bD45d1C6b52d9695e26166a145Bd\" }, invocation=null, revert={ \"args\": [ \"User already registered\" ], \"name\": \"Error\", \"signature\": \"Error(string)\" }, code=CALL_EXCEPTION, version=6.15.0)","reason":"User already registered","revert":{"args":["User already registered"],"name":"Error","signature":"Error(string)"},"service":"quikdb-grpc-server","shortMessage":"execution reverted: \"User already registered\"","stack":"Error: execution reverted: \"User already registered\" (action=\"estimateGas\", data=\"0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000175573657220616c72656164792072656769737465726564000000000000000000\", reason=\"User already registered\", transaction={ \"data\": \"0xeffc83700000000000000000000000006f1b6ac175e2cf9436d7478e6d08e22c415eb4743508905298109c1c1e2c93bbe3a0491ee882bf99f2b3a109222a555b0113d3b10000000000000000000000000000000000000000000000000000000000000002\", \"from\": \"0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474\", \"to\": \"0x3425bEd37488bD45d1C6b52d9695e26166a145Bd\" }, invocation=null, revert={ \"args\": [ \"User already registered\" ], \"name\": \"Error\", \"signature\": \"Error(string)\" }, code=CALL_EXCEPTION, version=6.15.0)\n    at makeError (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/utils/errors.js:137:21)\n    at getBuiltinCallException (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/abi-coder.js:105:37)\n    at AbiCoder.getBuiltinCallException (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/abi-coder.js:206:16)\n    at JsonRpcProvider.getRpcError (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/providers/provider-jsonrpc.js:695:43)\n    at /Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/providers/provider-jsonrpc.js:302:45\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2025-07-12T11:10:53.331Z","transaction":{"data":"0xeffc83700000000000000000000000006f1b6ac175e2cf9436d7478e6d08e22c415eb4743508905298109c1c1e2c93bbe3a0491ee882bf99f2b3a109222a555b0113d3b10000000000000000000000000000000000000000000000000000000000000002","from":"0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474","to":"0x3425bEd37488bD45d1C6b52d9695e26166a145Bd"}}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:11:06.888Z","typeFilter":"USER_TYPE_CONSUMER","verifiedOnly":false}
+{"level":"info","message":"Finished streaming 0 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:11:07.390Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:12:51.806Z","typeFilter":"USER_TYPE_CONSUMER","verifiedOnly":false}
+{"level":"info","message":"Finished streaming 0 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:12:52.385Z"}
+{"level":"info","message":"Received SIGINT, starting graceful shutdown...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:22.416Z"}
+{"level":"info","message":"Contract manager initialized with signer","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:30.954Z"}
+{"level":"info","message":"Loaded proto file: common.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.035Z"}
+{"level":"info","message":"Loaded proto file: user.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.053Z"}
+{"level":"info","message":"Loaded proto file: node.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.070Z"}
+{"level":"info","message":"Loaded proto file: health.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.072Z"}
+{"level":"info","message":"Loaded proto file: events.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.079Z"}
+{"level":"info","message":"Loaded proto file: stats.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.103Z"}
+{"level":"info","message":"Setting up gRPC services...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.104Z"}
+{"level":"info","message":"UserService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.104Z"}
+{"level":"info","message":"StatsService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.105Z"}
+{"level":"info","message":"All gRPC services configured successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.107Z"}
+{"level":"info","message":"Initializing QuikDB gRPC server...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.108Z"}
+{"level":"info","message":"Loaded deployment addresses from: /Users/mac/Documents/2025/quikdb-nodes-contract/smart-contract/deployments/latest.json","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.109Z"}
+{"level":"info","message":"Contract addresses validated successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.121Z"}
+{"level":"info","message":"Contract instances created successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.223Z"}
+{"level":"info","message":"Contract manager initialized successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.224Z"}
+{"level":"info","message":"Contract manager initialized","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.226Z"}
+{"level":"info","message":"Metrics collection started","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.231Z"}
+{"level":"info","message":"Metrics server listening on port 3001","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.248Z"}
+{"level":"info","message":"Health check: http://localhost:3001/health","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.248Z"}
+{"level":"info","message":"Metrics endpoint: http://localhost:3001/metrics","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:31.248Z"}
+{"facadeStats":{"allocations":"0","nodes":"0","users":"2"},"level":"info","message":"Contract connectivity test passed","nodeCount":"0","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:32.902Z","userCount":"2"}
+{"level":"info","message":"Contract connectivity verified","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:32.902Z"}
+{"level":"info","message":"QuikDB gRPC server listening on 0.0.0.0:50051 (port 50051)","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:32.907Z"}
+{"blockchain":{"chainId":4202,"network":"lisk-sepolia","rpcUrl":"https://rpc.sepolia-api.lisk.com"},"cache":{"enabled":true,"ttl":300},"level":"info","message":"Server configuration:","monitoring":{"enabled":true,"port":3001},"service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:32.908Z"}
+{"level":"info","message":"Getting user stats","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:40.565Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:41.096Z","typeFilter":"USER_TYPE_CONSUMER","verifiedOnly":false}
+{"level":"info","message":"Finished streaming 0 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:41.600Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:53.547Z","typeFilter":"USER_TYPE_CONSUMER","verifiedOnly":false}
+{"level":"info","message":"Finished streaming 0 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:16:54.195Z"}
+{"level":"info","message":"Received SIGINT, starting graceful shutdown...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:19:21.375Z"}
+{"level":"info","message":"Contract manager initialized with signer","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.045Z"}
+{"level":"info","message":"Loaded proto file: common.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.147Z"}
+{"level":"info","message":"Loaded proto file: user.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.174Z"}
+{"level":"info","message":"Loaded proto file: node.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.220Z"}
+{"level":"info","message":"Loaded proto file: health.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.226Z"}
+{"level":"info","message":"Loaded proto file: events.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.234Z"}
+{"level":"info","message":"Loaded proto file: stats.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.319Z"}
+{"level":"info","message":"Setting up gRPC services...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.329Z"}
+{"level":"info","message":"UserService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.330Z"}
+{"level":"info","message":"StatsService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.331Z"}
+{"level":"info","message":"All gRPC services configured successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.428Z"}
+{"level":"info","message":"Initializing QuikDB gRPC server...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.440Z"}
+{"level":"info","message":"Loaded deployment addresses from: /Users/mac/Documents/2025/quikdb-nodes-contract/smart-contract/deployments/latest.json","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.448Z"}
+{"level":"info","message":"Contract addresses validated successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.460Z"}
+{"level":"info","message":"Contract instances created successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.562Z"}
+{"level":"info","message":"Contract manager initialized successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.563Z"}
+{"level":"info","message":"Contract manager initialized","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.563Z"}
+{"level":"info","message":"Metrics collection started","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.563Z"}
+{"level":"info","message":"Metrics server listening on port 3001","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.583Z"}
+{"level":"info","message":"Health check: http://localhost:3001/health","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.584Z"}
+{"level":"info","message":"Metrics endpoint: http://localhost:3001/metrics","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:32.584Z"}
+{"facadeStats":{"allocations":"0","nodes":"0","users":"2"},"level":"info","message":"Contract connectivity test passed","nodeCount":"0","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:34.531Z","userCount":"2"}
+{"level":"info","message":"Contract connectivity verified","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:34.531Z"}
+{"level":"info","message":"QuikDB gRPC server listening on 0.0.0.0:50051 (port 50051)","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:34.635Z"}
+{"blockchain":{"chainId":4202,"network":"lisk-sepolia","rpcUrl":"https://rpc.sepolia-api.lisk.com"},"cache":{"enabled":true,"ttl":300},"level":"info","message":"Server configuration:","monitoring":{"enabled":true,"port":3001},"service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:34.635Z"}
+{"level":"info","message":"Getting user stats","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:55.925Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:28:56.561Z","typeFilter":"USER_TYPE_CONSUMER","verifiedOnly":false}
+{"argument":"value","code":"INVALID_ARGUMENT","level":"error","message":"Failed to stream users: invalid BigNumberish string: Cannot convert USER_TYPE_CONSUMER to a BigInt (argument=\"value\", value=\"USER_TYPE_CONSUMER\", code=INVALID_ARGUMENT, version=6.15.0)","service":"quikdb-grpc-server","shortMessage":"invalid BigNumberish string: Cannot convert USER_TYPE_CONSUMER to a BigInt","stack":"TypeError: invalid BigNumberish string: Cannot convert USER_TYPE_CONSUMER to a BigInt (argument=\"value\", value=\"USER_TYPE_CONSUMER\", code=INVALID_ARGUMENT, version=6.15.0)\n    at makeError (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/utils/errors.js:130:21)\n    at assert (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/utils/errors.js:157:15)\n    at assertArgument (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/utils/errors.js:169:5)\n    at getBigInt (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/utils/maths.js:93:48)\n    at NumberCoder.encode (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/coders/number.js:25:46)\n    at /Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/coders/array.js:47:19\n    at Array.forEach (<anonymous>)\n    at pack (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/coders/array.js:33:12)\n    at TupleCoder.encode (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/coders/tuple.js:60:36)\n    at AbiCoder.encode (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/abi-coder.js:170:15)","timestamp":"2025-07-12T11:28:56.563Z","value":"USER_TYPE_CONSUMER"}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:28.849Z"}
+{"level":"info","message":"Contract manager initialized with signer","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.394Z"}
+{"level":"info","message":"Loaded proto file: common.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.443Z"}
+{"level":"info","message":"Loaded proto file: user.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.461Z"}
+{"level":"info","message":"Loaded proto file: node.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.476Z"}
+{"level":"info","message":"Loaded proto file: health.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.478Z"}
+{"level":"info","message":"Loaded proto file: events.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.486Z"}
+{"level":"info","message":"Loaded proto file: stats.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.522Z"}
+{"level":"info","message":"Setting up gRPC services...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.523Z"}
+{"level":"info","message":"UserService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.524Z"}
+{"level":"info","message":"StatsService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.525Z"}
+{"level":"info","message":"All gRPC services configured successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.525Z"}
+{"level":"info","message":"Initializing QuikDB gRPC server...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.526Z"}
+{"level":"info","message":"Loaded deployment addresses from: /Users/mac/Documents/2025/quikdb-nodes-contract/smart-contract/deployments/latest.json","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.527Z"}
+{"level":"info","message":"Contract addresses validated successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.538Z"}
+{"level":"info","message":"Contract instances created successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.682Z"}
+{"level":"info","message":"Contract manager initialized successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.682Z"}
+{"level":"info","message":"Contract manager initialized","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.682Z"}
+{"level":"info","message":"Metrics collection started","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.683Z"}
+{"level":"info","message":"Metrics server listening on port 3001","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.691Z"}
+{"level":"info","message":"Health check: http://localhost:3001/health","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.691Z"}
+{"level":"info","message":"Metrics endpoint: http://localhost:3001/metrics","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:32.692Z"}
+{"facadeStats":{"allocations":"0","nodes":"0","users":"2"},"level":"info","message":"Contract connectivity test passed","nodeCount":"0","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:35.431Z","userCount":"2"}
+{"level":"info","message":"Contract connectivity verified","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:35.432Z"}
+{"level":"info","message":"QuikDB gRPC server listening on 0.0.0.0:50051 (port 50051)","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:35.437Z"}
+{"blockchain":{"chainId":4202,"network":"lisk-sepolia","rpcUrl":"https://rpc.sepolia-api.lisk.com"},"cache":{"enabled":true,"ttl":300},"level":"info","message":"Server configuration:","monitoring":{"enabled":true,"port":3001},"service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:35.437Z"}
+{"level":"info","message":"Getting user stats","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:52.154Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:30:52.717Z","typeFilter":"USER_TYPE_CONSUMER","verifiedOnly":false}
+{"argument":"value","code":"INVALID_ARGUMENT","level":"error","message":"Failed to stream users: underflow (argument=\"value\", value=NaN, code=INVALID_ARGUMENT, version=6.15.0)","service":"quikdb-grpc-server","shortMessage":"underflow","stack":"TypeError: underflow (argument=\"value\", value=NaN, code=INVALID_ARGUMENT, version=6.15.0)\n    at makeError (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/utils/errors.js:130:21)\n    at assert (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/utils/errors.js:157:15)\n    at assertArgument (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/utils/errors.js:169:5)\n    at getBigInt (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/utils/maths.js:79:44)\n    at NumberCoder.encode (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/coders/number.js:25:46)\n    at /Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/coders/array.js:47:19\n    at Array.forEach (<anonymous>)\n    at pack (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/coders/array.js:33:12)\n    at TupleCoder.encode (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/coders/tuple.js:60:36)\n    at AbiCoder.encode (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/abi-coder.js:170:15)","timestamp":"2025-07-12T11:30:52.719Z","value":null}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:04.444Z"}
+{"level":"info","message":"Contract manager initialized with signer","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:07.843Z"}
+{"level":"info","message":"Loaded proto file: common.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:07.893Z"}
+{"level":"info","message":"Loaded proto file: user.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:07.910Z"}
+{"level":"info","message":"Loaded proto file: node.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:07.946Z"}
+{"level":"info","message":"Loaded proto file: health.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:07.995Z"}
+{"level":"info","message":"Loaded proto file: events.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:08.008Z"}
+{"level":"info","message":"Loaded proto file: stats.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:08.055Z"}
+{"level":"info","message":"Setting up gRPC services...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:08.055Z"}
+{"level":"info","message":"UserService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:08.056Z"}
+{"level":"info","message":"StatsService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:08.056Z"}
+{"level":"info","message":"All gRPC services configured successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:08.056Z"}
+{"level":"info","message":"Initializing QuikDB gRPC server...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:08.057Z"}
+{"level":"info","message":"Loaded deployment addresses from: /Users/mac/Documents/2025/quikdb-nodes-contract/smart-contract/deployments/latest.json","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:08.057Z"}
+{"level":"info","message":"Contract addresses validated successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:08.090Z"}
+{"level":"info","message":"Contract instances created successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:08.129Z"}
+{"level":"info","message":"Contract manager initialized successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:08.129Z"}
+{"level":"info","message":"Contract manager initialized","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:08.129Z"}
+{"level":"info","message":"Metrics collection started","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:08.130Z"}
+{"level":"info","message":"Metrics server listening on port 3001","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:08.142Z"}
+{"level":"info","message":"Health check: http://localhost:3001/health","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:08.142Z"}
+{"level":"info","message":"Metrics endpoint: http://localhost:3001/metrics","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:08.142Z"}
+{"facadeStats":{"allocations":"0","nodes":"0","users":"2"},"level":"info","message":"Contract connectivity test passed","nodeCount":"0","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:09.745Z","userCount":"2"}
+{"level":"info","message":"Contract connectivity verified","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:09.746Z"}
+{"level":"info","message":"QuikDB gRPC server listening on 0.0.0.0:50051 (port 50051)","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:09.751Z"}
+{"blockchain":{"chainId":4202,"network":"lisk-sepolia","rpcUrl":"https://rpc.sepolia-api.lisk.com"},"cache":{"enabled":true,"ttl":300},"level":"info","message":"Server configuration:","monitoring":{"enabled":true,"port":3001},"service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:09.752Z"}
+{"level":"info","message":"Getting user stats","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:23.757Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"DEBUG: Received request parameters","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:24.308Z","typeFilter":"USER_TYPE_CONSUMER","typeFilterType":"string","verifiedOnly":false}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:24.308Z","typeFilter":"USER_TYPE_CONSUMER","verifiedOnly":false}
+{"level":"info","message":"Getting users of type 0","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:24.308Z"}
+{"level":"info","message":"Found 0 users to stream","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:24.807Z"}
+{"level":"info","message":"Finished streaming 0 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:32:24.807Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"DEBUG: Received request parameters","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:33:08.085Z","typeFilter":"USER_TYPE_HYBRID","typeFilterType":"string","verifiedOnly":false}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:33:08.085Z","typeFilter":"USER_TYPE_HYBRID","verifiedOnly":false}
+{"level":"info","message":"Getting users of type NaN","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:33:08.085Z"}
+{"argument":"value","code":"INVALID_ARGUMENT","level":"error","message":"Failed to stream users: underflow (argument=\"value\", value=NaN, code=INVALID_ARGUMENT, version=6.15.0)","service":"quikdb-grpc-server","shortMessage":"underflow","stack":"TypeError: underflow (argument=\"value\", value=NaN, code=INVALID_ARGUMENT, version=6.15.0)\n    at makeError (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/utils/errors.js:130:21)\n    at assert (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/utils/errors.js:157:15)\n    at assertArgument (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/utils/errors.js:169:5)\n    at getBigInt (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/utils/maths.js:79:44)\n    at NumberCoder.encode (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/coders/number.js:25:46)\n    at /Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/coders/array.js:47:19\n    at Array.forEach (<anonymous>)\n    at pack (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/coders/array.js:33:12)\n    at TupleCoder.encode (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/coders/tuple.js:60:36)\n    at AbiCoder.encode (/Users/mac/Documents/2025/quikdb-nodes-contract/grpc-server/node_modules/ethers/lib.commonjs/abi/abi-coder.js:170:15)","timestamp":"2025-07-12T11:33:08.086Z","value":null}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:06.436Z"}
+{"level":"info","message":"Contract manager initialized with signer","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.242Z"}
+{"level":"info","message":"Loaded proto file: common.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.294Z"}
+{"level":"info","message":"Loaded proto file: user.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.312Z"}
+{"level":"info","message":"Loaded proto file: node.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.371Z"}
+{"level":"info","message":"Loaded proto file: health.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.378Z"}
+{"level":"info","message":"Loaded proto file: events.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.382Z"}
+{"level":"info","message":"Loaded proto file: stats.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.462Z"}
+{"level":"info","message":"Setting up gRPC services...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.463Z"}
+{"level":"info","message":"UserService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.463Z"}
+{"level":"info","message":"StatsService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.464Z"}
+{"level":"info","message":"All gRPC services configured successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.467Z"}
+{"level":"info","message":"Initializing QuikDB gRPC server...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.468Z"}
+{"level":"info","message":"Loaded deployment addresses from: /Users/mac/Documents/2025/quikdb-nodes-contract/smart-contract/deployments/latest.json","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.469Z"}
+{"level":"info","message":"Contract addresses validated successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.479Z"}
+{"level":"info","message":"Contract instances created successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.623Z"}
+{"level":"info","message":"Contract manager initialized successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.623Z"}
+{"level":"info","message":"Contract manager initialized","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.623Z"}
+{"level":"info","message":"Metrics collection started","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.624Z"}
+{"level":"info","message":"Metrics server listening on port 3001","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.634Z"}
+{"level":"info","message":"Health check: http://localhost:3001/health","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.635Z"}
+{"level":"info","message":"Metrics endpoint: http://localhost:3001/metrics","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:10.635Z"}
+{"facadeStats":{"allocations":"0","nodes":"0","users":"2"},"level":"info","message":"Contract connectivity test passed","nodeCount":"0","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:12.226Z","userCount":"2"}
+{"level":"info","message":"Contract connectivity verified","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:12.226Z"}
+{"level":"info","message":"QuikDB gRPC server listening on 0.0.0.0:50051 (port 50051)","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:12.231Z"}
+{"blockchain":{"chainId":4202,"network":"lisk-sepolia","rpcUrl":"https://rpc.sepolia-api.lisk.com"},"cache":{"enabled":true,"ttl":300},"level":"info","message":"Server configuration:","monitoring":{"enabled":true,"port":3001},"service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:12.231Z"}
+{"level":"info","message":"Getting user stats","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:29.484Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"DEBUG: Received request parameters","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:30.005Z","typeFilter":"USER_TYPE_HYBRID","typeFilterType":"string","verifiedOnly":false}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:30.005Z","typeFilter":"USER_TYPE_HYBRID","verifiedOnly":false}
+{"level":"info","message":"Getting users of type 2","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:30.005Z"}
+{"level":"info","message":"Found 2 users to stream","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:30.497Z"}
+{"level":"info","message":"Finished streaming 0 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:34:31.899Z"}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:49.242Z"}
+{"level":"info","message":"Contract manager initialized with signer","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.029Z"}
+{"level":"info","message":"Loaded proto file: common.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.086Z"}
+{"level":"info","message":"Loaded proto file: user.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.105Z"}
+{"level":"info","message":"Loaded proto file: node.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.139Z"}
+{"level":"info","message":"Loaded proto file: health.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.142Z"}
+{"level":"info","message":"Loaded proto file: events.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.147Z"}
+{"level":"info","message":"Loaded proto file: stats.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.183Z"}
+{"level":"info","message":"Setting up gRPC services...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.187Z"}
+{"level":"info","message":"UserService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.187Z"}
+{"level":"info","message":"StatsService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.187Z"}
+{"level":"info","message":"All gRPC services configured successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.188Z"}
+{"level":"info","message":"Initializing QuikDB gRPC server...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.189Z"}
+{"level":"info","message":"Loaded deployment addresses from: /Users/mac/Documents/2025/quikdb-nodes-contract/smart-contract/deployments/latest.json","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.190Z"}
+{"level":"info","message":"Contract addresses validated successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.215Z"}
+{"level":"info","message":"Contract instances created successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.273Z"}
+{"level":"info","message":"Contract manager initialized successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.273Z"}
+{"level":"info","message":"Contract manager initialized","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.273Z"}
+{"level":"info","message":"Metrics collection started","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.273Z"}
+{"level":"info","message":"Metrics server listening on port 3001","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.284Z"}
+{"level":"info","message":"Health check: http://localhost:3001/health","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.284Z"}
+{"level":"info","message":"Metrics endpoint: http://localhost:3001/metrics","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:53.286Z"}
+{"facadeStats":{"allocations":"0","nodes":"0","users":"2"},"level":"info","message":"Contract connectivity test passed","nodeCount":"0","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:55.108Z","userCount":"2"}
+{"level":"info","message":"Contract connectivity verified","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:55.108Z"}
+{"level":"info","message":"QuikDB gRPC server listening on 0.0.0.0:50051 (port 50051)","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:55.114Z"}
+{"blockchain":{"chainId":4202,"network":"lisk-sepolia","rpcUrl":"https://rpc.sepolia-api.lisk.com"},"cache":{"enabled":true,"ttl":300},"level":"info","message":"Server configuration:","monitoring":{"enabled":true,"port":3001},"service":"quikdb-grpc-server","timestamp":"2025-07-12T11:35:55.114Z"}
+{"level":"info","message":"Getting user stats","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:09.690Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"DEBUG: Received request parameters","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:10.357Z","typeFilter":"USER_TYPE_HYBRID","typeFilterType":"string","verifiedOnly":false}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:10.358Z","typeFilter":"USER_TYPE_HYBRID","verifiedOnly":false}
+{"level":"info","message":"Getting users of type 2","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:10.358Z"}
+{"level":"info","message":"Found 2 users to stream","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:10.848Z"}
+{"level":"info","message":"Processing user 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:10.849Z"}
+{"isActive":true,"isVerified":false,"level":"info","message":"User profile for 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:11.374Z","userType":"2"}
+{"level":"info","message":"User 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA filtered out by type: expected 2, got 2","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:11.374Z"}
+{"level":"info","message":"Processing user 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:11.374Z"}
+{"isActive":true,"isVerified":false,"level":"info","message":"User profile for 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:11.842Z","userType":"2"}
+{"level":"info","message":"User 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474 filtered out by type: expected 2, got 2","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:11.842Z"}
+{"level":"info","message":"Finished streaming 0 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:11.853Z"}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:46.514Z"}
+{"level":"info","message":"Contract manager initialized with signer","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.432Z"}
+{"level":"info","message":"Loaded proto file: common.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.573Z"}
+{"level":"info","message":"Loaded proto file: user.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.610Z"}
+{"level":"info","message":"Loaded proto file: node.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.644Z"}
+{"level":"info","message":"Loaded proto file: health.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.646Z"}
+{"level":"info","message":"Loaded proto file: events.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.657Z"}
+{"level":"info","message":"Loaded proto file: stats.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.700Z"}
+{"level":"info","message":"Setting up gRPC services...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.702Z"}
+{"level":"info","message":"UserService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.706Z"}
+{"level":"info","message":"StatsService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.708Z"}
+{"level":"info","message":"All gRPC services configured successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.709Z"}
+{"level":"info","message":"Initializing QuikDB gRPC server...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.710Z"}
+{"level":"info","message":"Loaded deployment addresses from: /Users/mac/Documents/2025/quikdb-nodes-contract/smart-contract/deployments/latest.json","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.712Z"}
+{"level":"info","message":"Contract addresses validated successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.725Z"}
+{"level":"info","message":"Contract instances created successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.828Z"}
+{"level":"info","message":"Contract manager initialized successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.829Z"}
+{"level":"info","message":"Contract manager initialized","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.830Z"}
+{"level":"info","message":"Metrics collection started","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.830Z"}
+{"level":"info","message":"Metrics server listening on port 3001","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.864Z"}
+{"level":"info","message":"Health check: http://localhost:3001/health","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.865Z"}
+{"level":"info","message":"Metrics endpoint: http://localhost:3001/metrics","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:50.865Z"}
+{"facadeStats":{"allocations":"0","nodes":"0","users":"2"},"level":"info","message":"Contract connectivity test passed","nodeCount":"0","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:52.615Z","userCount":"2"}
+{"level":"info","message":"Contract connectivity verified","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:52.615Z"}
+{"level":"info","message":"QuikDB gRPC server listening on 0.0.0.0:50051 (port 50051)","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:52.622Z"}
+{"blockchain":{"chainId":4202,"network":"lisk-sepolia","rpcUrl":"https://rpc.sepolia-api.lisk.com"},"cache":{"enabled":true,"ttl":300},"level":"info","message":"Server configuration:","monitoring":{"enabled":true,"port":3001},"service":"quikdb-grpc-server","timestamp":"2025-07-12T11:36:52.623Z"}
+{"level":"info","message":"Getting user stats","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:07.713Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"DEBUG: Received request parameters","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:08.317Z","typeFilter":"USER_TYPE_HYBRID","typeFilterType":"string","verifiedOnly":false}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:08.317Z","typeFilter":"USER_TYPE_HYBRID","verifiedOnly":false}
+{"level":"info","message":"Getting users of type 2","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:08.317Z"}
+{"level":"info","message":"Found 2 users to stream","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:08.843Z"}
+{"level":"info","message":"Processing user 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:08.844Z"}
+{"actualTypeFilter":2,"actualTypeFilterType":"number","isActive":true,"isVerified":false,"level":"info","message":"User profile for 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:09.333Z","userType":"2","userTypeType":"bigint"}
+{"level":"info","message":"Processing user 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:09.334Z"}
+{"actualTypeFilter":2,"actualTypeFilterType":"number","isActive":true,"isVerified":false,"level":"info","message":"User profile for 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:09.789Z","userType":"2","userTypeType":"bigint"}
+{"level":"info","message":"Finished streaming 2 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:09.801Z"}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:52.549Z"}
+{"level":"info","message":"Contract manager initialized with signer","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:54.912Z"}
+{"level":"info","message":"Loaded proto file: common.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:54.970Z"}
+{"level":"info","message":"Loaded proto file: user.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:55.009Z"}
+{"level":"info","message":"Loaded proto file: node.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:55.051Z"}
+{"level":"info","message":"Loaded proto file: health.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:55.053Z"}
+{"level":"info","message":"Loaded proto file: events.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:55.075Z"}
+{"level":"info","message":"Loaded proto file: stats.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:55.137Z"}
+{"level":"info","message":"Setting up gRPC services...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:55.138Z"}
+{"level":"info","message":"UserService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:55.141Z"}
+{"level":"info","message":"StatsService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:55.141Z"}
+{"level":"info","message":"All gRPC services configured successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:55.143Z"}
+{"level":"info","message":"Initializing QuikDB gRPC server...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:55.168Z"}
+{"level":"info","message":"Loaded deployment addresses from: /Users/mac/Documents/2025/quikdb-nodes-contract/smart-contract/deployments/latest.json","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:55.188Z"}
+{"level":"info","message":"Contract addresses validated successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:55.193Z"}
+{"level":"info","message":"Contract instances created successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:55.263Z"}
+{"level":"info","message":"Contract manager initialized successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:55.264Z"}
+{"level":"info","message":"Contract manager initialized","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:55.264Z"}
+{"level":"info","message":"Metrics collection started","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:55.264Z"}
+{"level":"info","message":"Metrics server listening on port 3001","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:55.280Z"}
+{"level":"info","message":"Health check: http://localhost:3001/health","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:55.281Z"}
+{"level":"info","message":"Metrics endpoint: http://localhost:3001/metrics","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:55.282Z"}
+{"facadeStats":{"allocations":"0","nodes":"0","users":"2"},"level":"info","message":"Contract connectivity test passed","nodeCount":"0","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:56.797Z","userCount":"2"}
+{"level":"info","message":"Contract connectivity verified","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:56.797Z"}
+{"level":"info","message":"QuikDB gRPC server listening on 0.0.0.0:50051 (port 50051)","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:56.802Z"}
+{"blockchain":{"chainId":4202,"network":"lisk-sepolia","rpcUrl":"https://rpc.sepolia-api.lisk.com"},"cache":{"enabled":true,"ttl":300},"level":"info","message":"Server configuration:","monitoring":{"enabled":true,"port":3001},"service":"quikdb-grpc-server","timestamp":"2025-07-12T11:37:56.802Z"}
+{"level":"info","message":"Getting user stats","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:38:12.188Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"DEBUG: Received request parameters","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:38:12.811Z","typeFilter":"USER_TYPE_HYBRID","typeFilterType":"string","verifiedOnly":false}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:38:12.813Z","typeFilter":"USER_TYPE_HYBRID","verifiedOnly":false}
+{"level":"info","message":"Getting users of type 2","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:38:12.814Z"}
+{"level":"info","message":"Found 2 users to stream","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:38:13.300Z"}
+{"level":"info","message":"Processing user 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:38:13.300Z"}
+{"actualTypeFilter":2,"actualTypeFilterType":"number","isActive":true,"isVerified":false,"level":"info","message":"User profile for 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:38:13.840Z","userType":"2","userTypeType":"bigint"}
+{"level":"info","message":"Processing user 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:38:13.841Z"}
+{"actualTypeFilter":2,"actualTypeFilterType":"number","isActive":true,"isVerified":false,"level":"info","message":"User profile for 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:38:14.352Z","userType":"2","userTypeType":"bigint"}
+{"level":"info","message":"Finished streaming 2 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:38:14.371Z"}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:22.428Z"}
+{"level":"info","message":"Contract manager initialized with signer","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.461Z"}
+{"level":"info","message":"Loaded proto file: common.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.515Z"}
+{"level":"info","message":"Loaded proto file: user.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.532Z"}
+{"level":"info","message":"Loaded proto file: node.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.555Z"}
+{"level":"info","message":"Loaded proto file: health.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.558Z"}
+{"level":"info","message":"Loaded proto file: events.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.575Z"}
+{"level":"info","message":"Loaded proto file: stats.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.600Z"}
+{"level":"info","message":"Setting up gRPC services...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.601Z"}
+{"level":"info","message":"UserService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.602Z"}
+{"level":"info","message":"StatsService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.608Z"}
+{"level":"info","message":"All gRPC services configured successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.609Z"}
+{"level":"info","message":"Initializing QuikDB gRPC server...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.610Z"}
+{"level":"info","message":"Loaded deployment addresses from: /Users/mac/Documents/2025/quikdb-nodes-contract/smart-contract/deployments/latest.json","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.611Z"}
+{"level":"info","message":"Contract addresses validated successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.628Z"}
+{"level":"info","message":"Contract instances created successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.672Z"}
+{"level":"info","message":"Contract manager initialized successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.673Z"}
+{"level":"info","message":"Contract manager initialized","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.673Z"}
+{"level":"info","message":"Metrics collection started","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.674Z"}
+{"level":"info","message":"Metrics server listening on port 3001","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.683Z"}
+{"level":"info","message":"Health check: http://localhost:3001/health","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.684Z"}
+{"level":"info","message":"Metrics endpoint: http://localhost:3001/metrics","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:26.684Z"}
+{"facadeStats":{"allocations":"0","nodes":"0","users":"2"},"level":"info","message":"Contract connectivity test passed","nodeCount":"0","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:28.247Z","userCount":"2"}
+{"level":"info","message":"Contract connectivity verified","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:28.247Z"}
+{"level":"info","message":"QuikDB gRPC server listening on 0.0.0.0:50051 (port 50051)","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:28.253Z"}
+{"blockchain":{"chainId":4202,"network":"lisk-sepolia","rpcUrl":"https://rpc.sepolia-api.lisk.com"},"cache":{"enabled":true,"ttl":300},"level":"info","message":"Server configuration:","monitoring":{"enabled":true,"port":3001},"service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:28.255Z"}
+{"level":"info","message":"Getting user stats","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:43.203Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"DEBUG: Received request parameters","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:43.867Z","typeFilter":"USER_TYPE_HYBRID","typeFilterType":"string","verifiedOnly":false}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:43.868Z","typeFilter":"USER_TYPE_HYBRID","verifiedOnly":false}
+{"level":"info","message":"Getting users of type 2","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:43.868Z"}
+{"level":"info","message":"Found 2 users to stream","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:44.362Z"}
+{"level":"info","message":"Processing user 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:44.363Z"}
+{"actualTypeFilter":2,"actualTypeFilterType":"number","isActive":true,"isVerified":false,"level":"info","message":"User profile for 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:44.843Z","userType":"2","userTypeType":"bigint"}
+{"created_at":0,"is_active":true,"is_verified":false,"level":"info","message":"Adding user 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA to batch","profile_hash":"0x9876543210abcdef9876543210abcdef9876543210abcdef9876543210abcdef","reputation_score":"5000","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:44.844Z","total_earned":"0","total_spent":"0","updated_at":1752317224,"user_type":"2"}
+{"level":"info","message":"Processing user 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:44.845Z"}
+{"actualTypeFilter":2,"actualTypeFilterType":"number","isActive":true,"isVerified":false,"level":"info","message":"User profile for 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:45.443Z","userType":"2","userTypeType":"bigint"}
+{"created_at":0,"is_active":true,"is_verified":false,"level":"info","message":"Adding user 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474 to batch","profile_hash":"0x3508905298109c1c1e2c93bbe3a0491ee882bf99f2b3a109222a555b0113d3b1","reputation_score":"5000","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:45.444Z","total_earned":"0","total_spent":"0","updated_at":1752318062,"user_type":"2"}
+{"level":"info","message":"Batch complete: 2 users in batch, 2 total processed","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:45.444Z"}
+{"isFinalBatch":true,"level":"info","message":"Sending batch response:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:45.444Z","totalSent":2,"usersCount":2}
+{"level":"info","message":"Finished streaming 2 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:39:45.456Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"DEBUG: Received request parameters","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:12.845Z","typeFilter":"USER_TYPE_HYBRID","typeFilterType":"string","verifiedOnly":false}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:12.845Z","typeFilter":"USER_TYPE_HYBRID","verifiedOnly":false}
+{"level":"info","message":"Getting users of type 2","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:12.845Z"}
+{"level":"info","message":"Found 2 users to stream","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:13.361Z"}
+{"level":"info","message":"Processing user 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:13.362Z"}
+{"actualTypeFilter":2,"actualTypeFilterType":"number","isActive":true,"isVerified":false,"level":"info","message":"User profile for 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:13.893Z","userType":"2","userTypeType":"bigint"}
+{"created_at":0,"is_active":true,"is_verified":false,"level":"info","message":"Adding user 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA to batch","profile_hash":"0x9876543210abcdef9876543210abcdef9876543210abcdef9876543210abcdef","reputation_score":"5000","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:13.894Z","total_earned":"0","total_spent":"0","updated_at":1752317224,"user_type":"2"}
+{"level":"info","message":"Processing user 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:13.894Z"}
+{"actualTypeFilter":2,"actualTypeFilterType":"number","isActive":true,"isVerified":false,"level":"info","message":"User profile for 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:14.393Z","userType":"2","userTypeType":"bigint"}
+{"created_at":0,"is_active":true,"is_verified":false,"level":"info","message":"Adding user 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474 to batch","profile_hash":"0x3508905298109c1c1e2c93bbe3a0491ee882bf99f2b3a109222a555b0113d3b1","reputation_score":"5000","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:14.394Z","total_earned":"0","total_spent":"0","updated_at":1752318062,"user_type":"2"}
+{"level":"info","message":"Batch complete: 2 users in batch, 2 total processed","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:14.394Z"}
+{"isFinalBatch":true,"level":"info","message":"Sending batch response:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:14.394Z","totalSent":2,"usersCount":2}
+{"level":"info","message":"Finished streaming 2 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:14.405Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"DEBUG: Received request parameters","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:37.811Z","typeFilter":"USER_TYPE_HYBRID","typeFilterType":"string","verifiedOnly":false}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:37.811Z","typeFilter":"USER_TYPE_HYBRID","verifiedOnly":false}
+{"level":"info","message":"Getting users of type 2","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:37.812Z"}
+{"level":"info","message":"Found 2 users to stream","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:38.358Z"}
+{"level":"info","message":"Processing user 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:38.359Z"}
+{"actualTypeFilter":2,"actualTypeFilterType":"number","isActive":true,"isVerified":false,"level":"info","message":"User profile for 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:38.954Z","userType":"2","userTypeType":"bigint"}
+{"created_at":0,"is_active":true,"is_verified":false,"level":"info","message":"Adding user 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA to batch","profile_hash":"0x9876543210abcdef9876543210abcdef9876543210abcdef9876543210abcdef","reputation_score":"5000","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:38.954Z","total_earned":"0","total_spent":"0","updated_at":1752317224,"user_type":"2"}
+{"level":"info","message":"Processing user 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:38.954Z"}
+{"actualTypeFilter":2,"actualTypeFilterType":"number","isActive":true,"isVerified":false,"level":"info","message":"User profile for 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:39.568Z","userType":"2","userTypeType":"bigint"}
+{"created_at":0,"is_active":true,"is_verified":false,"level":"info","message":"Adding user 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474 to batch","profile_hash":"0x3508905298109c1c1e2c93bbe3a0491ee882bf99f2b3a109222a555b0113d3b1","reputation_score":"5000","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:39.568Z","total_earned":"0","total_spent":"0","updated_at":1752318062,"user_type":"2"}
+{"level":"info","message":"Batch complete: 2 users in batch, 2 total processed","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:39.568Z"}
+{"isFinalBatch":true,"level":"info","message":"Sending batch response:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:39.568Z","totalSent":2,"usersCount":2}
+{"level":"info","message":"Finished streaming 2 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:42:39.580Z"}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:43:44.770Z"}
+{"level":"info","message":"Contract manager initialized with signer","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.037Z"}
+{"level":"info","message":"Loaded proto file: common.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.087Z"}
+{"level":"info","message":"Loaded proto file: user.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.102Z"}
+{"level":"info","message":"Loaded proto file: node.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.111Z"}
+{"level":"info","message":"Loaded proto file: health.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.113Z"}
+{"level":"info","message":"Loaded proto file: events.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.115Z"}
+{"level":"info","message":"Loaded proto file: stats.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.128Z"}
+{"level":"info","message":"Setting up gRPC services...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.128Z"}
+{"level":"info","message":"UserService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.129Z"}
+{"level":"info","message":"StatsService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.129Z"}
+{"level":"info","message":"All gRPC services configured successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.130Z"}
+{"level":"info","message":"Initializing QuikDB gRPC server...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.130Z"}
+{"level":"info","message":"Loaded deployment addresses from: /Users/mac/Documents/2025/quikdb-nodes-contract/smart-contract/deployments/latest.json","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.131Z"}
+{"level":"info","message":"Contract addresses validated successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.135Z"}
+{"level":"info","message":"Contract instances created successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.189Z"}
+{"level":"info","message":"Contract manager initialized successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.189Z"}
+{"level":"info","message":"Contract manager initialized","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.189Z"}
+{"level":"info","message":"Metrics collection started","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.189Z"}
+{"level":"info","message":"Metrics server listening on port 3001","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.201Z"}
+{"level":"info","message":"Health check: http://localhost:3001/health","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.201Z"}
+{"level":"info","message":"Metrics endpoint: http://localhost:3001/metrics","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:20.201Z"}
+{"facadeStats":{"allocations":"0","nodes":"0","users":"2"},"level":"info","message":"Contract connectivity test passed","nodeCount":"0","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:22.013Z","userCount":"2"}
+{"level":"info","message":"Contract connectivity verified","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:22.013Z"}
+{"level":"info","message":"QuikDB gRPC server listening on 0.0.0.0:50051 (port 50051)","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:22.020Z"}
+{"blockchain":{"chainId":4202,"network":"lisk-sepolia","rpcUrl":"https://rpc.sepolia-api.lisk.com"},"cache":{"enabled":true,"ttl":300},"level":"info","message":"Server configuration:","monitoring":{"enabled":true,"port":3001},"service":"quikdb-grpc-server","timestamp":"2025-07-12T11:44:22.021Z"}
+{"level":"info","message":"Getting user stats","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:10.504Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"DEBUG: Received request parameters","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:11.115Z","typeFilter":"USER_TYPE_HYBRID","typeFilterType":"string","verifiedOnly":false}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:11.116Z","typeFilter":"USER_TYPE_HYBRID","verifiedOnly":false}
+{"level":"info","message":"Getting users of type 2","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:11.116Z"}
+{"level":"info","message":"Found 2 users to stream","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:11.621Z"}
+{"level":"info","message":"Processing user 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:11.621Z"}
+{"actualTypeFilter":2,"actualTypeFilterType":"number","isActive":true,"isVerified":false,"level":"info","message":"User profile for 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:12.114Z","userType":"2","userTypeType":"bigint"}
+{"created_at":0,"is_active":true,"is_verified":false,"level":"info","message":"Adding user 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA to batch","profile_hash":"0x9876543210abcdef9876543210abcdef9876543210abcdef9876543210abcdef","reputation_score":"5000","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:12.115Z","total_earned":"0","total_spent":"0","updated_at":1752317224,"user_type":"2"}
+{"level":"info","message":"Processing user 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:12.115Z"}
+{"actualTypeFilter":2,"actualTypeFilterType":"number","isActive":true,"isVerified":false,"level":"info","message":"User profile for 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:12.637Z","userType":"2","userTypeType":"bigint"}
+{"created_at":0,"is_active":true,"is_verified":false,"level":"info","message":"Adding user 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474 to batch","profile_hash":"0x3508905298109c1c1e2c93bbe3a0491ee882bf99f2b3a109222a555b0113d3b1","reputation_score":"5000","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:12.638Z","total_earned":"0","total_spent":"0","updated_at":1752318062,"user_type":"2"}
+{"level":"info","message":"Batch complete: 2 users in batch, 2 total processed","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:12.638Z"}
+{"isFinalBatch":true,"level":"info","message":"Sending batch response:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:12.638Z","totalSent":2,"usersCount":2}
+{"level":"info","message":"Finished streaming 2 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:12.652Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"DEBUG: Received request parameters","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:43.352Z","typeFilter":"USER_TYPE_HYBRID","typeFilterType":"string","verifiedOnly":false}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:43.352Z","typeFilter":"USER_TYPE_HYBRID","verifiedOnly":false}
+{"level":"info","message":"Getting users of type 2","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:43.352Z"}
+{"level":"info","message":"Found 2 users to stream","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:43.916Z"}
+{"level":"info","message":"Processing user 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:43.916Z"}
+{"actualTypeFilter":2,"actualTypeFilterType":"number","isActive":true,"isVerified":false,"level":"info","message":"User profile for 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:44.454Z","userType":"2","userTypeType":"bigint"}
+{"created_at":0,"is_active":true,"is_verified":false,"level":"info","message":"Adding user 0x2308f94FA9Af7E8467a7CaA4B1d73a4d083013eA to batch","profile_hash":"0x9876543210abcdef9876543210abcdef9876543210abcdef9876543210abcdef","reputation_score":"5000","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:44.455Z","total_earned":"0","total_spent":"0","updated_at":1752317224,"user_type":"2"}
+{"level":"info","message":"Processing user 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:44.455Z"}
+{"actualTypeFilter":2,"actualTypeFilterType":"number","isActive":true,"isVerified":false,"level":"info","message":"User profile for 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:44.978Z","userType":"2","userTypeType":"bigint"}
+{"created_at":0,"is_active":true,"is_verified":false,"level":"info","message":"Adding user 0x6F1b6ac175E2cf9436D7478E6d08E22C415eb474 to batch","profile_hash":"0x3508905298109c1c1e2c93bbe3a0491ee882bf99f2b3a109222a555b0113d3b1","reputation_score":"5000","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:44.978Z","total_earned":"0","total_spent":"0","updated_at":1752318062,"user_type":"2"}
+{"level":"info","message":"Batch complete: 2 users in batch, 2 total processed","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:44.979Z"}
+{"isFinalBatch":true,"level":"info","message":"Sending batch response:","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:44.979Z","totalSent":2,"usersCount":2}
+{"level":"info","message":"Finished streaming 2 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:45:44.990Z"}
+{"level":"info","message":"Received SIGTERM, starting graceful shutdown...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:08.147Z"}
+{"level":"info","message":"Contract manager initialized with signer","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.026Z"}
+{"level":"info","message":"Loaded proto file: common.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.073Z"}
+{"level":"info","message":"Loaded proto file: user.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.087Z"}
+{"level":"info","message":"Loaded proto file: node.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.098Z"}
+{"level":"info","message":"Loaded proto file: health.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.104Z"}
+{"level":"info","message":"Loaded proto file: events.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.113Z"}
+{"level":"info","message":"Loaded proto file: stats.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.127Z"}
+{"level":"info","message":"Setting up gRPC services...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.128Z"}
+{"level":"info","message":"UserService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.128Z"}
+{"level":"info","message":"StatsService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.130Z"}
+{"level":"info","message":"All gRPC services configured successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.130Z"}
+{"level":"info","message":"Initializing QuikDB gRPC server...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.131Z"}
+{"level":"info","message":"Loaded deployment addresses from: /Users/mac/Documents/2025/quikdb-nodes-contract/smart-contract/deployments/latest.json","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.131Z"}
+{"level":"info","message":"Contract addresses validated successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.136Z"}
+{"level":"info","message":"Contract instances created successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.190Z"}
+{"level":"info","message":"Contract manager initialized successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.191Z"}
+{"level":"info","message":"Contract manager initialized","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.191Z"}
+{"level":"info","message":"Metrics collection started","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.192Z"}
+{"level":"info","message":"Metrics server listening on port 3001","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.201Z"}
+{"level":"info","message":"Health check: http://localhost:3001/health","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.201Z"}
+{"level":"info","message":"Metrics endpoint: http://localhost:3001/metrics","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:19.201Z"}
+{"facadeStats":{"allocations":"0","nodes":"0","users":"2"},"level":"info","message":"Contract connectivity test passed","nodeCount":"0","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:20.725Z","userCount":"2"}
+{"level":"info","message":"Contract connectivity verified","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:20.725Z"}
+{"level":"info","message":"QuikDB gRPC server listening on 0.0.0.0:50051 (port 50051)","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:20.730Z"}
+{"blockchain":{"chainId":4202,"network":"lisk-sepolia","rpcUrl":"https://rpc.sepolia-api.lisk.com"},"cache":{"enabled":true,"ttl":300},"level":"info","message":"Server configuration:","monitoring":{"enabled":true,"port":3001},"service":"quikdb-grpc-server","timestamp":"2025-07-12T11:47:20.731Z"}
+{"level":"info","message":"Getting user stats","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:48:01.206Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:48:01.854Z","typeFilter":"USER_TYPE_HYBRID","verifiedOnly":false}
+{"level":"info","message":"Getting users of type 2","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:48:01.855Z"}
+{"level":"info","message":"Found 2 users to stream","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:48:02.448Z"}
+{"level":"info","message":"Finished streaming 2 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:48:03.479Z"}
+{"level":"info","message":"Contract manager initialized with signer","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.538Z"}
+{"level":"info","message":"Loaded proto file: common.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.623Z"}
+{"level":"info","message":"Loaded proto file: user.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.649Z"}
+{"level":"info","message":"Loaded proto file: node.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.659Z"}
+{"level":"info","message":"Loaded proto file: health.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.663Z"}
+{"level":"info","message":"Loaded proto file: events.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.667Z"}
+{"level":"info","message":"Loaded proto file: stats.proto","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.689Z"}
+{"level":"info","message":"Setting up gRPC services...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.690Z"}
+{"level":"info","message":"UserService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.690Z"}
+{"level":"info","message":"StatsService configured","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.690Z"}
+{"level":"info","message":"All gRPC services configured successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.690Z"}
+{"level":"info","message":"Initializing QuikDB gRPC server...","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.697Z"}
+{"level":"info","message":"Loaded deployment addresses from: /Users/mac/Documents/2025/quikdb-nodes-contract/smart-contract/deployments/latest.json","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.697Z"}
+{"level":"info","message":"Contract addresses validated successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.707Z"}
+{"level":"info","message":"Contract instances created successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.769Z"}
+{"level":"info","message":"Contract manager initialized successfully","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.769Z"}
+{"level":"info","message":"Contract manager initialized","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.769Z"}
+{"level":"info","message":"Metrics collection started","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.770Z"}
+{"level":"info","message":"Metrics server listening on port 3001","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.786Z"}
+{"level":"info","message":"Health check: http://localhost:3001/health","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.786Z"}
+{"level":"info","message":"Metrics endpoint: http://localhost:3001/metrics","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:44.787Z"}
+{"facadeStats":{"allocations":"0","nodes":"0","users":"2"},"level":"info","message":"Contract connectivity test passed","nodeCount":"0","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:46.322Z","userCount":"2"}
+{"level":"info","message":"Contract connectivity verified","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:46.322Z"}
+{"level":"info","message":"QuikDB gRPC server listening on 0.0.0.0:50051 (port 50051)","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:46.327Z"}
+{"blockchain":{"chainId":4202,"network":"lisk-sepolia","rpcUrl":"https://rpc.sepolia-api.lisk.com"},"cache":{"enabled":true,"ttl":300},"level":"info","message":"Server configuration:","monitoring":{"enabled":true,"port":3001},"service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:46.327Z"}
+{"level":"info","message":"Getting user stats","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:52:59.983Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:53:00.619Z","typeFilter":"USER_TYPE_HYBRID","verifiedOnly":false}
+{"level":"info","message":"Getting users of type 2","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:53:00.619Z"}
+{"level":"info","message":"Found 2 users to stream","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:53:01.100Z"}
+{"level":"info","message":"Finished streaming 2 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:53:02.191Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:53:12.990Z","typeFilter":"USER_TYPE_HYBRID","verifiedOnly":false}
+{"level":"info","message":"Getting users of type 2","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:53:12.990Z"}
+{"level":"info","message":"Found 2 users to stream","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:53:13.521Z"}
+{"level":"info","message":"Finished streaming 2 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:53:14.868Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:55:51.159Z","typeFilter":"USER_TYPE_HYBRID","verifiedOnly":false}
+{"level":"info","message":"Getting users of type 2","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:55:51.160Z"}
+{"level":"info","message":"Found 2 users to stream","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:55:52.100Z"}
+{"level":"info","message":"Finished streaming 2 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:55:53.138Z"}
+{"activeOnly":true,"batchSize":5,"level":"info","message":"Streaming users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:57:27.023Z","typeFilter":"USER_TYPE_HYBRID","verifiedOnly":false}
+{"level":"info","message":"Getting users of type 2","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:57:27.023Z"}
+{"level":"info","message":"Found 2 users to stream","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:57:27.560Z"}
+{"level":"info","message":"Finished streaming 2 users","service":"quikdb-grpc-server","timestamp":"2025-07-12T11:57:28.654Z"}

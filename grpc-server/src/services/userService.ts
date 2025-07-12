@@ -453,10 +453,50 @@ export class UserServiceImpl {
         activeOnly,
       });
 
-      const totalCount = await contracts.userStorage.getTotalUsers();
+      // Get users by type instead of trying to paginate all users
+      let allUserAddresses: string[] = [];
+      let actualTypeFilter: number | undefined;
+
+      if (typeFilter !== undefined && typeFilter !== null) {
+        // Get users of specific type (ensure it's a number)
+        let numericTypeFilter = typeFilter;
+
+        // Handle string enum names
+        if (typeof typeFilter === "string") {
+          const enumMap: { [key: string]: number } = {
+            USER_TYPE_CONSUMER: 0,
+            USER_TYPE_PROVIDER: 1,
+            USER_TYPE_HYBRID: 2, // Maps to MARKETPLACE_ADMIN
+            USER_TYPE_ENTERPRISE: 3, // Maps to PLATFORM_ADMIN
+          };
+          numericTypeFilter =
+            enumMap[typeFilter] !== undefined
+              ? enumMap[typeFilter]
+              : parseInt(typeFilter);
+        }
+
+        actualTypeFilter = numericTypeFilter;
+        logger.info(`Getting users of type ${numericTypeFilter}`);
+        allUserAddresses = await contracts.userStorage.getUsersByType(
+          numericTypeFilter
+        );
+      } else {
+        // Get all users by combining all types
+        const types = [0, 1, 2, 3]; // CONSUMER, PROVIDER, MARKETPLACE_ADMIN, PLATFORM_ADMIN
+        for (const type of types) {
+          const usersOfType = await contracts.userStorage.getUsersByType(type);
+          allUserAddresses = allUserAddresses.concat(usersOfType);
+        }
+      }
+
+      logger.info(`Found ${allUserAddresses.length} users to stream`);
       let processed = 0;
 
-      for (let offset = 0; offset < Number(totalCount); offset += batchSize) {
+      for (
+        let offset = 0;
+        offset < allUserAddresses.length;
+        offset += batchSize
+      ) {
         // Check if client cancelled
         if (call.cancelled || call.destroyed) {
           logger.info("Client cancelled streaming users");
@@ -466,25 +506,24 @@ export class UserServiceImpl {
         const users: any[] = [];
 
         try {
-          // Get batch of user addresses (if available in your contract)
+          // Get batch of user addresses from the collected list
           for (
             let i = offset;
-            i < Math.min(offset + batchSize, Number(totalCount));
+            i < Math.min(offset + batchSize, allUserAddresses.length);
             i++
           ) {
             try {
-              // This assumes you have a way to get user addresses
-              const userAddresses =
-                await contracts.userStorage.getUserAddresses?.(i, 1);
-              if (userAddresses && userAddresses.length > 0) {
+              const userAddress = allUserAddresses[i];
+              if (userAddress) {
                 const userProfile = await contracts.userLogic.getUserProfile(
-                  userAddresses[0]
+                  userAddress
                 );
 
-                // Apply filters
+                // Apply filters - only include users that match the type filter
                 if (
-                  typeFilter !== pb.UserType.USER_TYPE_CONSUMER &&
-                  userProfile.userType !== typeFilter
+                  actualTypeFilter !== undefined &&
+                  actualTypeFilter !== null &&
+                  Number(userProfile.userType) !== Number(actualTypeFilter)
                 ) {
                   continue;
                 }
@@ -519,8 +558,8 @@ export class UserServiceImpl {
           // Send batch if we have users
           if (users.length > 0) {
             const response = {
-              users_list: users,
-              is_final_batch: offset + batchSize >= Number(totalCount),
+              users: users,
+              is_final_batch: offset + batchSize >= allUserAddresses.length,
               total_sent: processed,
             };
 
