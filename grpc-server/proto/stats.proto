@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package quikdb.stats;
+
+import "user.proto";
+import "node.proto";
+
+option go_package = "github.com/quikdb/contracts-grpc/pkg/proto/stats";
+
+// Combined stats message
+message SystemStats {
+  quikdb.user.UserStats user_stats = 1;
+  quikdb.node.NodeStats node_stats = 2;
+  uint64 total_transactions = 3;
+  uint64 total_volume = 4; // Total transaction volume
+  uint64 last_updated = 5;
+}
+
+message GetSystemStatsRequest {}
+
+message GetSystemStatsResponse {
+  SystemStats stats = 1;
+}
+
+// Stats service
+service StatsService {
+  rpc GetSystemStats(GetSystemStatsRequest) returns (GetSystemStatsResponse);
+}

@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package quikdb.common;
+
+option go_package = "github.com/quikdb/contracts-grpc/pkg/proto/common";
+
+// Common message types
+message Empty {}
+
+message Address {
+  string address = 1;
+}
+
+message TransactionHash {
+  string hash = 1;
+}
+
+message BlockNumber {
+  uint64 number = 1;
+}
+
+message PaginationRequest {
+  uint32 page = 1;
+  uint32 limit = 2;
+  string sort_by = 3;
+  string sort_order = 4; // "asc" or "desc"
+}
+
+message PaginationResponse {
+  uint32 page = 1;
+  uint32 limit = 2;
+  uint32 total_pages = 3;
+  uint64 total_items = 4;
+  bool has_next = 5;
+  bool has_previous = 6;
+}
