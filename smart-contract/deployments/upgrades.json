@@ -389,5 +389,64 @@
     },
     "status": "success",
     "errors": []
+  },
+  {
+    "timestamp": "2025-07-11T19:10:49.342Z",
+    "deployer": "0x744cDf77b3bb55aDb00D608d9EE35C8B43d4b0C8",
+    "previousImplementations": {
+      "nodeLogic": "0xE9C91a79b5ea71F159bc9D4b9efDAA3ed6a4cd7f",
+      "userLogic": "0x78598F4f8f13B6EEae4d1FF875C5a9b1BBA9293E",
+      "resourceLogic": "0x2A9c102ee8432eac63Bb010dCa21889fd00668B3",
+      "facade": "0x6cE4052D864d73E721C9aDA7f7B9f972632654fF"
+    },
+    "newImplementations": {},
+    "proxyAddresses": {},
+    "status": "failed",
+    "errors": [
+      "Command failed: forge script scripts/QuikDBUpgrade.sol:QuikDBUpgrade --broadcast --rpc-url https://rpc.sepolia-api.lisk.com\nError: script failed: <empty revert data>\n"
+    ]
+  },
+  {
+    "timestamp": "2025-07-11T19:11:50.464Z",
+    "deployer": "0x744cDf77b3bb55aDb00D608d9EE35C8B43d4b0C8",
+    "previousImplementations": {},
+    "newImplementations": {
+      "nodeLogic": "0xfD2953d4d3a53415D344560322caA78A479d17F3",
+      "userLogic": "0xB38Aa71B6708Fc0C6b96F40fd6352771B3A3C0EA",
+      "resourceLogic": "0x97Afe9d2184D17A6aE53E37da4c2194F2fA50B46",
+      "facade": "0x5b1c2A416B08cf131c289bF44C8b0D48161f4DE0"
+    },
+    "proxyAddresses": {
+      "nodeLogic": "0x80Dba15c21260c81BEcfD3379E2d3477B6a7103E",
+      "userLogic": "0x889e3c1C98d477689d04276eBaC4729eB1604345",
+      "resourceLogic": "0x802d9E1B6d9CFb87fDc2E80307d20dD094f5f1D0",
+      "facade": "0x1973356ce1Ba206aBCE8AdF84d2C8db3f7D4Eb30"
+    },
+    "status": "success",
+    "errors": []
+  },
+  {
+    "timestamp": "2025-07-11T19:39:50.461Z",
+    "deployer": "0x744cDf77b3bb55aDb00D608d9EE35C8B43d4b0C8",
+    "previousImplementations": {
+      "nodeLogic": "0xfD2953d4d3a53415D344560322caA78A479d17F3",
+      "userLogic": "0xB38Aa71B6708Fc0C6b96F40fd6352771B3A3C0EA",
+      "resourceLogic": "0x97Afe9d2184D17A6aE53E37da4c2194F2fA50B46",
+      "facade": "0x5b1c2A416B08cf131c289bF44C8b0D48161f4DE0"
+    },
+    "newImplementations": {
+      "nodeLogic": "0x602B3e81F8Ec0787a0fbb3090e36c114f117E355",
+      "userLogic": "0xaf9988dc57991368Fe027EeEc03b40dFF67704C6",
+      "resourceLogic": "0xee770dC52681f100A87BDAC27c43d1b5cc624674",
+      "facade": "0x58C8A0765D8Ff0211C9F2cD06B5bC80443FFCA59"
+    },
+    "proxyAddresses": {
+      "nodeLogic": "0x80Dba15c21260c81BEcfD3379E2d3477B6a7103E",
+      "userLogic": "0x889e3c1C98d477689d04276eBaC4729eB1604345",
+      "resourceLogic": "0x802d9E1B6d9CFb87fDc2E80307d20dD094f5f1D0",
+      "facade": "0x1973356ce1Ba206aBCE8AdF84d2C8db3f7D4Eb30"
+    },
+    "status": "success",
+    "errors": []
   }
 ]

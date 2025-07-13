@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-07-11T18:40:51.722Z",
+  "timestamp": "2025-07-11T19:39:50.461Z",
   "deployer": "0x744cDf77b3bb55aDb00D608d9EE35C8B43d4b0C8",
   "storage": {
     "nodeStorage": "0xe267D405e9E80C1B9F97213E843b290a6b19134A",
@@ -7,10 +7,10 @@
     "resourceStorage": "0x9AAfe80D1c553a72718D14eE3A09de6fAdda2Ec0"
   },
   "implementations": {
-    "nodeLogic": "0xE9C91a79b5ea71F159bc9D4b9efDAA3ed6a4cd7f",
-    "userLogic": "0x78598F4f8f13B6EEae4d1FF875C5a9b1BBA9293E",
-    "resourceLogic": "0x2A9c102ee8432eac63Bb010dCa21889fd00668B3",
-    "facade": "0x6cE4052D864d73E721C9aDA7f7B9f972632654fF"
+    "nodeLogic": "0x602B3e81F8Ec0787a0fbb3090e36c114f117E355",
+    "userLogic": "0xaf9988dc57991368Fe027EeEc03b40dFF67704C6",
+    "resourceLogic": "0xee770dC52681f100A87BDAC27c43d1b5cc624674",
+    "facade": "0x58C8A0765D8Ff0211C9F2cD06B5bC80443FFCA59"
   },
   "proxies": {
     "proxyAdmin": "0x024575272436c24C7c3941F04f0A75f6EC7C18A5",
