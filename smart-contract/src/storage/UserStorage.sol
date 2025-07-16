@@ -364,6 +364,44 @@ contract UserStorage is AccessControl {
         emit UserDataUpdated(userAddress, "nonce");
     }
 
+    /**
+     * @dev Delete user and all associated data (logic contract only)
+     * @param userAddress Address of the user to delete
+     */
+    function deleteUser(address userAddress) external onlyLogic {
+        require(registeredUsers[userAddress], "User not registered");
+        
+        UserInfo storage user = users[userAddress];
+        
+        // Update statistics before deletion
+        if (user.profile.isActive) {
+            activeUsers--;
+        }
+        if (user.profile.isVerified) {
+            verifiedUsersCount--;
+        }
+        totalUsers--;
+        
+        // Remove from usersByType mapping
+        UserType userType = user.profile.userType;
+        address[] storage typeArray = usersByType[userType];
+        for (uint i = 0; i < typeArray.length; i++) {
+            if (typeArray[i] == userAddress) {
+                // Replace with last element and remove last
+                typeArray[i] = typeArray[typeArray.length - 1];
+                typeArray.pop();
+                break;
+            }
+        }
+        
+        // Delete all user data
+        delete users[userAddress];
+        delete registeredUsers[userAddress];
+        delete verifiedUsers[userAddress];
+        
+        emit UserDataUpdated(userAddress, "deleted");
+    }
+
     // =============================================================================
     // VIEW FUNCTIONS
     // =============================================================================
