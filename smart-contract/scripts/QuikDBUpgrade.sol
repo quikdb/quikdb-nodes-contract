@@ -18,7 +18,11 @@ import "@openzeppelin/contracts/interfaces/IERC1967.sol";
 contract QuikDBUpgrade is Script {
     
     // CREATE2 salt for new implementation contracts - increment version for upgrades
-    bytes32 public constant IMPL_SALT = keccak256("QuikDB.v2.2025.IMPL");
+    bytes32 public constant IMPL_SALT = keccak256("QuikDB.v2.2025.IMPLt");
+
+    // EIP-1967 admin slot: bytes32(uint256(keccak256("eip1967.proxy.admin")) - 1)
+    bytes32 constant ADMIN_SLOT = bytes32(uint256(keccak256("eip1967.proxy.admin")) - 1);
+
     
     // Existing deployment addresses (loaded from latest.json)
     struct ExistingDeployment {
@@ -104,83 +108,48 @@ contract QuikDBUpgrade is Script {
 
         // Get direct reference to the interface method we need to call
         bytes memory emptyData = "";
-        
-        // Upgrade NodeLogic proxy
-        console.log("Upgrading NodeLogic proxy...");
-        // We need to direct call with address.call to avoid compilation issues
-        (bool nodeSuccess, bytes memory nodeData) = address(proxyAdmin).call(
-            abi.encodeWithSignature(
-                "upgradeAndCall(address,address,bytes)", 
-                existing.nodeLogicProxy, 
-                address(newNodeLogicImpl),
-                emptyData
-            )
-        );
-        
-        if (nodeSuccess) {
-            console.log("NodeLogic proxy upgraded successfully");
-        } else {
-            string memory reason = nodeData.length > 0 ? _getRevertMsg(nodeData) : "unknown error";
-            console.log("NodeLogic upgrade failed:", reason);
-            revert(string(abi.encodePacked("NodeLogic upgrade failed: ", reason)));
+
+        // Upgrade all proxies using raw admin slot logic like NodeLogic
+        console.log("Upgrading proxies using direct admin address + upgradeAndCall...");
+
+        address[4] memory proxyAddrs;
+        address[4] memory newImpls;
+        string[4] memory labels = ["NodeLogic", "UserLogic", "ResourceLogic", "Facade"];
+
+        proxyAddrs[0] = existing.nodeLogicProxy;
+        proxyAddrs[1] = existing.userLogicProxy;
+        proxyAddrs[2] = existing.resourceLogicProxy;
+        proxyAddrs[3] = existing.facadeProxy;
+
+        newImpls[0] = address(newNodeLogicImpl);
+        newImpls[1] = address(newUserLogicImpl);
+        newImpls[2] = address(newResourceLogicImpl);
+        newImpls[3] = address(newFacadeImpl);
+
+        for (uint256 i = 0; i < proxyAddrs.length; i++) {
+            bytes32 adminRaw = vm.load(proxyAddrs[i], ADMIN_SLOT);
+            address proxyAdminFromSlot = address(uint160(uint256(adminRaw)));
+
+            console.log(string.concat("Upgrading ", labels[i], " proxy..."));
+
+            (bool success, bytes memory returnData) = proxyAdminFromSlot.call(
+                abi.encodeWithSignature(
+                    "upgradeAndCall(address,address,bytes)",
+                    proxyAddrs[i],
+                    newImpls[i],
+                    emptyData
+                )
+            );
+
+            if (success) {
+                console.log(string.concat(labels[i], " proxy upgraded successfully"));
+            } else {
+                string memory reason = returnData.length > 0 ? _getRevertMsg(returnData) : "unknown error";
+                console.log(string.concat(labels[i], " upgrade failed: "), reason);
+                revert(string(abi.encodePacked(labels[i], " upgrade failed: ", reason)));
+            }
         }
-        
-        // Upgrade UserLogic proxy
-        console.log("Upgrading UserLogic proxy...");
-        (bool userSuccess, bytes memory userData) = address(proxyAdmin).call(
-            abi.encodeWithSignature(
-                "upgradeAndCall(address,address,bytes)", 
-                existing.userLogicProxy, 
-                address(newUserLogicImpl),
-                emptyData
-            )
-        );
-        
-        if (userSuccess) {
-            console.log("UserLogic proxy upgraded successfully");
-        } else {
-            string memory reason = userData.length > 0 ? _getRevertMsg(userData) : "unknown error";
-            console.log("UserLogic upgrade failed:", reason);
-            revert(string(abi.encodePacked("UserLogic upgrade failed: ", reason)));
-        }
-        
-        // Upgrade ResourceLogic proxy
-        console.log("Upgrading ResourceLogic proxy...");
-        (bool resourceSuccess, bytes memory resourceData) = address(proxyAdmin).call(
-            abi.encodeWithSignature(
-                "upgradeAndCall(address,address,bytes)", 
-                existing.resourceLogicProxy, 
-                address(newResourceLogicImpl),
-                emptyData
-            )
-        );
-        
-        if (resourceSuccess) {
-            console.log("ResourceLogic proxy upgraded successfully");
-        } else {
-            string memory reason = resourceData.length > 0 ? _getRevertMsg(resourceData) : "unknown error";
-            console.log("ResourceLogic upgrade failed:", reason);
-            revert(string(abi.encodePacked("ResourceLogic upgrade failed: ", reason)));
-        }
-        
-        // Upgrade Facade proxy
-        console.log("Upgrading Facade proxy...");
-        (bool facadeSuccess, bytes memory facadeData) = address(proxyAdmin).call(
-            abi.encodeWithSignature(
-                "upgradeAndCall(address,address,bytes)", 
-                existing.facadeProxy, 
-                address(newFacadeImpl),
-                emptyData
-            )
-        );
-        
-        if (facadeSuccess) {
-            console.log("Facade proxy upgraded successfully");
-        } else {
-            string memory reason = facadeData.length > 0 ? _getRevertMsg(facadeData) : "unknown error";
-            console.log("Facade upgrade failed:", reason);
-            revert(string(abi.encodePacked("Facade upgrade failed: ", reason)));
-        }
+
         
         // 3. Verify upgrades
         console.log("=== VERIFYING UPGRADES ===");
@@ -221,11 +190,33 @@ contract QuikDBUpgrade is Script {
         });
     }
     
-    function verifyUpgrade(address proxy, address expectedImpl, string memory contractName) internal pure {
-        // Note: In production, you would verify the implementation address
-        // This is a simplified verification
-        console.log(string(abi.encodePacked(contractName, " upgrade verified - proxy: ")), proxy);
-        console.log(string(abi.encodePacked("  New implementation: ")), expectedImpl);
+    function verifyUpgrade(address proxy, address expectedImpl, string memory contractName) internal view {
+        // Get the implementation address from the proxy's storage
+        // Implementation slot: bytes32(uint256(keccak256('eip1967.proxy.implementation')) - 1)
+        bytes32 implementationSlot = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
+        
+        address actualImpl;
+        
+        // Use vm.load to read from the proxy's storage slot
+        bytes32 value = vm.load(proxy, implementationSlot);
+        actualImpl = address(uint160(uint256(value)));
+        
+        console.log(string(abi.encodePacked(contractName, " upgrade verification:")));
+        console.log("  Proxy:", proxy);
+        console.log("  Expected implementation:", expectedImpl);
+        console.log("  Actual implementation:", actualImpl);
+        
+        if (actualImpl == address(0)) {
+            console.log("Warning: Could not retrieve implementation address");
+            return;
+        }
+
+        if (actualImpl != expectedImpl) {
+            console.log("ERROR: Implementation address mismatch!");
+            revert(string(abi.encodePacked(contractName, " upgrade verification failed: implementation mismatch")));
+        } else {
+            console.log("SUCCESS: Implementation address matches!");
+        }
     }
     
     // Helper function to extract the revert reason from the response

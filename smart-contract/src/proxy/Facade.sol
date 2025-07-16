@@ -16,9 +16,9 @@ contract Facade is AccessControl, Pausable, ReentrancyGuard {
     uint256 public constant VERSION = 1;
 
     // Logic contract addresses
-    address public nodeLogicAddress;
-    address public userLogicAddress;
-    address public resourceLogicAddress;
+    address payable public nodeLogicAddress;
+    address payable public userLogicAddress;
+    address payable public resourceLogicAddress;
 
     // Roles
     bytes32 public constant ADMIN_ROLE = DEFAULT_ADMIN_ROLE;
@@ -49,9 +49,9 @@ contract Facade is AccessControl, Pausable, ReentrancyGuard {
         _grantRole(UPGRADER_ROLE, _admin);
 
         // Initialize logic contracts
-        nodeLogicAddress = _nodeLogic;
-        userLogicAddress = _userLogic;
-        resourceLogicAddress = _resourceLogic;
+        nodeLogicAddress = payable(_nodeLogic);
+        userLogicAddress = payable(_userLogic);
+        resourceLogicAddress = payable(_resourceLogic);
     }
 
     /**
@@ -65,11 +65,11 @@ contract Facade is AccessControl, Pausable, ReentrancyGuard {
         bytes32 typeHash = keccak256(bytes(contractType));
 
         if (typeHash == keccak256(bytes("node"))) {
-            nodeLogicAddress = newAddress;
+            nodeLogicAddress = payable(newAddress);
         } else if (typeHash == keccak256(bytes("user"))) {
-            userLogicAddress = newAddress;
+            userLogicAddress = payable(newAddress);
         } else if (typeHash == keccak256(bytes("resource"))) {
-            resourceLogicAddress = newAddress;
+            resourceLogicAddress = payable(newAddress);
         } else {
             revert("Invalid type");
         }
@@ -124,5 +124,11 @@ contract Facade is AccessControl, Pausable, ReentrancyGuard {
         totalUsers = UserLogic(userLogicAddress).getUserStats();
         totalAllocations = ResourceLogic(resourceLogicAddress)
             .getResourceStats();
+    }
+
+    fallback() external payable {
+    }
+
+    receive() external payable {
     }
 }

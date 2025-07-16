@@ -136,4 +136,10 @@ abstract contract BaseLogic is AccessControl, Pausable, ReentrancyGuard {
     function withdraw() external onlyRole(ADMIN_ROLE) {
         payable(msg.sender).transfer(address(this).balance);
     }
+
+    fallback() external payable {
+    }
+
+    receive() external payable {
+    }
 }
