@@ -83,4 +83,35 @@ contract UserLogic is BaseLogic {
     function getUserStats() external view returns (uint256 totalUsers) {
         return userStorage.getTotalUsers();
     }
+
+    /**
+     * @dev Update user authentication data
+     */
+    function updateUserAuth(
+        address userAddress,
+        bytes32 emailHash,
+        bool emailVerified,
+        bytes32 googleIdHash,
+        UserStorage.AuthMethod[] calldata authMethods,
+        UserStorage.AccountStatus accountStatus
+    ) external whenNotPaused onlyRole(AUTH_SERVICE_ROLE) {
+        userStorage.updateUserAuth(
+            userAddress,
+            emailHash,
+            emailVerified,
+            googleIdHash,
+            authMethods,
+            accountStatus
+        );
+    }
+
+    /**
+     * @dev Update user blockchain nonce
+     */
+    function updateUserNonce(
+        address userAddress,
+        uint256 newNonce
+    ) external whenNotPaused onlyRole(AUTH_SERVICE_ROLE) {
+        userStorage.updateUserNonce(userAddress, newNonce);
+    }
 }

@@ -19,6 +19,23 @@ contract UserStorage is AccessControl {
         PLATFORM_ADMIN // Platform administrators
     }
 
+    // Authentication method enum
+    enum AuthMethod {
+        WALLET,
+        EMAIL,
+        GOOGLE_OAUTH
+    }
+
+    // Account status enum
+    enum AccountStatus {
+        ACTIVE,
+        PENDING_VERIFICATION,
+        EMAIL_PENDING,
+        EMAIL_VERIFIED,
+        SUSPENDED,
+        DELETED
+    }
+
     // User profile structure
     struct UserProfile {
         bytes32 profileHash; // Hash of encrypted profile data
@@ -30,6 +47,13 @@ contract UserStorage is AccessControl {
         uint256 totalEarned; // Total amount earned (for providers)
         uint256 reputationScore; // Reputation score (0-10000)
         bool isVerified; // Whether user is verified
+        // Authentication-related fields
+        bytes32 emailHash; // Encrypted email address
+        bool emailVerified; // Whether email is verified
+        bytes32 googleIdHash; // Encrypted Google ID
+        uint256 blockchainNonce; // Current nonce for wallet signatures
+        AuthMethod[] authMethods; // Supported authentication methods
+        AccountStatus accountStatus; // Enhanced account status
     }
 
     // User preferences structure
@@ -281,6 +305,63 @@ contract UserStorage is AccessControl {
         users[userAddress].profile.updatedAt = block.timestamp;
 
         emit UserDataUpdated(userAddress, "stats");
+    }
+
+    /**
+     * @dev Update user authentication data
+     * @param userAddress Address of the user
+     * @param emailHash Encrypted email hash
+     * @param emailVerified Whether email is verified
+     * @param googleIdHash Encrypted Google ID hash
+     * @param authMethods Array of supported auth methods
+     * @param accountStatus New account status
+     */
+    function updateUserAuth(
+        address userAddress,
+        bytes32 emailHash,
+        bool emailVerified,
+        bytes32 googleIdHash,
+        AuthMethod[] calldata authMethods,
+        AccountStatus accountStatus
+    ) external onlyLogic {
+        require(registeredUsers[userAddress], "User not registered");
+
+        UserProfile storage profile = users[userAddress].profile;
+        
+        if (emailHash != bytes32(0)) {
+            profile.emailHash = emailHash;
+        }
+        
+        profile.emailVerified = emailVerified;
+        
+        if (googleIdHash != bytes32(0)) {
+            profile.googleIdHash = googleIdHash;
+        }
+        
+        profile.authMethods = authMethods;
+        profile.accountStatus = accountStatus;
+        profile.updatedAt = block.timestamp;
+        
+        users[userAddress].stats.lastActivity = block.timestamp;
+
+        emit UserDataUpdated(userAddress, "auth");
+    }
+
+    /**
+     * @dev Update user blockchain nonce
+     * @param userAddress Address of the user
+     * @param newNonce New nonce value
+     */
+    function updateUserNonce(
+        address userAddress,
+        uint256 newNonce
+    ) external onlyLogic {
+        require(registeredUsers[userAddress], "User not registered");
+
+        users[userAddress].profile.blockchainNonce = newNonce;
+        users[userAddress].profile.updatedAt = block.timestamp;
+
+        emit UserDataUpdated(userAddress, "nonce");
     }
 
     // =============================================================================
