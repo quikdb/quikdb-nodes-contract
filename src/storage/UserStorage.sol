@@ -17,6 +17,7 @@ contract UserStorage is AccessControl {
         PROVIDER, // Node operators who provide services
         MARKETPLACE_ADMIN, // Marketplace administrators
         PLATFORM_ADMIN // Platform administrators
+
     }
 
     // Authentication method enum
@@ -109,9 +110,7 @@ contract UserStorage is AccessControl {
      * @dev Set the logic contract address
      * @param logicContract Address of the logic contract
      */
-    function setLogicContract(
-        address logicContract
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setLogicContract(address logicContract) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _grantRole(LOGIC_ROLE, logicContract);
     }
 
@@ -121,11 +120,7 @@ contract UserStorage is AccessControl {
      * @param profileHash Hash of encrypted profile data
      * @param userType Type of user
      */
-    function registerUser(
-        address userAddress,
-        bytes32 profileHash,
-        UserType userType
-    ) external onlyLogic {
+    function registerUser(address userAddress, bytes32 profileHash, UserType userType) external onlyLogic {
         require(userAddress != address(0), "Invalid user address");
         require(!registeredUsers[userAddress], "User already registered");
 
@@ -154,10 +149,7 @@ contract UserStorage is AccessControl {
      * @param userAddress Address of the user
      * @param profileHash New profile hash
      */
-    function updateUserProfile(
-        address userAddress,
-        bytes32 profileHash
-    ) external onlyLogic {
+    function updateUserProfile(address userAddress, bytes32 profileHash) external onlyLogic {
         require(registeredUsers[userAddress], "User not registered");
 
         users[userAddress].profile.profileHash = profileHash;
@@ -172,10 +164,7 @@ contract UserStorage is AccessControl {
      * @param userAddress Address of the user
      * @param preferences New preferences
      */
-    function updateUserPreferences(
-        address userAddress,
-        UserPreferences calldata preferences
-    ) external onlyLogic {
+    function updateUserPreferences(address userAddress, UserPreferences calldata preferences) external onlyLogic {
         require(registeredUsers[userAddress], "User not registered");
 
         users[userAddress].preferences = preferences;
@@ -190,10 +179,7 @@ contract UserStorage is AccessControl {
      * @param userAddress Address of the user
      * @param isActive New active status
      */
-    function updateUserStatus(
-        address userAddress,
-        bool isActive
-    ) external onlyLogic {
+    function updateUserStatus(address userAddress, bool isActive) external onlyLogic {
         require(registeredUsers[userAddress], "User not registered");
 
         bool wasActive = users[userAddress].profile.isActive;
@@ -233,10 +219,7 @@ contract UserStorage is AccessControl {
      * @param userAddress Address of the user
      * @param newScore New reputation score (0-10000)
      */
-    function updateUserReputation(
-        address userAddress,
-        uint256 newScore
-    ) external onlyLogic {
+    function updateUserReputation(address userAddress, uint256 newScore) external onlyLogic {
         require(registeredUsers[userAddress], "User not registered");
         require(newScore <= 10000, "Invalid reputation score");
 
@@ -252,11 +235,7 @@ contract UserStorage is AccessControl {
      * @param amountSpent Amount spent (for consumers)
      * @param amountEarned Amount earned (for providers)
      */
-    function updateUserFinancials(
-        address userAddress,
-        uint256 amountSpent,
-        uint256 amountEarned
-    ) external onlyLogic {
+    function updateUserFinancials(address userAddress, uint256 amountSpent, uint256 amountEarned) external onlyLogic {
         require(registeredUsers[userAddress], "User not registered");
 
         users[userAddress].profile.totalSpent += amountSpent;
@@ -278,12 +257,10 @@ contract UserStorage is AccessControl {
      * @param cancelledJobs Number of cancelled jobs to add
      * @param rating New rating to factor in (0-10000)
      */
-    function updateUserStats(
-        address userAddress,
-        uint256 completedJobs,
-        uint256 cancelledJobs,
-        uint256 rating
-    ) external onlyLogic {
+    function updateUserStats(address userAddress, uint256 completedJobs, uint256 cancelledJobs, uint256 rating)
+        external
+        onlyLogic
+    {
         require(registeredUsers[userAddress], "User not registered");
         require(rating <= 10000, "Invalid rating");
 
@@ -294,12 +271,8 @@ contract UserStorage is AccessControl {
 
         // Update average rating using weighted average
         if (rating > 0) {
-            uint256 totalRatings = stats.completedJobs > 0
-                ? stats.completedJobs
-                : 1;
-            stats.avgRating =
-                ((stats.avgRating * (totalRatings - 1)) + rating) /
-                totalRatings;
+            uint256 totalRatings = stats.completedJobs > 0 ? stats.completedJobs : 1;
+            stats.avgRating = ((stats.avgRating * (totalRatings - 1)) + rating) / totalRatings;
         }
 
         users[userAddress].profile.updatedAt = block.timestamp;
@@ -327,21 +300,21 @@ contract UserStorage is AccessControl {
         require(registeredUsers[userAddress], "User not registered");
 
         UserProfile storage profile = users[userAddress].profile;
-        
+
         if (emailHash != bytes32(0)) {
             profile.emailHash = emailHash;
         }
-        
+
         profile.emailVerified = emailVerified;
-        
+
         if (googleIdHash != bytes32(0)) {
             profile.googleIdHash = googleIdHash;
         }
-        
+
         profile.authMethods = authMethods;
         profile.accountStatus = accountStatus;
         profile.updatedAt = block.timestamp;
-        
+
         users[userAddress].stats.lastActivity = block.timestamp;
 
         emit UserDataUpdated(userAddress, "auth");
@@ -352,10 +325,7 @@ contract UserStorage is AccessControl {
      * @param userAddress Address of the user
      * @param newNonce New nonce value
      */
-    function updateUserNonce(
-        address userAddress,
-        uint256 newNonce
-    ) external onlyLogic {
+    function updateUserNonce(address userAddress, uint256 newNonce) external onlyLogic {
         require(registeredUsers[userAddress], "User not registered");
 
         users[userAddress].profile.blockchainNonce = newNonce;
@@ -370,9 +340,9 @@ contract UserStorage is AccessControl {
      */
     function deleteUser(address userAddress) external onlyLogic {
         require(registeredUsers[userAddress], "User not registered");
-        
+
         UserInfo storage user = users[userAddress];
-        
+
         // Update statistics before deletion
         if (user.profile.isActive) {
             activeUsers--;
@@ -381,11 +351,11 @@ contract UserStorage is AccessControl {
             verifiedUsersCount--;
         }
         totalUsers--;
-        
+
         // Remove from usersByType mapping
         UserType userType = user.profile.userType;
         address[] storage typeArray = usersByType[userType];
-        for (uint i = 0; i < typeArray.length; i++) {
+        for (uint256 i = 0; i < typeArray.length; i++) {
             if (typeArray[i] == userAddress) {
                 // Replace with last element and remove last
                 typeArray[i] = typeArray[typeArray.length - 1];
@@ -393,12 +363,12 @@ contract UserStorage is AccessControl {
                 break;
             }
         }
-        
+
         // Delete all user data
         delete users[userAddress];
         delete registeredUsers[userAddress];
         delete verifiedUsers[userAddress];
-        
+
         emit UserDataUpdated(userAddress, "deleted");
     }
 
@@ -411,9 +381,7 @@ contract UserStorage is AccessControl {
      * @param userAddress Address of the user
      * @return User information struct
      */
-    function getUserInfo(
-        address userAddress
-    ) external view returns (UserInfo memory) {
+    function getUserInfo(address userAddress) external view returns (UserInfo memory) {
         require(registeredUsers[userAddress], "User not registered");
         return users[userAddress];
     }
@@ -423,9 +391,7 @@ contract UserStorage is AccessControl {
      * @param userAddress Address of the user
      * @return User profile struct
      */
-    function getUserProfile(
-        address userAddress
-    ) external view returns (UserProfile memory) {
+    function getUserProfile(address userAddress) external view returns (UserProfile memory) {
         require(registeredUsers[userAddress], "User not registered");
         return users[userAddress].profile;
     }
@@ -435,9 +401,7 @@ contract UserStorage is AccessControl {
      * @param userAddress Address of the user
      * @return User preferences struct
      */
-    function getUserPreferences(
-        address userAddress
-    ) external view returns (UserPreferences memory) {
+    function getUserPreferences(address userAddress) external view returns (UserPreferences memory) {
         require(registeredUsers[userAddress], "User not registered");
         return users[userAddress].preferences;
     }
@@ -447,9 +411,7 @@ contract UserStorage is AccessControl {
      * @param userAddress Address of the user
      * @return User statistics struct
      */
-    function getUserStats(
-        address userAddress
-    ) external view returns (UserStats memory) {
+    function getUserStats(address userAddress) external view returns (UserStats memory) {
         require(registeredUsers[userAddress], "User not registered");
         return users[userAddress].stats;
     }
@@ -459,9 +421,7 @@ contract UserStorage is AccessControl {
      * @param userType Type of user
      * @return Array of user addresses
      */
-    function getUsersByType(
-        UserType userType
-    ) external view returns (address[] memory) {
+    function getUsersByType(UserType userType) external view returns (address[] memory) {
         return usersByType[userType];
     }
 
@@ -470,9 +430,7 @@ contract UserStorage is AccessControl {
      * @param userAddress Address to check
      * @return Whether the user is registered
      */
-    function isUserRegistered(
-        address userAddress
-    ) external view returns (bool) {
+    function isUserRegistered(address userAddress) external view returns (bool) {
         return registeredUsers[userAddress];
     }
 
@@ -510,9 +468,7 @@ contract UserStorage is AccessControl {
      * @param userAddress Address of the user
      * @return Reputation score (0-10000)
      */
-    function getUserReputation(
-        address userAddress
-    ) external view returns (uint256) {
+    function getUserReputation(address userAddress) external view returns (uint256) {
         require(registeredUsers[userAddress], "User not registered");
         return users[userAddress].profile.reputationScore;
     }
@@ -523,11 +479,7 @@ contract UserStorage is AccessControl {
      * @return active Number of active users
      * @return verified Number of verified users
      */
-    function getStats()
-        external
-        view
-        returns (uint256 total, uint256 active, uint256 verified)
-    {
+    function getStats() external view returns (uint256 total, uint256 active, uint256 verified) {
         return (totalUsers, activeUsers, verifiedUsersCount);
     }
 
@@ -548,10 +500,7 @@ contract UserStorage is AccessControl {
      * @param userAddress Address of the user
      * @param isActive New active status
      */
-    function adminUpdateUserStatus(
-        address userAddress,
-        bool isActive
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function adminUpdateUserStatus(address userAddress, bool isActive) external onlyRole(DEFAULT_ADMIN_ROLE) {
         require(registeredUsers[userAddress], "User not registered");
 
         bool wasActive = users[userAddress].profile.isActive;
@@ -572,9 +521,7 @@ contract UserStorage is AccessControl {
      * @dev Revoke user verification (admin only)
      * @param userAddress Address of the user
      */
-    function revokeUserVerification(
-        address userAddress
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function revokeUserVerification(address userAddress) external onlyRole(DEFAULT_ADMIN_ROLE) {
         require(registeredUsers[userAddress], "User not registered");
 
         if (users[userAddress].profile.isVerified) {

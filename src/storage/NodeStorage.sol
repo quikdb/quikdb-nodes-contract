@@ -20,12 +20,14 @@ contract NodeStorage is AccessControl {
         SUSPENDED, // Node temporarily suspended
         DEREGISTERED, // Node permanently removed
         LISTED // Node actively listed for provider services
+
     }
 
     // Provider type enumeration
     enum ProviderType {
         COMPUTE, // Compute provider for computational workloads
         STORAGE // Storage provider for data storage services
+
     }
 
     // Node tier enumeration
@@ -36,6 +38,7 @@ contract NodeStorage is AccessControl {
         STANDARD, // Standard tier - general purpose
         PREMIUM, // Premium tier - high performance
         ENTERPRISE // Enterprise tier - maximum performance
+
     }
 
     // Node capacity structure
@@ -142,9 +145,7 @@ contract NodeStorage is AccessControl {
      * @dev Set the logic contract address
      * @param logicContract Address of the logic contract
      */
-    function setLogicContract(
-        address logicContract
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setLogicContract(address logicContract) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _grantRole(LOGIC_ROLE, logicContract);
     }
 
@@ -155,12 +156,10 @@ contract NodeStorage is AccessControl {
      * @param tier Tier of the node
      * @param providerType Type of provider
      */
-    function registerNode(
-        string calldata nodeId,
-        address nodeAddress,
-        NodeTier tier,
-        ProviderType providerType
-    ) external onlyLogic {
+    function registerNode(string calldata nodeId, address nodeAddress, NodeTier tier, ProviderType providerType)
+        external
+        onlyLogic
+    {
         require(!nodeExists[nodeId], "Node already exists");
         require(nodeAddress != address(0), "Invalid node address");
 
@@ -192,10 +191,7 @@ contract NodeStorage is AccessControl {
      * @param nodeId Node identifier
      * @param status New status
      */
-    function _updateNodeStatus(
-        string calldata nodeId,
-        NodeStatus status
-    ) internal {
+    function _updateNodeStatus(string calldata nodeId, NodeStatus status) internal {
         require(nodeExists[nodeId], "Node does not exist");
 
         NodeInfo storage node = nodes[nodeId];
@@ -210,19 +206,14 @@ contract NodeStorage is AccessControl {
         // Update active nodes count
         if (status == NodeStatus.ACTIVE && oldStatus != NodeStatus.ACTIVE) {
             activeNodes++;
-        } else if (
-            status != NodeStatus.ACTIVE && oldStatus == NodeStatus.ACTIVE
-        ) {
+        } else if (status != NodeStatus.ACTIVE && oldStatus == NodeStatus.ACTIVE) {
             activeNodes--;
         }
 
         emit NodeDataUpdated(nodeId, "status");
     }
 
-    function updateNodeStatus(
-        string calldata nodeId,
-        NodeStatus status
-    ) external onlyLogic {
+    function updateNodeStatus(string calldata nodeId, NodeStatus status) external onlyLogic {
         _updateNodeStatus(nodeId, status);
     }
 
@@ -231,10 +222,7 @@ contract NodeStorage is AccessControl {
      * @param nodeId Node identifier
      * @param capacity New capacity information
      */
-    function updateNodeCapacity(
-        string calldata nodeId,
-        NodeCapacity calldata capacity
-    ) external onlyLogic {
+    function updateNodeCapacity(string calldata nodeId, NodeCapacity calldata capacity) external onlyLogic {
         require(nodeExists[nodeId], "Node does not exist");
 
         nodes[nodeId].capacity = capacity;
@@ -248,10 +236,7 @@ contract NodeStorage is AccessControl {
      * @param nodeId Node identifier
      * @param metrics New metrics information
      */
-    function updateNodeMetrics(
-        string calldata nodeId,
-        NodeMetrics calldata metrics
-    ) external onlyLogic {
+    function updateNodeMetrics(string calldata nodeId, NodeMetrics calldata metrics) external onlyLogic {
         require(nodeExists[nodeId], "Node does not exist");
 
         nodes[nodeId].metrics = metrics;
@@ -266,18 +251,11 @@ contract NodeStorage is AccessControl {
      * @param hourlyRate Hourly rate
      * @param availability Availability percentage
      */
-    function listNode(
-        string calldata nodeId,
-        uint256 hourlyRate,
-        uint256 availability
-    ) external onlyLogic {
+    function listNode(string calldata nodeId, uint256 hourlyRate, uint256 availability) external onlyLogic {
         require(nodeExists[nodeId], "Node does not exist");
 
         NodeInfo storage node = nodes[nodeId];
-        require(
-            node.status == NodeStatus.ACTIVE,
-            "Node must be active to list"
-        );
+        require(node.status == NodeStatus.ACTIVE, "Node must be active to list");
 
         bool wasListed = node.listing.isListed;
         _updateNodeStatus(nodeId, NodeStatus.LISTED);
@@ -327,9 +305,7 @@ contract NodeStorage is AccessControl {
      * @param nodeId Node identifier
      * @return Node information struct
      */
-    function getNodeInfo(
-        string calldata nodeId
-    ) external view returns (NodeInfo memory) {
+    function getNodeInfo(string calldata nodeId) external view returns (NodeInfo memory) {
         require(nodeExists[nodeId], "Node does not exist");
         return nodes[nodeId];
     }
@@ -339,9 +315,7 @@ contract NodeStorage is AccessControl {
      * @param nodeId Node identifier
      * @return Address of the node operator
      */
-    function getNodeAddress(
-        string calldata nodeId
-    ) external view returns (address) {
+    function getNodeAddress(string calldata nodeId) external view returns (address) {
         require(nodeExists[nodeId], "Node does not exist");
         return nodes[nodeId].nodeAddress;
     }
@@ -351,9 +325,7 @@ contract NodeStorage is AccessControl {
      * @param nodeId Node identifier
      * @return Current node status
      */
-    function getNodeStatus(
-        string calldata nodeId
-    ) external view returns (NodeStatus) {
+    function getNodeStatus(string calldata nodeId) external view returns (NodeStatus) {
         require(nodeExists[nodeId], "Node does not exist");
         return nodes[nodeId].status;
     }
@@ -363,9 +335,7 @@ contract NodeStorage is AccessControl {
      * @param operator Address of the node operator
      * @return Array of node IDs
      */
-    function getNodesByOperator(
-        address operator
-    ) external view returns (string[] memory) {
+    function getNodesByOperator(address operator) external view returns (string[] memory) {
         return operatorNodes[operator];
     }
 
@@ -374,9 +344,7 @@ contract NodeStorage is AccessControl {
      * @param tier Node tier
      * @return Array of node IDs
      */
-    function getNodesByTier(
-        NodeTier tier
-    ) external view returns (string[] memory) {
+    function getNodesByTier(NodeTier tier) external view returns (string[] memory) {
         return nodesByTier[tier];
     }
 
@@ -385,9 +353,7 @@ contract NodeStorage is AccessControl {
      * @param providerType Provider type
      * @return Array of node IDs
      */
-    function getNodesByProvider(
-        ProviderType providerType
-    ) external view returns (string[] memory) {
+    function getNodesByProvider(ProviderType providerType) external view returns (string[] memory) {
         return nodesByProvider[providerType];
     }
 
@@ -396,9 +362,7 @@ contract NodeStorage is AccessControl {
      * @param status Node status
      * @return Array of node IDs
      */
-    function getNodesByStatus(
-        NodeStatus status
-    ) external view returns (string[] memory) {
+    function getNodesByStatus(NodeStatus status) external view returns (string[] memory) {
         return nodesByStatus[status];
     }
 
@@ -407,9 +371,7 @@ contract NodeStorage is AccessControl {
      * @param nodeId Node identifier
      * @return Whether the node exists
      */
-    function doesNodeExist(
-        string calldata nodeId
-    ) external view returns (bool) {
+    function doesNodeExist(string calldata nodeId) external view returns (bool) {
         return nodeExists[nodeId];
     }
 
@@ -428,11 +390,7 @@ contract NodeStorage is AccessControl {
      * @return active Number of active nodes
      * @return listed Number of listed nodes
      */
-    function getStats()
-        external
-        view
-        returns (uint256 total, uint256 active, uint256 listed)
-    {
+    function getStats() external view returns (uint256 total, uint256 active, uint256 listed) {
         return (totalNodes, activeNodes, listedNodes);
     }
 
@@ -453,10 +411,7 @@ contract NodeStorage is AccessControl {
      * @param nodeId Node identifier
      * @param status Status to remove from
      */
-    function _removeFromStatusArray(
-        string calldata nodeId,
-        NodeStatus status
-    ) internal {
+    function _removeFromStatusArray(string calldata nodeId, NodeStatus status) internal {
         string[] storage statusArray = nodesByStatus[status];
         for (uint256 i = 0; i < statusArray.length; i++) {
             if (keccak256(bytes(statusArray[i])) == keccak256(bytes(nodeId))) {
@@ -476,10 +431,7 @@ contract NodeStorage is AccessControl {
      * @param nodeId Node identifier
      * @param extended Extended information struct
      */
-    function updateNodeExtendedInfo(
-        string calldata nodeId,
-        NodeExtendedInfo calldata extended
-    ) external onlyLogic {
+    function updateNodeExtendedInfo(string calldata nodeId, NodeExtendedInfo calldata extended) external onlyLogic {
         require(nodeExists[nodeId], "Node does not exist");
 
         NodeInfo storage node = nodes[nodeId];
@@ -504,11 +456,10 @@ contract NodeStorage is AccessControl {
      * @param key Attribute key
      * @param value Attribute value
      */
-    function setNodeCustomAttribute(
-        string calldata nodeId,
-        string calldata key,
-        string calldata value
-    ) external onlyLogic {
+    function setNodeCustomAttribute(string calldata nodeId, string calldata key, string calldata value)
+        external
+        onlyLogic
+    {
         require(nodeExists[nodeId], "Node does not exist");
 
         nodeCustomAttributes[nodeId][key] = value;
@@ -523,11 +474,10 @@ contract NodeStorage is AccessControl {
      * @param certificationId Certification identifier
      * @param details Certification details
      */
-    function addNodeCertification(
-        string calldata nodeId,
-        bytes32 certificationId,
-        string calldata details
-    ) external onlyLogic {
+    function addNodeCertification(string calldata nodeId, bytes32 certificationId, string calldata details)
+        external
+        onlyLogic
+    {
         require(nodeExists[nodeId], "Node does not exist");
 
         nodeCertifications[nodeId].push(certificationId);
@@ -542,10 +492,7 @@ contract NodeStorage is AccessControl {
      * @param nodeId Node identifier
      * @param certificationId Certification identifier
      */
-    function removeNodeCertification(
-        string calldata nodeId,
-        bytes32 certificationId
-    ) external onlyLogic {
+    function removeNodeCertification(string calldata nodeId, bytes32 certificationId) external onlyLogic {
         require(nodeExists[nodeId], "Node does not exist");
 
         bytes32[] storage certs = nodeCertifications[nodeId];
@@ -566,10 +513,7 @@ contract NodeStorage is AccessControl {
      * @param nodeId Node identifier
      * @param network Network identifier
      */
-    function addNodeNetwork(
-        string calldata nodeId,
-        string calldata network
-    ) external onlyLogic {
+    function addNodeNetwork(string calldata nodeId, string calldata network) external onlyLogic {
         require(nodeExists[nodeId], "Node does not exist");
 
         nodeNetworks[nodeId].push(network);
@@ -583,10 +527,7 @@ contract NodeStorage is AccessControl {
      * @param nodeId Node identifier
      * @param bondAmount Bond amount in wei
      */
-    function setNodeSecurityBond(
-        string calldata nodeId,
-        uint256 bondAmount
-    ) external onlyLogic {
+    function setNodeSecurityBond(string calldata nodeId, uint256 bondAmount) external onlyLogic {
         require(nodeExists[nodeId], "Node does not exist");
 
         nodeSecurityBonds[nodeId] = bondAmount;
@@ -606,10 +547,11 @@ contract NodeStorage is AccessControl {
      * @param key Attribute key
      * @return Attribute value
      */
-    function getNodeCustomAttribute(
-        string calldata nodeId,
-        string calldata key
-    ) external view returns (string memory) {
+    function getNodeCustomAttribute(string calldata nodeId, string calldata key)
+        external
+        view
+        returns (string memory)
+    {
         require(nodeExists[nodeId], "Node does not exist");
         return nodeCustomAttributes[nodeId][key];
     }
@@ -619,9 +561,7 @@ contract NodeStorage is AccessControl {
      * @param nodeId Node identifier
      * @return Array of certification IDs
      */
-    function getNodeCertifications(
-        string calldata nodeId
-    ) external view returns (bytes32[] memory) {
+    function getNodeCertifications(string calldata nodeId) external view returns (bytes32[] memory) {
         require(nodeExists[nodeId], "Node does not exist");
         return nodeCertifications[nodeId];
     }
@@ -631,9 +571,7 @@ contract NodeStorage is AccessControl {
      * @param certificationId Certification identifier
      * @return Certification details
      */
-    function getCertificationDetails(
-        bytes32 certificationId
-    ) external view returns (string memory) {
+    function getCertificationDetails(bytes32 certificationId) external view returns (string memory) {
         return certificationDetails[certificationId];
     }
 
@@ -642,9 +580,7 @@ contract NodeStorage is AccessControl {
      * @param nodeId Node identifier
      * @return Array of network identifiers
      */
-    function getNodeNetworks(
-        string calldata nodeId
-    ) external view returns (string[] memory) {
+    function getNodeNetworks(string calldata nodeId) external view returns (string[] memory) {
         require(nodeExists[nodeId], "Node does not exist");
         return nodeNetworks[nodeId];
     }
@@ -654,9 +590,7 @@ contract NodeStorage is AccessControl {
      * @param nodeId Node identifier
      * @return Bond amount in wei
      */
-    function getNodeSecurityBond(
-        string calldata nodeId
-    ) external view returns (uint256) {
+    function getNodeSecurityBond(string calldata nodeId) external view returns (uint256) {
         require(nodeExists[nodeId], "Node does not exist");
         return nodeSecurityBonds[nodeId];
     }
@@ -666,9 +600,7 @@ contract NodeStorage is AccessControl {
      * @dev Note: This function is not fully implemented - returns empty array
      * @return Array of node IDs (currently empty)
      */
-    function getNodesByVerification(
-        bool /* verified */
-    ) external pure returns (string[] memory) {
+    function getNodesByVerification(bool /* verified */ ) external pure returns (string[] memory) {
         // This is a simple implementation - for production, consider indexing
         // Note: Variables commented out to avoid compiler warnings
         // string[] memory allNodes = new string[](totalNodes);
@@ -678,7 +610,7 @@ contract NodeStorage is AccessControl {
         // Consider maintaining separate verified/unverified indexes
         // For now, return empty array as this function is not fully implemented
         return new string[](0);
-        
+
         // TODO: Implement proper verification-based node filtering
         // This would require maintaining additional indexes for efficiency
     }
@@ -693,12 +625,7 @@ contract NodeStorage is AccessControl {
     function getExtendedStats()
         external
         view
-        returns (
-            uint256 total,
-            uint256 active,
-            uint256 listed,
-            uint256 verified
-        )
+        returns (uint256 total, uint256 active, uint256 listed, uint256 verified)
     {
         return (totalNodes, activeNodes, listedNodes, verifiedNodes);
     }

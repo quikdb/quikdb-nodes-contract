@@ -30,17 +30,9 @@ contract Facade is AccessControl, Pausable, ReentrancyGuard {
     /**
      * @dev Initialize the facade contract
      */
-    function initialize(
-        address _nodeLogic,
-        address _userLogic,
-        address _resourceLogic,
-        address _admin
-    ) external {
+    function initialize(address _nodeLogic, address _userLogic, address _resourceLogic, address _admin) external {
         require(
-            _admin != address(0) &&
-                _nodeLogic != address(0) &&
-                _userLogic != address(0) &&
-                _resourceLogic != address(0),
+            _admin != address(0) && _nodeLogic != address(0) && _userLogic != address(0) && _resourceLogic != address(0),
             "Invalid address"
         );
 
@@ -57,10 +49,7 @@ contract Facade is AccessControl, Pausable, ReentrancyGuard {
     /**
      * @dev Update logic contract addresses
      */
-    function updateLogicContract(
-        string calldata contractType,
-        address newAddress
-    ) external onlyRole(ADMIN_ROLE) {
+    function updateLogicContract(string calldata contractType, address newAddress) external onlyRole(ADMIN_ROLE) {
         require(newAddress != address(0), "Invalid address");
         bytes32 typeHash = keccak256(bytes(contractType));
 
@@ -91,19 +80,10 @@ contract Facade is AccessControl, Pausable, ReentrancyGuard {
     /**
      * @dev Get total statistics across all domains
      */
-    function getTotalStats()
-        external
-        view
-        returns (
-            uint256 totalNodes,
-            uint256 totalUsers,
-            uint256 totalAllocations
-        )
-    {
-        (totalNodes, , , ) = NodeLogic(nodeLogicAddress).getNodeStats();
+    function getTotalStats() external view returns (uint256 totalNodes, uint256 totalUsers, uint256 totalAllocations) {
+        (totalNodes,,,) = NodeLogic(nodeLogicAddress).getNodeStats();
         totalUsers = UserLogic(userLogicAddress).getUserStats();
-        totalAllocations = ResourceLogic(resourceLogicAddress)
-            .getResourceStats();
+        totalAllocations = ResourceLogic(resourceLogicAddress).getResourceStats();
     }
 
     /**
@@ -112,23 +92,14 @@ contract Facade is AccessControl, Pausable, ReentrancyGuard {
     function getExtendedStats()
         external
         view
-        returns (
-            uint256 totalNodes,
-            uint256 totalUsers,
-            uint256 totalAllocations,
-            uint256 verifiedNodes
-        )
+        returns (uint256 totalNodes, uint256 totalUsers, uint256 totalAllocations, uint256 verifiedNodes)
     {
-        (totalNodes, , , verifiedNodes) = NodeLogic(nodeLogicAddress)
-            .getNodeStats();
+        (totalNodes,,, verifiedNodes) = NodeLogic(nodeLogicAddress).getNodeStats();
         totalUsers = UserLogic(userLogicAddress).getUserStats();
-        totalAllocations = ResourceLogic(resourceLogicAddress)
-            .getResourceStats();
+        totalAllocations = ResourceLogic(resourceLogicAddress).getResourceStats();
     }
 
-    fallback() external payable {
-    }
+    fallback() external payable {}
 
-    receive() external payable {
-    }
+    receive() external payable {}
 }

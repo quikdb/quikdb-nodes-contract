@@ -22,17 +22,10 @@ interface IResourceTrackingEvents {
         uint256 timestamp
     );
     event ContainerStarted(
-        bytes32 indexed containerId,
-        address indexed nodeOperator,
-        uint256 startTime,
-        uint256 timestamp
+        bytes32 indexed containerId, address indexed nodeOperator, uint256 startTime, uint256 timestamp
     );
     event ContainerStopped(
-        bytes32 indexed containerId,
-        address indexed nodeOperator,
-        uint256 stopTime,
-        string reason,
-        uint256 timestamp
+        bytes32 indexed containerId, address indexed nodeOperator, uint256 stopTime, string reason, uint256 timestamp
     );
     event ContainerFailed(
         bytes32 indexed containerId,
@@ -42,10 +35,7 @@ interface IResourceTrackingEvents {
         uint256 timestamp
     );
     event ContainerDestroyed(
-        bytes32 indexed containerId,
-        address indexed nodeOperator,
-        uint256 destructionTime,
-        uint256 timestamp
+        bytes32 indexed containerId, address indexed nodeOperator, uint256 destructionTime, uint256 timestamp
     );
     event ContainerResourceUsage(
         bytes32 indexed containerId,
@@ -92,18 +82,9 @@ interface IResourceTrackingEvents {
         uint256 downloadSize,
         uint256 timestamp
     );
-    event FileDeleted(
-        bytes32 indexed fileId,
-        address indexed owner,
-        bytes32 storageContractId,
-        uint256 timestamp
-    );
+    event FileDeleted(bytes32 indexed fileId, address indexed owner, bytes32 storageContractId, uint256 timestamp);
     event StorageNodeAssigned(
-        bytes32 indexed fileId,
-        address indexed nodeOperator,
-        string nodeId,
-        bool isPrimary,
-        uint256 timestamp
+        bytes32 indexed fileId, address indexed nodeOperator, string nodeId, bool isPrimary, uint256 timestamp
     );
     event StorageNodeReassigned(
         bytes32 indexed fileId,
@@ -120,11 +101,7 @@ interface IResourceTrackingEvents {
         uint256 timestamp
     );
     event FileReplicationCompleted(
-        bytes32 indexed fileId,
-        address indexed sourceNode,
-        address indexed targetNode,
-        bool success,
-        uint256 timestamp
+        bytes32 indexed fileId, address indexed sourceNode, address indexed targetNode, bool success, uint256 timestamp
     );
     event DataIntegrityCheck(
         bytes32 indexed fileId,
@@ -135,29 +112,13 @@ interface IResourceTrackingEvents {
         uint256 timestamp
     );
     event DataCorruptionDetected(
-        bytes32 indexed fileId,
-        address indexed nodeOperator,
-        string corruptionType,
-        uint256 timestamp
+        bytes32 indexed fileId, address indexed nodeOperator, string corruptionType, uint256 timestamp
     );
     event StorageBucketCreated(
-        bytes32 indexed bucketId,
-        address indexed owner,
-        string bucketName,
-        uint256 maxSize,
-        uint256 timestamp
+        bytes32 indexed bucketId, address indexed owner, string bucketName, uint256 maxSize, uint256 timestamp
     );
-    event StorageBucketUpdated(
-        bytes32 indexed bucketId,
-        address indexed owner,
-        uint256 newMaxSize,
-        uint256 timestamp
-    );
-    event StorageBucketDeleted(
-        bytes32 indexed bucketId,
-        address indexed owner,
-        uint256 timestamp
-    );
+    event StorageBucketUpdated(bytes32 indexed bucketId, address indexed owner, uint256 newMaxSize, uint256 timestamp);
+    event StorageBucketDeleted(bytes32 indexed bucketId, address indexed owner, uint256 timestamp);
 
     // Node Management Events
     event NodeRegistered(
@@ -171,18 +132,9 @@ interface IResourceTrackingEvents {
         string region,
         uint256 timestamp
     );
-    event NodeDeregistered(
-        address indexed nodeOperator,
-        string nodeId,
-        string reason,
-        uint256 timestamp
-    );
+    event NodeDeregistered(address indexed nodeOperator, string nodeId, string reason, uint256 timestamp);
     event NodeVerified(
-        address indexed nodeOperator,
-        string nodeId,
-        address indexed verifier,
-        bool isVerified,
-        uint256 timestamp
+        address indexed nodeOperator, string nodeId, address indexed verifier, bool isVerified, uint256 timestamp
     );
     event NodeCapacityUpdated(
         address indexed nodeOperator,
@@ -193,11 +145,7 @@ interface IResourceTrackingEvents {
         uint256 timestamp
     );
     event NodeAvailabilityChanged(
-        address indexed nodeOperator,
-        string nodeId,
-        bool isOnline,
-        bool acceptingJobs,
-        uint256 timestamp
+        address indexed nodeOperator, string nodeId, bool isOnline, bool acceptingJobs, uint256 timestamp
     );
     event NodePerformanceReport(
         address indexed nodeOperator,
@@ -244,11 +192,7 @@ interface IResourceTrackingEvents {
         uint256 timestamp
     );
     event NodePaymentProcessed(
-        address indexed nodeOperator,
-        string nodeId,
-        uint256 amount,
-        bytes32 paymentId,
-        uint256 timestamp
+        address indexed nodeOperator, string nodeId, uint256 amount, bytes32 paymentId, uint256 timestamp
     );
 
     // Billing Events
@@ -263,25 +207,13 @@ interface IResourceTrackingEvents {
         uint256 timestamp
     );
     event BillingCycleStarted(
-        address indexed customer,
-        uint256 cycleId,
-        uint256 startTime,
-        uint256 endTime,
-        uint256 timestamp
+        address indexed customer, uint256 cycleId, uint256 startTime, uint256 endTime, uint256 timestamp
     );
     event BillingCycleCompleted(
-        address indexed customer,
-        uint256 cycleId,
-        uint256 totalUsage,
-        uint256 totalCost,
-        uint256 timestamp
+        address indexed customer, uint256 cycleId, uint256 totalUsage, uint256 totalCost, uint256 timestamp
     );
     event PricingModelUpdated(
-        string resourceType,
-        uint256 oldRate,
-        uint256 newRate,
-        uint256 effectiveDate,
-        uint256 timestamp
+        string resourceType, uint256 oldRate, uint256 newRate, uint256 effectiveDate, uint256 timestamp
     );
     event CostCalculated(
         bytes32 indexed resourceId,
@@ -292,38 +224,17 @@ interface IResourceTrackingEvents {
         uint256 timestamp
     );
     event PaymentRequired(
-        address indexed customer,
-        uint256 invoiceId,
-        uint256 amountDue,
-        uint256 dueDate,
-        uint256 timestamp
+        address indexed customer, uint256 invoiceId, uint256 amountDue, uint256 dueDate, uint256 timestamp
     );
     event PaymentReceived(
-        address indexed customer,
-        uint256 invoiceId,
-        uint256 amountPaid,
-        bytes32 paymentHash,
-        uint256 timestamp
+        address indexed customer, uint256 invoiceId, uint256 amountPaid, bytes32 paymentHash, uint256 timestamp
     );
     event PaymentOverdue(
-        address indexed customer,
-        uint256 invoiceId,
-        uint256 amountOverdue,
-        uint256 daysPastDue,
-        uint256 timestamp
+        address indexed customer, uint256 invoiceId, uint256 amountOverdue, uint256 daysPastDue, uint256 timestamp
     );
-    event RevenueDistributed(
-        uint256 totalRevenue,
-        uint256 platformFee,
-        uint256 nodeOperatorShare,
-        uint256 timestamp
-    );
+    event RevenueDistributed(uint256 totalRevenue, uint256 platformFee, uint256 nodeOperatorShare, uint256 timestamp);
     event NodeOperatorPayout(
-        address indexed nodeOperator,
-        uint256 amount,
-        uint256 period,
-        bytes32 payoutId,
-        uint256 timestamp
+        address indexed nodeOperator, uint256 amount, uint256 period, bytes32 payoutId, uint256 timestamp
     );
     event UsageAnalyticsGenerated(
         address indexed customer,
@@ -362,11 +273,7 @@ interface IResourceTrackingEvents {
         uint256 timestamp
     );
     event JobStarted(
-        bytes32 indexed jobId,
-        address indexed nodeOperator,
-        bytes32 containerId,
-        uint256 startTime,
-        uint256 timestamp
+        bytes32 indexed jobId, address indexed nodeOperator, bytes32 containerId, uint256 startTime, uint256 timestamp
     );
     event JobProgressUpdate(
         bytes32 indexed jobId,
@@ -394,16 +301,7 @@ interface IResourceTrackingEvents {
         uint256 timestamp
     );
     event JobResultVerified(
-        bytes32 indexed jobId,
-        address indexed verifier,
-        bool isValid,
-        string verificationHash,
-        uint256 timestamp
+        bytes32 indexed jobId, address indexed verifier, bool isValid, string verificationHash, uint256 timestamp
     );
-    event JobResultDisputed(
-        bytes32 indexed jobId,
-        address indexed disputer,
-        string disputeReason,
-        uint256 timestamp
-    );
+    event JobResultDisputed(bytes32 indexed jobId, address indexed disputer, string disputeReason, uint256 timestamp);
 }

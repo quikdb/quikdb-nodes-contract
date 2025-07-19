@@ -24,8 +24,7 @@ abstract contract BaseLogic is AccessControl, Pausable, ReentrancyGuard {
     bytes32 public constant ADMIN_ROLE = DEFAULT_ADMIN_ROLE;
     bytes32 public constant MARKETPLACE_ROLE = keccak256("MARKETPLACE_ROLE");
     bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE");
-    bytes32 public constant NODE_OPERATOR_ROLE =
-        keccak256("NODE_OPERATOR_ROLE");
+    bytes32 public constant NODE_OPERATOR_ROLE = keccak256("NODE_OPERATOR_ROLE");
     bytes32 public constant AUTH_SERVICE_ROLE = keccak256("AUTH_SERVICE_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
@@ -35,9 +34,8 @@ abstract contract BaseLogic is AccessControl, Pausable, ReentrancyGuard {
 
     modifier onlyStorageContracts() {
         require(
-            msg.sender == address(nodeStorage) ||
-                msg.sender == address(userStorage) ||
-                msg.sender == address(resourceStorage),
+            msg.sender == address(nodeStorage) || msg.sender == address(userStorage)
+                || msg.sender == address(resourceStorage),
             "Only storage"
         );
         _;
@@ -46,17 +44,12 @@ abstract contract BaseLogic is AccessControl, Pausable, ReentrancyGuard {
     /**
      * @dev Initialize the base logic contract
      */
-    function _initializeBase(
-        address _nodeStorage,
-        address _userStorage,
-        address _resourceStorage,
-        address _admin
-    ) internal {
+    function _initializeBase(address _nodeStorage, address _userStorage, address _resourceStorage, address _admin)
+        internal
+    {
         require(
-            _admin != address(0) &&
-                _nodeStorage != address(0) &&
-                _userStorage != address(0) &&
-                _resourceStorage != address(0),
+            _admin != address(0) && _nodeStorage != address(0) && _userStorage != address(0)
+                && _resourceStorage != address(0),
             "Invalid address"
         );
 
@@ -75,23 +68,16 @@ abstract contract BaseLogic is AccessControl, Pausable, ReentrancyGuard {
     /**
      * @dev Check if caller is authorized to operate on a node
      */
-    function _isNodeAuthorized(
-        string calldata nodeId
-    ) internal view returns (address nodeAddress) {
+    function _isNodeAuthorized(string calldata nodeId) internal view returns (address nodeAddress) {
         nodeAddress = nodeStorage.getNodeAddress(nodeId);
-        require(
-            msg.sender == nodeAddress || hasRole(ADMIN_ROLE, msg.sender),
-            "Not authorized"
-        );
+        require(msg.sender == nodeAddress || hasRole(ADMIN_ROLE, msg.sender), "Not authorized");
         return nodeAddress;
     }
 
     /**
      * @dev Verify node operator is caller
      */
-    function _onlyNodeOperator(
-        string calldata nodeId
-    ) internal view returns (address) {
+    function _onlyNodeOperator(string calldata nodeId) internal view returns (address) {
         address nodeAddress = nodeStorage.getNodeAddress(nodeId);
         require(msg.sender == nodeAddress, "Not node operator");
         return nodeAddress;
@@ -102,10 +88,7 @@ abstract contract BaseLogic is AccessControl, Pausable, ReentrancyGuard {
     /**
      * @dev Update storage contract address
      */
-    function updateStorageContract(
-        string calldata contractType,
-        address newAddress
-    ) external onlyRole(ADMIN_ROLE) {
+    function updateStorageContract(string calldata contractType, address newAddress) external onlyRole(ADMIN_ROLE) {
         require(newAddress != address(0), "Invalid address");
         bytes32 typeHash = keccak256(bytes(contractType));
 
@@ -137,9 +120,7 @@ abstract contract BaseLogic is AccessControl, Pausable, ReentrancyGuard {
         payable(msg.sender).transfer(address(this).balance);
     }
 
-    fallback() external payable {
-    }
+    fallback() external payable {}
 
-    receive() external payable {
-    }
+    receive() external payable {}
 }

@@ -17,11 +17,9 @@ contract QuikProxy is TransparentUpgradeableProxy {
      * @param _admin Address of the proxy admin
      * @param _data Initialization data for the logic contract
      */
-    constructor(
-        address _logic,
-        address _admin,
-        bytes memory _data
-    ) TransparentUpgradeableProxy(_logic, _admin, _data) {}
+    constructor(address _logic, address _admin, bytes memory _data)
+        TransparentUpgradeableProxy(_logic, _admin, _data)
+    {}
 }
 
 /**
@@ -33,22 +31,12 @@ contract QuikProxyAdmin is ProxyAdmin, AccessControl {
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
     // Events
-    event LogicUpgraded(
-        address indexed proxy,
-        address indexed oldLogic,
-        address indexed newLogic
-    );
-    event AdminChanged(
-        address indexed proxy,
-        address indexed oldAdmin,
-        address indexed newAdmin
-    );
+    event LogicUpgraded(address indexed proxy, address indexed oldLogic, address indexed newLogic);
+    event AdminChanged(address indexed proxy, address indexed oldAdmin, address indexed newAdmin);
 
     modifier onlyUpgrader() {
         require(
-            hasRole(UPGRADER_ROLE, msg.sender) ||
-                hasRole(DEFAULT_ADMIN_ROLE, msg.sender),
-            "Not authorized to upgrade"
+            hasRole(UPGRADER_ROLE, msg.sender) || hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Not authorized to upgrade"
         );
         _;
     }
@@ -63,10 +51,7 @@ contract QuikProxyAdmin is ProxyAdmin, AccessControl {
      * @param proxy Address of the proxy contract
      * @param newLogic Address of the new logic contract
      */
-    function upgradeLogic(
-        ITransparentUpgradeableProxy proxy,
-        address newLogic
-    ) external onlyUpgrader {
+    function upgradeLogic(ITransparentUpgradeableProxy proxy, address newLogic) external onlyUpgrader {
         // Store old implementation (not directly accessible in this version)
         address oldLogic = address(0); // We can't access the implementation directly
 
@@ -84,11 +69,10 @@ contract QuikProxyAdmin is ProxyAdmin, AccessControl {
      * @param newLogic Address of the new logic contract
      * @param data Calldata for the function to call after upgrade
      */
-    function upgradeLogicAndCall(
-        ITransparentUpgradeableProxy proxy,
-        address newLogic,
-        bytes calldata data
-    ) external onlyUpgrader {
+    function upgradeLogicAndCall(ITransparentUpgradeableProxy proxy, address newLogic, bytes calldata data)
+        external
+        onlyUpgrader
+    {
         // Store old implementation (not directly accessible in this version)
         address oldLogic = address(0); // We can't access the implementation directly
 
@@ -104,10 +88,10 @@ contract QuikProxyAdmin is ProxyAdmin, AccessControl {
      * @param proxy Address of the proxy contract
      * @param newAdmin Address of the new admin
      */
-    function changeProxyAdmin(
-        ITransparentUpgradeableProxy proxy,
-        address newAdmin
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function changeProxyAdmin(ITransparentUpgradeableProxy proxy, address newAdmin)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
         // We can't directly access the old admin with current API
         address oldAdmin = address(0);
 
@@ -122,9 +106,7 @@ contract QuikProxyAdmin is ProxyAdmin, AccessControl {
      * @dev Grant upgrader role to an address
      * @param account Address to grant upgrader role
      */
-    function grantUpgraderRole(
-        address account
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function grantUpgraderRole(address account) external onlyRole(DEFAULT_ADMIN_ROLE) {
         grantRole(UPGRADER_ROLE, account);
     }
 
@@ -132,9 +114,7 @@ contract QuikProxyAdmin is ProxyAdmin, AccessControl {
      * @dev Revoke upgrader role from an address
      * @param account Address to revoke upgrader role
      */
-    function revokeUpgraderRole(
-        address account
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function revokeUpgraderRole(address account) external onlyRole(DEFAULT_ADMIN_ROLE) {
         revokeRole(UPGRADER_ROLE, account);
     }
 }

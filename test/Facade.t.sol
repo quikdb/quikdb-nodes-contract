@@ -8,7 +8,6 @@ import "./BaseTest.sol";
  * @notice Tests for Facade contract functionality
  */
 contract FacadeTest is BaseTest {
-
     // =============================================================
     //                      STATS TESTS
     // =============================================================
@@ -59,8 +58,12 @@ contract FacadeTest is BaseTest {
     function testFacade_CompleteWorkflow() public {
         // 1. Register nodes of different types
         vm.startPrank(nodeOperator);
-        nodeLogic.registerNode("compute-node", nodeOperator, NodeStorage.NodeTier.STANDARD, NodeStorage.ProviderType.COMPUTE);
-        nodeLogic.registerNode("storage-node", nodeOperator, NodeStorage.NodeTier.PREMIUM, NodeStorage.ProviderType.STORAGE);
+        nodeLogic.registerNode(
+            "compute-node", nodeOperator, NodeStorage.NodeTier.STANDARD, NodeStorage.ProviderType.COMPUTE
+        );
+        nodeLogic.registerNode(
+            "storage-node", nodeOperator, NodeStorage.NodeTier.PREMIUM, NodeStorage.ProviderType.STORAGE
+        );
         vm.stopPrank();
 
         // 2. Register users of different types
@@ -97,14 +100,14 @@ contract FacadeTest is BaseTest {
         _registerTestUser(address(0x400), UserStorage.UserType.CONSUMER);
 
         // Stats should reflect the delegated calls
-        (uint256 totalNodes, uint256 totalUsers, /* uint256 totalAllocations */) = facade.getTotalStats();
+        (uint256 totalNodes, uint256 totalUsers, /* uint256 totalAllocations */ ) = facade.getTotalStats();
         assertEq(totalNodes, 1);
         assertEq(totalUsers, 1);
 
         // Direct contract calls should show same data
         NodeStorage.NodeInfo memory nodeInfo = nodeLogic.getNodeInfo("proxy-test-node");
         UserStorage.UserProfile memory userProfile = userLogic.getUserProfile(address(0x400));
-        
+
         assertEq(nodeInfo.nodeId, "proxy-test-node");
         assertEq(uint8(userProfile.userType), uint8(UserStorage.UserType.CONSUMER));
     }
@@ -116,7 +119,7 @@ contract FacadeTest is BaseTest {
     function testFacade_EmptyState() public view {
         // Test facade behavior with no registrations
         (uint256 totalNodes, uint256 totalUsers, uint256 totalAllocations) = facade.getTotalStats();
-        
+
         assertEq(totalNodes, 0);
         assertEq(totalUsers, 0);
         assertEq(totalAllocations, 0);
@@ -126,7 +129,9 @@ contract FacadeTest is BaseTest {
         // Register only nodes, no users
         _registerTestNode("only-node-1");
         vm.startPrank(nodeOperator);
-        nodeLogic.registerNode("only-node-2", nodeOperator, NodeStorage.NodeTier.PREMIUM, NodeStorage.ProviderType.STORAGE);
+        nodeLogic.registerNode(
+            "only-node-2", nodeOperator, NodeStorage.NodeTier.PREMIUM, NodeStorage.ProviderType.STORAGE
+        );
         vm.stopPrank();
 
         (uint256 totalNodes, uint256 totalUsers, uint256 totalAllocations) = facade.getTotalStats();

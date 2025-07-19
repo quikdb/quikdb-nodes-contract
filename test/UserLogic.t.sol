@@ -8,7 +8,6 @@ import "./BaseTest.sol";
  * @notice Tests for UserLogic contract functionality
  */
 contract UserLogicTest is BaseTest {
-
     // =============================================================
     //                      BASIC USER TESTS
     // =============================================================
@@ -87,7 +86,7 @@ contract UserLogicTest is BaseTest {
 
         bytes32 profileHash1 = keccak256(abi.encodePacked("first-profile"));
         // bytes32 profileHash2 = keccak256(abi.encodePacked("second-profile")); // Unused for now
-        
+
         // First registration should succeed
         userLogic.registerUser(user, profileHash1, UserStorage.UserType.CONSUMER);
 

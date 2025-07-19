@@ -14,10 +14,7 @@ contract ResourceStorage is AccessControl, IResourceTypes {
 
     // Access control modifier
     modifier onlyLogic() {
-        require(
-            hasRole(LOGIC_ROLE, msg.sender),
-            "Caller is not Logic contract"
-        );
+        require(hasRole(LOGIC_ROLE, msg.sender), "Caller is not Logic contract");
         _;
     }
 
@@ -57,9 +54,7 @@ contract ResourceStorage is AccessControl, IResourceTypes {
      * @dev Set the logic contract address
      * @param logicContract Address of the logic contract
      */
-    function setLogicContract(
-        address logicContract
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setLogicContract(address logicContract) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _grantRole(LOGIC_ROLE, logicContract);
     }
 
@@ -89,9 +84,7 @@ contract ResourceStorage is AccessControl, IResourceTypes {
         uint256 hourlyRate,
         string calldata region
     ) external onlyLogic returns (bytes32 listingId) {
-        listingId = keccak256(
-            abi.encodePacked("compute", nextListingId, block.timestamp)
-        );
+        listingId = keccak256(abi.encodePacked("compute", nextListingId, block.timestamp));
         nextListingId++;
 
         ComputeListing storage listing = computeListings[listingId];
@@ -126,14 +119,8 @@ contract ResourceStorage is AccessControl, IResourceTypes {
      * @param listingId Listing identifier
      * @param status New status
      */
-    function updateComputeListingStatus(
-        bytes32 listingId,
-        ListingStatus status
-    ) external onlyLogic {
-        require(
-            computeListings[listingId].provider != address(0),
-            "Listing does not exist"
-        );
+    function updateComputeListingStatus(bytes32 listingId, ListingStatus status) external onlyLogic {
+        require(computeListings[listingId].provider != address(0), "Listing does not exist");
 
         ComputeListing storage listing = computeListings[listingId];
         ListingStatus oldStatus = listing.status;
@@ -176,9 +163,7 @@ contract ResourceStorage is AccessControl, IResourceTypes {
         uint256 hourlyRate,
         string calldata region
     ) external onlyLogic returns (bytes32 listingId) {
-        listingId = keccak256(
-            abi.encodePacked("storage", nextListingId, block.timestamp)
-        );
+        listingId = keccak256(abi.encodePacked("storage", nextListingId, block.timestamp));
         nextListingId++;
 
         StorageListing storage listing = storageListings[listingId];
@@ -211,14 +196,8 @@ contract ResourceStorage is AccessControl, IResourceTypes {
      * @param listingId Listing identifier
      * @param status New status
      */
-    function updateStorageListingStatus(
-        bytes32 listingId,
-        ListingStatus status
-    ) external onlyLogic {
-        require(
-            storageListings[listingId].provider != address(0),
-            "Listing does not exist"
-        );
+    function updateStorageListingStatus(bytes32 listingId, ListingStatus status) external onlyLogic {
+        require(storageListings[listingId].provider != address(0), "Listing does not exist");
 
         StorageListing storage listing = storageListings[listingId];
         ListingStatus oldStatus = listing.status;
@@ -251,18 +230,15 @@ contract ResourceStorage is AccessControl, IResourceTypes {
      * @param totalCost Total cost in wei
      * @return allocationId Unique allocation identifier
      */
-    function allocateCompute(
-        bytes32 listingId,
-        address customer,
-        uint256 duration,
-        uint256 totalCost
-    ) external onlyLogic returns (bytes32 allocationId) {
+    function allocateCompute(bytes32 listingId, address customer, uint256 duration, uint256 totalCost)
+        external
+        onlyLogic
+        returns (bytes32 allocationId)
+    {
         ComputeListing memory listing = computeListings[listingId];
         require(listing.isActive, "Listing not active");
 
-        allocationId = keccak256(
-            abi.encodePacked("allocation", nextAllocationId, block.timestamp)
-        );
+        allocationId = keccak256(abi.encodePacked("allocation", nextAllocationId, block.timestamp));
         nextAllocationId++;
 
         ResourceAllocation storage allocation = allocations[allocationId];
@@ -292,34 +268,21 @@ contract ResourceStorage is AccessControl, IResourceTypes {
      * @param allocationId Allocation identifier
      * @param status New status
      */
-    function updateAllocationStatus(
-        bytes32 allocationId,
-        AllocationStatus status
-    ) external onlyLogic {
-        require(
-            allocations[allocationId].customer != address(0),
-            "Allocation does not exist"
-        );
+    function updateAllocationStatus(bytes32 allocationId, AllocationStatus status) external onlyLogic {
+        require(allocations[allocationId].customer != address(0), "Allocation does not exist");
 
         ResourceAllocation storage allocation = allocations[allocationId];
         AllocationStatus oldStatus = allocation.status;
         allocation.status = status;
 
-        if (
-            status == AllocationStatus.ACTIVE &&
-            oldStatus == AllocationStatus.PENDING
-        ) {
+        if (status == AllocationStatus.ACTIVE && oldStatus == AllocationStatus.PENDING) {
             allocation.startedAt = uint32(block.timestamp);
         } else if (
-            status == AllocationStatus.COMPLETED ||
-            status == AllocationStatus.CANCELLED ||
-            status == AllocationStatus.FAILED
+            status == AllocationStatus.COMPLETED || status == AllocationStatus.CANCELLED
+                || status == AllocationStatus.FAILED
         ) {
             allocation.isActive = false;
-            if (
-                oldStatus == AllocationStatus.ACTIVE ||
-                oldStatus == AllocationStatus.PENDING
-            ) {
+            if (oldStatus == AllocationStatus.ACTIVE || oldStatus == AllocationStatus.PENDING) {
                 activeAllocations--;
             }
         }
@@ -336,13 +299,8 @@ contract ResourceStorage is AccessControl, IResourceTypes {
      * @param listingId Listing identifier
      * @return Compute listing struct
      */
-    function getComputeListing(
-        bytes32 listingId
-    ) external view returns (ComputeListing memory) {
-        require(
-            computeListings[listingId].provider != address(0),
-            "Listing does not exist"
-        );
+    function getComputeListing(bytes32 listingId) external view returns (ComputeListing memory) {
+        require(computeListings[listingId].provider != address(0), "Listing does not exist");
         return computeListings[listingId];
     }
 
@@ -351,13 +309,8 @@ contract ResourceStorage is AccessControl, IResourceTypes {
      * @param listingId Listing identifier
      * @return Storage listing struct
      */
-    function getStorageListing(
-        bytes32 listingId
-    ) external view returns (StorageListing memory) {
-        require(
-            storageListings[listingId].provider != address(0),
-            "Listing does not exist"
-        );
+    function getStorageListing(bytes32 listingId) external view returns (StorageListing memory) {
+        require(storageListings[listingId].provider != address(0), "Listing does not exist");
         return storageListings[listingId];
     }
 
@@ -366,13 +319,8 @@ contract ResourceStorage is AccessControl, IResourceTypes {
      * @param allocationId Allocation identifier
      * @return Resource allocation struct
      */
-    function getAllocation(
-        bytes32 allocationId
-    ) external view returns (ResourceAllocation memory) {
-        require(
-            allocations[allocationId].customer != address(0),
-            "Allocation does not exist"
-        );
+    function getAllocation(bytes32 allocationId) external view returns (ResourceAllocation memory) {
+        require(allocations[allocationId].customer != address(0), "Allocation does not exist");
         return allocations[allocationId];
     }
 
@@ -381,9 +329,7 @@ contract ResourceStorage is AccessControl, IResourceTypes {
      * @param provider Provider address
      * @return Array of listing IDs
      */
-    function getProviderComputeListings(
-        address provider
-    ) external view returns (bytes32[] memory) {
+    function getProviderComputeListings(address provider) external view returns (bytes32[] memory) {
         return providerComputeListings[provider];
     }
 
@@ -392,9 +338,7 @@ contract ResourceStorage is AccessControl, IResourceTypes {
      * @param provider Provider address
      * @return Array of listing IDs
      */
-    function getProviderStorageListings(
-        address provider
-    ) external view returns (bytes32[] memory) {
+    function getProviderStorageListings(address provider) external view returns (bytes32[] memory) {
         return providerStorageListings[provider];
     }
 
@@ -403,9 +347,7 @@ contract ResourceStorage is AccessControl, IResourceTypes {
      * @param customer Customer address
      * @return Array of allocation IDs
      */
-    function getCustomerAllocations(
-        address customer
-    ) external view returns (bytes32[] memory) {
+    function getCustomerAllocations(address customer) external view returns (bytes32[] memory) {
         return customerAllocations[customer];
     }
 
@@ -414,9 +356,7 @@ contract ResourceStorage is AccessControl, IResourceTypes {
      * @param tier Compute tier
      * @return Array of listing IDs
      */
-    function getComputeListingsByTier(
-        ComputeTier tier
-    ) external view returns (bytes32[] memory) {
+    function getComputeListingsByTier(ComputeTier tier) external view returns (bytes32[] memory) {
         return computeListingsByTier[tier];
     }
 
@@ -425,9 +365,7 @@ contract ResourceStorage is AccessControl, IResourceTypes {
      * @param tier Storage tier
      * @return Array of listing IDs
      */
-    function getStorageListingsByTier(
-        StorageTier tier
-    ) external view returns (bytes32[] memory) {
+    function getStorageListingsByTier(StorageTier tier) external view returns (bytes32[] memory) {
         return storageListingsByTier[tier];
     }
 
@@ -436,9 +374,7 @@ contract ResourceStorage is AccessControl, IResourceTypes {
      * @param region Geographic region
      * @return Array of listing IDs
      */
-    function getListingsByRegion(
-        string calldata region
-    ) external view returns (bytes32[] memory) {
+    function getListingsByRegion(string calldata region) external view returns (bytes32[] memory) {
         return listingsByRegion[region];
     }
 
@@ -490,10 +426,7 @@ contract ResourceStorage is AccessControl, IResourceTypes {
      * @param listingId Listing identifier
      * @param metrics Performance metrics
      */
-    function updateListingMetrics(
-        bytes32 listingId,
-        PerformanceMetrics calldata metrics
-    ) external onlyLogic {
+    function updateListingMetrics(bytes32 listingId, PerformanceMetrics calldata metrics) external onlyLogic {
         listingMetrics[listingId] = metrics;
         emit ResourceDataUpdated(listingId, "metrics");
     }
@@ -503,9 +436,7 @@ contract ResourceStorage is AccessControl, IResourceTypes {
      * @param listingId Listing identifier
      * @return Performance metrics struct
      */
-    function getListingMetrics(
-        bytes32 listingId
-    ) external view returns (PerformanceMetrics memory) {
+    function getListingMetrics(bytes32 listingId) external view returns (PerformanceMetrics memory) {
         return listingMetrics[listingId];
     }
 
