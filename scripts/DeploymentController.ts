@@ -55,6 +55,15 @@ class DeploymentController {
       // Parse deployment output and save addresses
       const addresses = this.parseDirectDeployOutput(output);
       this.saveAddresses(addresses);
+      
+      // Save Lisk-specific deployment if deploying to Lisk network
+      const rpcUrl = process.env.RPC_URL;
+      if (rpcUrl?.includes('sepolia-api.lisk.com')) {
+        this.saveLiskDeployment(addresses, 'sepolia');
+      } else if (rpcUrl?.includes('api.lisk.com')) {
+        this.saveLiskDeployment(addresses, 'mainnet');
+      }
+      
       this.printSummary(addresses);
       
     } catch (error: any) {
@@ -98,6 +107,15 @@ class DeploymentController {
       const resourceStorageMatch = output.match(/ResourceStorage deployed at: (0x[a-fA-F0-9]{40})/);
       if (resourceStorageMatch) addresses.storage.resourceStorage = resourceStorageMatch[1];
 
+      const rewardsStorageMatch = output.match(/RewardsStorage deployed at: (0x[a-fA-F0-9]{40})/);
+      if (rewardsStorageMatch) addresses.storage.rewardsStorage = rewardsStorageMatch[1];
+
+      const applicationStorageMatch = output.match(/ApplicationStorage deployed at: (0x[a-fA-F0-9]{40})/);
+      if (applicationStorageMatch) addresses.storage.applicationStorage = applicationStorageMatch[1];
+
+      const storageAllocatorStorageMatch = output.match(/StorageAllocatorStorage deployed at: (0x[a-fA-F0-9]{40})/);
+      if (storageAllocatorStorageMatch) addresses.storage.storageAllocatorStorage = storageAllocatorStorageMatch[1];
+
       // Parse implementation contracts
       const nodeLogicImplMatch = output.match(/NodeLogic Implementation deployed at: (0x[a-fA-F0-9]{40})/);
       if (nodeLogicImplMatch) addresses.implementations.nodeLogic = nodeLogicImplMatch[1];
@@ -107,6 +125,15 @@ class DeploymentController {
 
       const resourceLogicImplMatch = output.match(/ResourceLogic Implementation deployed at: (0x[a-fA-F0-9]{40})/);
       if (resourceLogicImplMatch) addresses.implementations.resourceLogic = resourceLogicImplMatch[1];
+
+      const rewardsLogicImplMatch = output.match(/RewardsLogic Implementation deployed at: (0x[a-fA-F0-9]{40})/);
+      if (rewardsLogicImplMatch) addresses.implementations.rewardsLogic = rewardsLogicImplMatch[1];
+
+      const applicationLogicImplMatch = output.match(/ApplicationLogic Implementation deployed at: (0x[a-fA-F0-9]{40})/);
+      if (applicationLogicImplMatch) addresses.implementations.applicationLogic = applicationLogicImplMatch[1];
+
+      const storageAllocatorLogicImplMatch = output.match(/StorageAllocatorLogic Implementation deployed at: (0x[a-fA-F0-9]{40})/);
+      if (storageAllocatorLogicImplMatch) addresses.implementations.storageAllocatorLogic = storageAllocatorLogicImplMatch[1];
 
       const facadeImplMatch = output.match(/Facade Implementation deployed at: (0x[a-fA-F0-9]{40})/);
       if (facadeImplMatch) addresses.implementations.facade = facadeImplMatch[1];
@@ -123,6 +150,15 @@ class DeploymentController {
 
       const resourceLogicProxyMatch = output.match(/ResourceLogic Proxy deployed at: (0x[a-fA-F0-9]{40})/);
       if (resourceLogicProxyMatch) addresses.proxies.resourceLogic = resourceLogicProxyMatch[1];
+
+      const rewardsLogicProxyMatch = output.match(/RewardsLogic Proxy deployed at: (0x[a-fA-F0-9]{40})/);
+      if (rewardsLogicProxyMatch) addresses.proxies.rewardsLogic = rewardsLogicProxyMatch[1];
+
+      const applicationLogicProxyMatch = output.match(/ApplicationLogic Proxy deployed at: (0x[a-fA-F0-9]{40})/);
+      if (applicationLogicProxyMatch) addresses.proxies.applicationLogic = applicationLogicProxyMatch[1];
+
+      const storageAllocatorLogicProxyMatch = output.match(/StorageAllocatorLogic Proxy deployed at: (0x[a-fA-F0-9]{40})/);
+      if (storageAllocatorLogicProxyMatch) addresses.proxies.storageAllocatorLogic = storageAllocatorLogicProxyMatch[1];
 
       const facadeProxyMatch = output.match(/Facade Proxy deployed at: (0x[a-fA-F0-9]{40})/);
       if (facadeProxyMatch) addresses.proxies.facade = facadeProxyMatch[1];
@@ -161,6 +197,33 @@ class DeploymentController {
       
     } catch (error) {
       console.error('❌ Failed to save addresses:', (error as Error).message);
+    }
+  }
+
+  private saveLiskDeployment(addresses: ContractAddresses, network: 'sepolia' | 'mainnet'): void {
+    try {
+      const liskFile = join(this.deployDir, `lisk-${network}.json`);
+      
+      const liskDeployment = {
+        network: `lisk-${network}`,
+        chainId: network === 'sepolia' ? 4202 : 1135,
+        rpc: network === 'sepolia' ? 'https://rpc.sepolia-api.lisk.com' : 'https://rpc.api.lisk.com',
+        timestamp: addresses.timestamp,
+        deployer: addresses.deployer,
+        contracts: {
+          storage: addresses.storage,
+          implementations: addresses.implementations,
+          proxies: addresses.proxies
+        },
+        status: addresses.status,
+        errors: addresses.errors
+      };
+      
+      writeFileSync(liskFile, JSON.stringify(liskDeployment, null, 2));
+      console.log(`📄 Lisk ${network} deployment saved to:`, liskFile);
+      
+    } catch (error) {
+      console.error(`❌ Failed to save Lisk ${network} deployment:`, (error as Error).message);
     }
   }
 

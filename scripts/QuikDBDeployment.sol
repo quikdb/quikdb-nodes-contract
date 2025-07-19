@@ -5,9 +5,15 @@ import {Script, console} from "forge-std/Script.sol";
 import "../src/storage/NodeStorage.sol";
 import "../src/storage/UserStorage.sol";
 import "../src/storage/ResourceStorage.sol";
+import "../src/storage/RewardsStorage.sol";
+import "../src/storage/ApplicationStorage.sol";
+import "../src/storage/StorageAllocatorStorage.sol";
 import "../src/proxy/NodeLogic.sol";
 import "../src/proxy/UserLogic.sol";
 import "../src/proxy/ResourceLogic.sol";
+import "../src/proxy/RewardsLogic.sol";
+import "../src/proxy/ApplicationLogic.sol";
+import "../src/proxy/StorageAllocatorLogic.sol";
 import "../src/proxy/Facade.sol";
 import "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
@@ -36,21 +42,33 @@ contract QuikDBDeployment is Script {
         NodeStorage nodeStorage = new NodeStorage{salt: SALT}(deployer);
         UserStorage userStorage = new UserStorage{salt: SALT}(deployer);
         ResourceStorage resourceStorage = new ResourceStorage{salt: SALT}(deployer);
+        RewardsStorage rewardsStorage = new RewardsStorage{salt: SALT}();
+        ApplicationStorage applicationStorage = new ApplicationStorage{salt: SALT}();
+        StorageAllocatorStorage storageAllocatorStorage = new StorageAllocatorStorage{salt: SALT}();
 
         console.log("NodeStorage deployed at:", address(nodeStorage));
         console.log("UserStorage deployed at:", address(userStorage));
         console.log("ResourceStorage deployed at:", address(resourceStorage));
+        console.log("RewardsStorage deployed at:", address(rewardsStorage));
+        console.log("ApplicationStorage deployed at:", address(applicationStorage));
+        console.log("StorageAllocatorStorage deployed at:", address(storageAllocatorStorage));
 
         // 2. Deploy logic implementation contracts using CREATE2
         console.log("=== DEPLOYING LOGIC IMPLEMENTATIONS (CREATE2) ===");
         NodeLogic nodeLogicImpl = new NodeLogic{salt: SALT}();
         UserLogic userLogicImpl = new UserLogic{salt: SALT}();
         ResourceLogic resourceLogicImpl = new ResourceLogic{salt: SALT}();
+        RewardsLogic rewardsLogicImpl = new RewardsLogic{salt: SALT}();
+        ApplicationLogic applicationLogicImpl = new ApplicationLogic{salt: SALT}();
+        StorageAllocatorLogic storageAllocatorLogicImpl = new StorageAllocatorLogic{salt: SALT}();
         Facade facadeImpl = new Facade{salt: SALT}();
 
         console.log("NodeLogic Implementation deployed at:", address(nodeLogicImpl));
         console.log("UserLogic Implementation deployed at:", address(userLogicImpl));
         console.log("ResourceLogic Implementation deployed at:", address(resourceLogicImpl));
+        console.log("RewardsLogic Implementation deployed at:", address(rewardsLogicImpl));
+        console.log("ApplicationLogic Implementation deployed at:", address(applicationLogicImpl));
+        console.log("StorageAllocatorLogic Implementation deployed at:", address(storageAllocatorLogicImpl));
         console.log("Facade Implementation deployed at:", address(facadeImpl));
 
         // 3. Deploy ProxyAdmin using CREATE2
@@ -86,6 +104,30 @@ contract QuikDBDeployment is Script {
             deployer
         );
 
+        bytes memory rewardsLogicInitData = abi.encodeWithSelector(
+            RewardsLogic.initialize.selector,
+            address(rewardsStorage),
+            address(nodeStorage),
+            address(userStorage),
+            deployer
+        );
+
+        bytes memory applicationLogicInitData = abi.encodeWithSelector(
+            ApplicationLogic.initialize.selector,
+            address(applicationStorage),
+            address(nodeStorage),
+            address(userStorage),
+            deployer
+        );
+
+        bytes memory storageAllocatorLogicInitData = abi.encodeWithSelector(
+            StorageAllocatorLogic.initialize.selector,
+            address(storageAllocatorStorage),
+            address(nodeStorage),
+            address(userStorage),
+            deployer
+        );
+
         // Deploy proxies using CREATE2 with different salts for each
         TransparentUpgradeableProxy nodeLogicProxy = new TransparentUpgradeableProxy{
             salt: keccak256(abi.encodePacked(SALT, "NodeLogicProxy"))
@@ -98,6 +140,18 @@ contract QuikDBDeployment is Script {
         TransparentUpgradeableProxy resourceLogicProxy = new TransparentUpgradeableProxy{
             salt: keccak256(abi.encodePacked(SALT, "ResourceLogicProxy"))
         }(address(resourceLogicImpl), deployer, resourceLogicInitData);
+
+        TransparentUpgradeableProxy rewardsLogicProxy = new TransparentUpgradeableProxy{
+            salt: keccak256(abi.encodePacked(SALT, "RewardsLogicProxy"))
+        }(address(rewardsLogicImpl), deployer, rewardsLogicInitData);
+
+        TransparentUpgradeableProxy applicationLogicProxy = new TransparentUpgradeableProxy{
+            salt: keccak256(abi.encodePacked(SALT, "ApplicationLogicProxy"))
+        }(address(applicationLogicImpl), deployer, applicationLogicInitData);
+
+        TransparentUpgradeableProxy storageAllocatorLogicProxy = new TransparentUpgradeableProxy{
+            salt: keccak256(abi.encodePacked(SALT, "StorageAllocatorLogicProxy"))
+        }(address(storageAllocatorLogicImpl), deployer, storageAllocatorLogicInitData);
 
         // Initialize facade with logic contract addresses
         bytes memory facadeInitData = abi.encodeWithSelector(
@@ -115,6 +169,9 @@ contract QuikDBDeployment is Script {
         console.log("NodeLogic Proxy deployed at:", address(nodeLogicProxy));
         console.log("UserLogic Proxy deployed at:", address(userLogicProxy));
         console.log("ResourceLogic Proxy deployed at:", address(resourceLogicProxy));
+        console.log("RewardsLogic Proxy deployed at:", address(rewardsLogicProxy));
+        console.log("ApplicationLogic Proxy deployed at:", address(applicationLogicProxy));
+        console.log("StorageAllocatorLogic Proxy deployed at:", address(storageAllocatorLogicProxy));
         console.log("Facade Proxy deployed at:", address(facadeProxy));
 
         // 5. Configure storage contracts to accept logic contracts
@@ -147,11 +204,17 @@ contract QuikDBDeployment is Script {
         console.log("  NodeStorage:", address(nodeStorage));
         console.log("  UserStorage:", address(userStorage));
         console.log("  ResourceStorage:", address(resourceStorage));
+        console.log("  RewardsStorage:", address(rewardsStorage));
+        console.log("  ApplicationStorage:", address(applicationStorage));
+        console.log("  StorageAllocatorStorage:", address(storageAllocatorStorage));
         console.log("");
         console.log("Implementation Contracts:");
         console.log("  NodeLogic:", address(nodeLogicImpl));
         console.log("  UserLogic:", address(userLogicImpl));
         console.log("  ResourceLogic:", address(resourceLogicImpl));
+        console.log("  RewardsLogic:", address(rewardsLogicImpl));
+        console.log("  ApplicationLogic:", address(applicationLogicImpl));
+        console.log("  StorageAllocatorLogic:", address(storageAllocatorLogicImpl));
         console.log("  Facade:", address(facadeImpl));
         console.log("");
         console.log("Proxy Contracts:");
@@ -159,6 +222,9 @@ contract QuikDBDeployment is Script {
         console.log("  NodeLogic:", address(nodeLogicProxy));
         console.log("  UserLogic:", address(userLogicProxy));
         console.log("  ResourceLogic:", address(resourceLogicProxy));
+        console.log("  RewardsLogic:", address(rewardsLogicProxy));
+        console.log("  ApplicationLogic:", address(applicationLogicProxy));
+        console.log("  StorageAllocatorLogic:", address(storageAllocatorLogicProxy));
         console.log("  Facade:", address(facadeProxy));
 
         console.log("=== QUIKDB DEPLOYMENT COMPLETED ===");

@@ -178,6 +178,19 @@ async function loadDeploymentAddresses(network: string): Promise<void> {
             } else if (deploymentData.addresses) {
                 // Standard format with addresses object
                 CONTRACT_ADDRESSES = deploymentData.addresses;
+            } else if (deploymentData.contracts) {
+                // Lisk deployment format with nested contracts object
+                CONTRACT_ADDRESSES = {
+                    nodeStorage: deploymentData.contracts.storage?.nodeStorage || "",
+                    userStorage: deploymentData.contracts.storage?.userStorage || "",
+                    resourceStorage: deploymentData.contracts.storage?.resourceStorage || "",
+                    // For validation, we use proxy addresses as the main contract addresses
+                    nodeLogic: deploymentData.contracts.proxies?.nodeLogic || deploymentData.contracts.implementations?.nodeLogic || "",
+                    userLogic: deploymentData.contracts.proxies?.userLogic || deploymentData.contracts.implementations?.userLogic || "",
+                    resourceLogic: deploymentData.contracts.proxies?.resourceLogic || deploymentData.contracts.implementations?.resourceLogic || "",
+                    facade: deploymentData.contracts.proxies?.facade || deploymentData.contracts.implementations?.facade || "",
+                    proxyAdmin: deploymentData.contracts.proxies?.proxyAdmin || ""
+                };
             } else if (deploymentData.storage || deploymentData.implementations || deploymentData.proxies) {
                 // Direct deployment format (like latest.json)
                 CONTRACT_ADDRESSES = {
