@@ -70,13 +70,12 @@ contract ApplicationLogic is BaseLogic {
      * @param appId Unique identifier for the application
      * @param deployer Address of the deployer
      * @param nodeIds Array of node IDs where the application will be deployed
-     * @param configHash Hash of the application configuration
      */
     function registerApplication(
         string calldata appId,
         address deployer,
         string[] calldata nodeIds,
-        string calldata configHash
+        string calldata /* configHash */
     ) external onlyRole(APPLICATION_DEPLOYER_ROLE) whenNotPaused nonReentrant {
         if (bytes(appId).length == 0) revert InvalidApplicationId(appId);
         if (deployer == address(0)) revert InvalidDeployer(deployer);

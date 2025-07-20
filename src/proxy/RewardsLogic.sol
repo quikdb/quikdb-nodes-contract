@@ -114,7 +114,7 @@ contract RewardsLogic is BaseLogic {
         bytes32 rewardId
     ) external onlyRole(REWARDS_DISTRIBUTOR_ROLE) whenNotPaused nonReentrant {
         // Get reward record from storage
-        (address nodeOperator, uint256 amount, uint256 distributionDate, uint8 rewardType, bool distributed) = 
+        (address nodeOperator, uint256 amount, , , bool distributed) = 
             rewardsStorage.rewardRecords(rewardId);
 
         if (nodeOperator == address(0)) revert RewardNotFound(rewardId);
@@ -133,8 +133,6 @@ contract RewardsLogic is BaseLogic {
     /**
      * @dev Get reward history for a specific node operator
      * @param nodeOperator Address of the node operator
-     * @param offset Starting index for pagination
-     * @param limit Maximum number of records to return
      * @return rewardIds Array of reward IDs for the operator
      * @return amounts Array of reward amounts
      * @return distributionDates Array of distribution dates
@@ -143,9 +141,9 @@ contract RewardsLogic is BaseLogic {
      */
     function getRewardHistory(
         address nodeOperator,
-        uint256 offset,
-        uint256 limit
-    ) external view returns (
+        uint256 /* offset */,
+        uint256 /* limit */
+    ) external pure returns (
         bytes32[] memory rewardIds,
         uint256[] memory amounts,
         uint256[] memory distributionDates,

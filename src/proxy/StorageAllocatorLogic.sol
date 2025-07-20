@@ -124,7 +124,7 @@ contract StorageAllocatorLogic is BaseLogic {
         if (bytes(allocationId).length == 0) revert InvalidAllocationId(allocationId);
 
         // Check if allocation exists
-        (string memory existingAllocationId, address requester, , uint8 currentStatus, ) = 
+        (string memory existingAllocationId, address requester, , , ) = 
             storageAllocatorStorage.allocations(allocationId);
         if (bytes(existingAllocationId).length == 0) {
             revert AllocationNotFound(allocationId);

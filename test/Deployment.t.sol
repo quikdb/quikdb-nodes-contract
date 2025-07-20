@@ -38,7 +38,7 @@ contract DeploymentTest is BaseTest {
         // Verify all proxy contracts are deployed
         assertTrue(address(nodeLogic) != address(0), "NodeLogic proxy not deployed");
         assertTrue(address(userLogic) != address(0), "UserLogic proxy not deployed");
-        assertTrue(address(resourceLogic) != address(0), "ResourceLogic proxy not deployed");
+        // assertTrue(address(resourceLogic) != address(0), "ResourceLogic proxy not deployed"); // Moved to ResourceLogic.t.sol
         assertTrue(address(performanceLogic) != address(0), "PerformanceLogic proxy not deployed");
         assertTrue(address(clusterLogic) != address(0), "ClusterLogic proxy not deployed");
         assertTrue(address(rewardsLogic) != address(0), "RewardsLogic proxy not deployed");
@@ -58,7 +58,7 @@ contract DeploymentTest is BaseTest {
         // This indirectly verifies the implementation is correctly set
         assertTrue(address(nodeLogic) != address(0), "NodeLogic proxy not working");
         assertTrue(address(userLogic) != address(0), "UserLogic proxy not working");
-        assertTrue(address(resourceLogic) != address(0), "ResourceLogic proxy not working");
+        // assertTrue(address(resourceLogic) != address(0), "ResourceLogic proxy not working"); // Moved to ResourceLogic.t.sol
         assertTrue(address(performanceLogic) != address(0), "PerformanceLogic proxy not working");
         assertTrue(address(clusterLogic) != address(0), "ClusterLogic proxy not working");
         assertTrue(address(facade) != address(0), "Facade proxy not working");
@@ -92,10 +92,10 @@ contract DeploymentTest is BaseTest {
         assertTrue(
             userLogic.hasRole(userLogic.DEFAULT_ADMIN_ROLE(), admin), "Admin missing DEFAULT_ADMIN_ROLE on UserLogic"
         );
-        assertTrue(
-            resourceLogic.hasRole(resourceLogic.DEFAULT_ADMIN_ROLE(), admin),
-            "Admin missing DEFAULT_ADMIN_ROLE on ResourceLogic"
-        );
+        // assertTrue(
+        //     resourceLogic.hasRole(resourceLogic.DEFAULT_ADMIN_ROLE(), admin),
+        //     "Admin missing DEFAULT_ADMIN_ROLE on ResourceLogic"
+        // ); // Moved to ResourceLogic.t.sol
         assertTrue(
             performanceLogic.hasRole(performanceLogic.DEFAULT_ADMIN_ROLE(), admin),
             "Admin missing DEFAULT_ADMIN_ROLE on PerformanceLogic"
@@ -251,10 +251,10 @@ contract DeploymentTest is BaseTest {
         // Verify that contracts have been properly configured
         assertTrue(address(nodeLogic.nodeStorage()) != address(0), "NodeLogic not initialized - nodeStorage not set");
         assertTrue(address(userLogic.userStorage()) != address(0), "UserLogic not initialized - userStorage not set");
-        assertTrue(
-            address(resourceLogic.resourceStorage()) != address(0),
-            "ResourceLogic not initialized - resourceStorage not set"
-        );
+        // assertTrue(
+        //     address(resourceLogic.resourceStorage()) != address(0),
+        //     "ResourceLogic should have resource storage set"
+        // ); // Moved to ResourceLogic.t.sol
         assertTrue(
             address(performanceLogic.performanceStorage()) != address(0),
             "PerformanceLogic not initialized - performanceStorage not set"
@@ -267,9 +267,9 @@ contract DeploymentTest is BaseTest {
         // Verify admin roles were set up correctly
         assertTrue(nodeLogic.hasRole(nodeLogic.DEFAULT_ADMIN_ROLE(), admin), "Admin role not set for NodeLogic");
         assertTrue(userLogic.hasRole(userLogic.DEFAULT_ADMIN_ROLE(), admin), "Admin role not set for UserLogic");
-        assertTrue(
-            resourceLogic.hasRole(resourceLogic.DEFAULT_ADMIN_ROLE(), admin), "Admin role not set for ResourceLogic"
-        );
+        // assertTrue(
+        //     resourceLogic.hasRole(resourceLogic.DEFAULT_ADMIN_ROLE(), admin), "Admin role not set for ResourceLogic"
+        // ); // Moved to ResourceLogic.t.sol
         assertTrue(
             performanceLogic.hasRole(performanceLogic.DEFAULT_ADMIN_ROLE(), admin), "Admin role not set for PerformanceLogic"
         );

@@ -200,9 +200,9 @@ contract UserLogic is BaseLogic {
      * @dev Get users with query parameters for blockchain service
      */
     function getUsers(
-        string calldata userIdFilter,
-        string calldata statusFilter,
-        string calldata organizationFilter,
+        string calldata /* userIdFilter */,
+        string calldata /* statusFilter */,
+        string calldata /* organizationFilter */,
         uint256 limit,
         uint256 offset
     ) external view returns (

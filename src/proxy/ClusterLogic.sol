@@ -224,8 +224,8 @@ contract ClusterLogic is BaseLogic {
      */
     function registerCluster(
         string[] calldata nodeIds,
-        bytes32 clusterConfigHash,
-        bytes32 metadataHash
+        bytes32 /* clusterConfigHash */,
+        bytes32 /* metadataHash */
     ) external whenNotPaused onlyRole(CLUSTER_MANAGER_ROLE) returns (string memory) {
         require(nodeIds.length > 0, "No nodes provided");
         require(nodeIds.length <= 100, "Too many nodes"); // Reasonable limit
@@ -294,7 +294,7 @@ contract ClusterLogic is BaseLogic {
         string calldata clusterId,
         string calldata status,
         uint8 healthScore,
-        uint256 lastUpdated
+        uint256 /* lastUpdated */
     ) external whenNotPaused onlyRole(CLUSTER_MANAGER_ROLE) {
         require(bytes(clusterId).length > 0, "Invalid clusterId");
         require(clusterRegistered[clusterId], "Cluster does not exist");

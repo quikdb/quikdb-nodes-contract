@@ -78,7 +78,7 @@ abstract contract BaseTest is Test {
     // Proxied contracts
     NodeLogic internal nodeLogic;
     UserLogic internal userLogic;
-    ResourceLogic internal resourceLogic;
+    // ResourceLogic internal resourceLogic; // Moved to ResourceLogic.t.sol
     PerformanceLogic internal performanceLogic;
     ClusterLogic internal clusterLogic;
     RewardsLogic internal rewardsLogic;
@@ -252,7 +252,7 @@ abstract contract BaseTest is Test {
         // Get proxied contracts
         nodeLogic = NodeLogic(payable(address(nodeLogicProxy)));
         userLogic = UserLogic(payable(address(userLogicProxy)));
-        resourceLogic = ResourceLogic(payable(address(resourceLogicProxy)));
+        // resourceLogic = ResourceLogic(payable(address(resourceLogicProxy))); // Moved to ResourceLogic.t.sol
         performanceLogic = PerformanceLogic(payable(address(performanceLogicProxy)));
         clusterLogic = ClusterLogic(payable(address(clusterLogicProxy)));
         rewardsLogic = RewardsLogic(payable(address(rewardsLogicProxy)));
