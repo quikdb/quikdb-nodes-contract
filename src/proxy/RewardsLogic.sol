@@ -14,6 +14,17 @@ contract RewardsLogic is BaseLogic {
     // Storage contract reference
     RewardsStorage public rewardsStorage;
 
+    // Node ID to address mapping for rewards
+    mapping(string => address) private nodeIdToAddress;
+    mapping(address => string) private addressToNodeId;
+    
+    // Reward tracking
+    mapping(string => uint256) private nodeLastRewardTime;
+    mapping(string => uint256) private nodeTotalRewards;
+    
+    // Reward records by nodeId
+    mapping(string => bytes32[]) private nodeRewardIds;
+
     // Rewards-specific roles
     bytes32 public constant REWARDS_CALCULATOR_ROLE = keccak256("REWARDS_CALCULATOR_ROLE");
     bytes32 public constant REWARDS_DISTRIBUTOR_ROLE = keccak256("REWARDS_DISTRIBUTOR_ROLE");
@@ -191,5 +202,82 @@ contract RewardsLogic is BaseLogic {
         bool distributed
     ) {
         return rewardsStorage.rewardRecords(rewardId);
+    }
+
+    // =============================================================================
+    // MISSING BLOCKCHAIN SERVICE METHODS
+    // =============================================================================
+
+    /**
+     * @dev Distribute rewards with blockchain service interface
+     */
+    function distributeRewards(
+        string calldata nodeId,
+        uint256 amount,
+        string calldata period,
+        uint8 uptimeScore,
+        uint8 performanceScore,
+        uint8 qualityScore
+    ) external onlyRole(REWARDS_DISTRIBUTOR_ROLE) whenNotPaused nonReentrant returns (bytes32) {
+        require(bytes(nodeId).length > 0, "Invalid nodeId");
+        require(amount > 0, "Invalid reward amount");
+        require(uptimeScore <= 100 && performanceScore <= 100 && qualityScore <= 100, "Invalid scores");
+        
+        // Generate unique reward ID
+        bytes32 rewardId = keccak256(
+            abi.encodePacked(nodeId, amount, block.timestamp, period)
+        );
+
+        // Calculate average performance score
+        uint8 avgScore = (uptimeScore + performanceScore + qualityScore) / 3;
+        
+        // Adjust reward based on performance
+        uint256 adjustedAmount = (amount * avgScore) / 100;
+        require(adjustedAmount > 0, "Calculated reward too low");
+        
+        // Check minimum time between rewards (prevent spam)
+        require(
+            block.timestamp >= nodeLastRewardTime[nodeId] + 24 hours,
+            "Reward distributed too recently"
+        );
+        
+        // Update tracking
+        nodeLastRewardTime[nodeId] = block.timestamp;
+        nodeTotalRewards[nodeId] += adjustedAmount;
+        nodeRewardIds[nodeId].push(rewardId);
+        
+        // Store reward record in storage if available
+        if (address(rewardsStorage) != address(0)) {
+            // Note: This would require the rewardsStorage to have a method to store the reward
+            // For now, we track it locally
+        }
+
+        emit RewardDistributionCompleted(rewardId, msg.sender, adjustedAmount);
+        return rewardId;
+    }
+    
+    /**
+     * @dev Get node total rewards
+     */
+    function getNodeTotalRewards(string calldata nodeId) external view returns (uint256) {
+        return nodeTotalRewards[nodeId];
+    }
+    
+    /**
+     * @dev Get node reward history
+     */
+    function getNodeRewardHistory(string calldata nodeId) external view returns (bytes32[] memory) {
+        return nodeRewardIds[nodeId];
+    }
+    
+    /**
+     * @dev Set node address mapping (for nodeId resolution)
+     */
+    function setNodeMapping(string calldata nodeId, address nodeAddress) external onlyRole(ADMIN_ROLE) {
+        require(bytes(nodeId).length > 0, "Invalid nodeId");
+        require(nodeAddress != address(0), "Invalid node address");
+        
+        nodeIdToAddress[nodeId] = nodeAddress;
+        addressToNodeId[nodeAddress] = nodeId;
     }
 }

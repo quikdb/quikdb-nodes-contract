@@ -13,6 +13,8 @@
     "deploy:broadcast": "tsx scripts/deploy.ts --broadcast",
     "deploy:lsk:testnet": "RPC_URL=https://rpc.sepolia-api.lisk.com tsx scripts/deploy.ts --broadcast",
     "deploy:lsk:mainnet": "RPC_URL=https://rpc.api.lisk.com tsx scripts/deploy.ts --broadcast",
+    "copy-deployments": "tsx scripts/copy-deployments.ts",
+    "validate-contracts": "tsx scripts/validate-contracts.ts",
     "upgrade": "tsx scripts/upgrade.ts",
     "upgrade:broadcast": "tsx scripts/upgrade.ts --broadcast",
     "upgrade:lsk:testnet": "RPC_URL=https://rpc.sepolia-api.lisk.com tsx scripts/upgrade.ts --broadcast",

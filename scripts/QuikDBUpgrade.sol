@@ -5,6 +5,11 @@ import {Script, console} from "forge-std/Script.sol";
 import "../src/proxy/NodeLogic.sol";
 import "../src/proxy/UserLogic.sol";
 import "../src/proxy/ResourceLogic.sol";
+import "../src/proxy/RewardsLogic.sol";
+import "../src/proxy/ApplicationLogic.sol";
+import "../src/proxy/StorageAllocatorLogic.sol";
+import "../src/proxy/ClusterLogic.sol";
+import "../src/proxy/PerformanceLogic.sol";
 import "../src/proxy/Facade.sol";
 import "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
@@ -17,7 +22,7 @@ import "@openzeppelin/contracts/interfaces/IERC1967.sol";
  */
 contract QuikDBUpgrade is Script {
     // CREATE2 salt for new implementation contracts - increment version for upgrades
-    bytes32 public constant IMPL_SALT = keccak256("QuikDB.v6.2025.IMPL");
+    bytes32 public constant IMPL_SALT = keccak256("QuikDB.v7.2025.IMPL");
 
     // EIP-1967 admin slot: bytes32(uint256(keccak256("eip1967.proxy.admin")) - 1)
     bytes32 constant ADMIN_SLOT = bytes32(uint256(keccak256("eip1967.proxy.admin")) - 1);
@@ -27,10 +32,20 @@ contract QuikDBUpgrade is Script {
         address nodeStorage;
         address userStorage;
         address resourceStorage;
+        address rewardsStorage;
+        address applicationStorage;
+        address storageAllocatorStorage;
+        address clusterStorage;
+        address performanceStorage;
         address proxyAdmin;
         address nodeLogicProxy;
         address userLogicProxy;
         address resourceLogicProxy;
+        address rewardsLogicProxy;
+        address applicationLogicProxy;
+        address storageAllocatorLogicProxy;
+        address clusterLogicProxy;
+        address performanceLogicProxy;
         address facadeProxy;
     }
 
@@ -52,11 +67,21 @@ contract QuikDBUpgrade is Script {
         NodeLogic newNodeLogicImpl = new NodeLogic{salt: IMPL_SALT}();
         UserLogic newUserLogicImpl = new UserLogic{salt: IMPL_SALT}();
         ResourceLogic newResourceLogicImpl = new ResourceLogic{salt: IMPL_SALT}();
+        RewardsLogic newRewardsLogicImpl = new RewardsLogic{salt: IMPL_SALT}();
+        ApplicationLogic newApplicationLogicImpl = new ApplicationLogic{salt: IMPL_SALT}();
+        StorageAllocatorLogic newStorageAllocatorLogicImpl = new StorageAllocatorLogic{salt: IMPL_SALT}();
+        ClusterLogic newClusterLogicImpl = new ClusterLogic{salt: IMPL_SALT}();
+        PerformanceLogic newPerformanceLogicImpl = new PerformanceLogic{salt: IMPL_SALT}();
         Facade newFacadeImpl = new Facade{salt: IMPL_SALT}();
 
         console.log("New NodeLogic Implementation deployed at:", address(newNodeLogicImpl));
         console.log("New UserLogic Implementation deployed at:", address(newUserLogicImpl));
         console.log("New ResourceLogic Implementation deployed at:", address(newResourceLogicImpl));
+        console.log("New RewardsLogic Implementation deployed at:", address(newRewardsLogicImpl));
+        console.log("New ApplicationLogic Implementation deployed at:", address(newApplicationLogicImpl));
+        console.log("New StorageAllocatorLogic Implementation deployed at:", address(newStorageAllocatorLogicImpl));
+        console.log("New ClusterLogic Implementation deployed at:", address(newClusterLogicImpl));
+        console.log("New PerformanceLogic Implementation deployed at:", address(newPerformanceLogicImpl));
         console.log("New Facade Implementation deployed at:", address(newFacadeImpl));
 
         // 2. Upgrade proxies to new implementations
@@ -110,19 +135,29 @@ contract QuikDBUpgrade is Script {
         // Upgrade all proxies using raw admin slot logic like NodeLogic
         console.log("Upgrading proxies using direct admin address + upgradeAndCall...");
 
-        address[4] memory proxyAddrs;
-        address[4] memory newImpls;
-        string[4] memory labels = ["NodeLogic", "UserLogic", "ResourceLogic", "Facade"];
+        address[9] memory proxyAddrs;
+        address[9] memory newImpls;
+        string[9] memory labels = ["NodeLogic", "UserLogic", "ResourceLogic", "RewardsLogic", "ApplicationLogic", "StorageAllocatorLogic", "ClusterLogic", "PerformanceLogic", "Facade"];
 
         proxyAddrs[0] = existing.nodeLogicProxy;
         proxyAddrs[1] = existing.userLogicProxy;
         proxyAddrs[2] = existing.resourceLogicProxy;
-        proxyAddrs[3] = existing.facadeProxy;
+        proxyAddrs[3] = existing.rewardsLogicProxy;
+        proxyAddrs[4] = existing.applicationLogicProxy;
+        proxyAddrs[5] = existing.storageAllocatorLogicProxy;
+        proxyAddrs[6] = existing.clusterLogicProxy;
+        proxyAddrs[7] = existing.performanceLogicProxy;
+        proxyAddrs[8] = existing.facadeProxy;
 
         newImpls[0] = address(newNodeLogicImpl);
         newImpls[1] = address(newUserLogicImpl);
         newImpls[2] = address(newResourceLogicImpl);
-        newImpls[3] = address(newFacadeImpl);
+        newImpls[3] = address(newRewardsLogicImpl);
+        newImpls[4] = address(newApplicationLogicImpl);
+        newImpls[5] = address(newStorageAllocatorLogicImpl);
+        newImpls[6] = address(newClusterLogicImpl);
+        newImpls[7] = address(newPerformanceLogicImpl);
+        newImpls[8] = address(newFacadeImpl);
 
         for (uint256 i = 0; i < proxyAddrs.length; i++) {
             bytes32 adminRaw = vm.load(proxyAddrs[i], ADMIN_SLOT);
@@ -148,6 +183,11 @@ contract QuikDBUpgrade is Script {
         verifyUpgrade(existing.nodeLogicProxy, address(newNodeLogicImpl), "NodeLogic");
         verifyUpgrade(existing.userLogicProxy, address(newUserLogicImpl), "UserLogic");
         verifyUpgrade(existing.resourceLogicProxy, address(newResourceLogicImpl), "ResourceLogic");
+        verifyUpgrade(existing.rewardsLogicProxy, address(newRewardsLogicImpl), "RewardsLogic");
+        verifyUpgrade(existing.applicationLogicProxy, address(newApplicationLogicImpl), "ApplicationLogic");
+        verifyUpgrade(existing.storageAllocatorLogicProxy, address(newStorageAllocatorLogicImpl), "StorageAllocatorLogic");
+        verifyUpgrade(existing.clusterLogicProxy, address(newClusterLogicImpl), "ClusterLogic");
+        verifyUpgrade(existing.performanceLogicProxy, address(newPerformanceLogicImpl), "PerformanceLogic");
         verifyUpgrade(existing.facadeProxy, address(newFacadeImpl), "Facade");
 
         vm.stopBroadcast();
@@ -157,12 +197,22 @@ contract QuikDBUpgrade is Script {
         console.log("  NodeLogic Proxy:", existing.nodeLogicProxy);
         console.log("  UserLogic Proxy:", existing.userLogicProxy);
         console.log("  ResourceLogic Proxy:", existing.resourceLogicProxy);
+        console.log("  RewardsLogic Proxy:", existing.rewardsLogicProxy);
+        console.log("  ApplicationLogic Proxy:", existing.applicationLogicProxy);
+        console.log("  StorageAllocatorLogic Proxy:", existing.storageAllocatorLogicProxy);
+        console.log("  ClusterLogic Proxy:", existing.clusterLogicProxy);
+        console.log("  PerformanceLogic Proxy:", existing.performanceLogicProxy);
         console.log("  Facade Proxy:", existing.facadeProxy);
         console.log("");
         console.log("New Implementation Addresses:");
         console.log("  NodeLogic Impl:", address(newNodeLogicImpl));
         console.log("  UserLogic Impl:", address(newUserLogicImpl));
         console.log("  ResourceLogic Impl:", address(newResourceLogicImpl));
+        console.log("  RewardsLogic Impl:", address(newRewardsLogicImpl));
+        console.log("  ApplicationLogic Impl:", address(newApplicationLogicImpl));
+        console.log("  StorageAllocatorLogic Impl:", address(newStorageAllocatorLogicImpl));
+        console.log("  ClusterLogic Impl:", address(newClusterLogicImpl));
+        console.log("  PerformanceLogic Impl:", address(newPerformanceLogicImpl));
         console.log("  Facade Impl:", address(newFacadeImpl));
 
         console.log("=== QUIKDB UPGRADE COMPLETED ===");
@@ -174,10 +224,20 @@ contract QuikDBUpgrade is Script {
             nodeStorage: vm.envAddress("NODE_STORAGE"),
             userStorage: vm.envAddress("USER_STORAGE"),
             resourceStorage: vm.envAddress("RESOURCE_STORAGE"),
+            rewardsStorage: vm.envAddress("REWARDS_STORAGE"),
+            applicationStorage: vm.envAddress("APPLICATION_STORAGE"),
+            storageAllocatorStorage: vm.envAddress("STORAGE_ALLOCATOR_STORAGE"),
+            clusterStorage: vm.envAddress("CLUSTER_STORAGE"),
+            performanceStorage: vm.envAddress("PERFORMANCE_STORAGE"),
             proxyAdmin: vm.envAddress("PROXY_ADMIN"),
             nodeLogicProxy: vm.envAddress("NODE_LOGIC_PROXY"),
             userLogicProxy: vm.envAddress("USER_LOGIC_PROXY"),
             resourceLogicProxy: vm.envAddress("RESOURCE_LOGIC_PROXY"),
+            rewardsLogicProxy: vm.envAddress("REWARDS_LOGIC_PROXY"),
+            applicationLogicProxy: vm.envAddress("APPLICATION_LOGIC_PROXY"),
+            storageAllocatorLogicProxy: vm.envAddress("STORAGE_ALLOCATOR_LOGIC_PROXY"),
+            clusterLogicProxy: vm.envAddress("CLUSTER_LOGIC_PROXY"),
+            performanceLogicProxy: vm.envAddress("PERFORMANCE_LOGIC_PROXY"),
             facadeProxy: vm.envAddress("FACADE_PROXY")
         });
     }

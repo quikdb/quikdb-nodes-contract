@@ -116,6 +116,12 @@ class DeploymentController {
       const storageAllocatorStorageMatch = output.match(/StorageAllocatorStorage deployed at: (0x[a-fA-F0-9]{40})/);
       if (storageAllocatorStorageMatch) addresses.storage.storageAllocatorStorage = storageAllocatorStorageMatch[1];
 
+      const clusterStorageMatch = output.match(/ClusterStorage deployed at: (0x[a-fA-F0-9]{40})/);
+      if (clusterStorageMatch) addresses.storage.clusterStorage = clusterStorageMatch[1];
+
+      const performanceStorageMatch = output.match(/PerformanceStorage deployed at: (0x[a-fA-F0-9]{40})/);
+      if (performanceStorageMatch) addresses.storage.performanceStorage = performanceStorageMatch[1];
+
       // Parse implementation contracts
       const nodeLogicImplMatch = output.match(/NodeLogic Implementation deployed at: (0x[a-fA-F0-9]{40})/);
       if (nodeLogicImplMatch) addresses.implementations.nodeLogic = nodeLogicImplMatch[1];
@@ -134,6 +140,12 @@ class DeploymentController {
 
       const storageAllocatorLogicImplMatch = output.match(/StorageAllocatorLogic Implementation deployed at: (0x[a-fA-F0-9]{40})/);
       if (storageAllocatorLogicImplMatch) addresses.implementations.storageAllocatorLogic = storageAllocatorLogicImplMatch[1];
+
+      const clusterLogicImplMatch = output.match(/ClusterLogic Implementation deployed at: (0x[a-fA-F0-9]{40})/);
+      if (clusterLogicImplMatch) addresses.implementations.clusterLogic = clusterLogicImplMatch[1];
+
+      const performanceLogicImplMatch = output.match(/PerformanceLogic Implementation deployed at: (0x[a-fA-F0-9]{40})/);
+      if (performanceLogicImplMatch) addresses.implementations.performanceLogic = performanceLogicImplMatch[1];
 
       const facadeImplMatch = output.match(/Facade Implementation deployed at: (0x[a-fA-F0-9]{40})/);
       if (facadeImplMatch) addresses.implementations.facade = facadeImplMatch[1];
@@ -159,6 +171,12 @@ class DeploymentController {
 
       const storageAllocatorLogicProxyMatch = output.match(/StorageAllocatorLogic Proxy deployed at: (0x[a-fA-F0-9]{40})/);
       if (storageAllocatorLogicProxyMatch) addresses.proxies.storageAllocatorLogic = storageAllocatorLogicProxyMatch[1];
+
+      const clusterLogicProxyMatch = output.match(/ClusterLogic Proxy deployed at: (0x[a-fA-F0-9]{40})/);
+      if (clusterLogicProxyMatch) addresses.proxies.clusterLogic = clusterLogicProxyMatch[1];
+
+      const performanceLogicProxyMatch = output.match(/PerformanceLogic Proxy deployed at: (0x[a-fA-F0-9]{40})/);
+      if (performanceLogicProxyMatch) addresses.proxies.performanceLogic = performanceLogicProxyMatch[1];
 
       const facadeProxyMatch = output.match(/Facade Proxy deployed at: (0x[a-fA-F0-9]{40})/);
       if (facadeProxyMatch) addresses.proxies.facade = facadeProxyMatch[1];

@@ -14,6 +14,20 @@ contract ClusterLogic is BaseLogic {
     // Storage contract reference
     ClusterStorage public clusterStorage;
 
+    // Node ID to address mapping
+    mapping(string => address) private nodeIdToAddress;
+    mapping(address => string) private addressToNodeId;
+    
+    // Cluster tracking
+    mapping(string => bool) private clusterRegistered;
+    mapping(string => uint256) private clusterCreationTimes;
+    mapping(string => uint8) private clusterStatuses;
+    mapping(string => uint8) private clusterHealthScores;
+    
+    // Arrays for tracking all clusters
+    string[] private allClusterIds;
+    mapping(string => uint256) private clusterIndices;
+
     // Cluster-specific roles
     bytes32 public constant CLUSTER_MANAGER_ROLE = keccak256("CLUSTER_MANAGER_ROLE");
 
@@ -199,5 +213,138 @@ contract ClusterLogic is BaseLogic {
         } else {
             super._checkRole(role);
         }
+    }
+
+    // =============================================================================
+    // MISSING BLOCKCHAIN SERVICE METHODS
+    // =============================================================================
+
+    /**
+     * @dev Register cluster with blockchain service interface
+     */
+    function registerCluster(
+        string[] calldata nodeIds,
+        bytes32 clusterConfigHash,
+        bytes32 metadataHash
+    ) external whenNotPaused onlyRole(CLUSTER_MANAGER_ROLE) returns (string memory) {
+        require(nodeIds.length > 0, "No nodes provided");
+        require(nodeIds.length <= 100, "Too many nodes"); // Reasonable limit
+        
+        // Generate unique cluster ID
+        string memory clusterId = string(abi.encodePacked("cluster_", block.timestamp, "_", block.number));
+        require(!clusterRegistered[clusterId], "Cluster ID collision");
+        
+        // Validate all nodeIds and convert to addresses
+        address[] memory nodeAddresses = new address[](nodeIds.length);
+        for (uint i = 0; i < nodeIds.length; i++) {
+            require(bytes(nodeIds[i]).length > 0, "Invalid nodeId");
+            
+            // For now, generate deterministic address from nodeId
+            // In real implementation, you'd validate that these nodes exist
+            address nodeAddr = address(uint160(uint256(keccak256(abi.encodePacked(nodeIds[i])))));
+            nodeAddresses[i] = nodeAddr;
+            
+            // Store mapping for future reference
+            if (nodeIdToAddress[nodeIds[i]] == address(0)) {
+                nodeIdToAddress[nodeIds[i]] = nodeAddr;
+                addressToNodeId[nodeAddr] = nodeIds[i];
+            }
+        }
+
+        // Create and store cluster
+        if (address(clusterStorage) != address(0)) {
+            ClusterStorage.NodeCluster memory cluster = ClusterStorage.NodeCluster({
+                clusterId: clusterId,
+                nodeAddresses: nodeAddresses,
+                strategy: uint8(ClusterStorage.ClusterStrategy.ROUND_ROBIN),
+                minActiveNodes: uint8(nodeIds.length > 1 ? 1 : 1),
+                status: uint8(ClusterStorage.ClusterStatus.ACTIVE),
+                autoManaged: true,
+                createdAt: block.timestamp
+            });
+            
+            clusterStorage.registerCluster(clusterId, cluster);
+        }
+        
+        // Update local tracking
+        clusterRegistered[clusterId] = true;
+        clusterCreationTimes[clusterId] = block.timestamp;
+        clusterStatuses[clusterId] = uint8(ClusterStorage.ClusterStatus.ACTIVE);
+        clusterHealthScores[clusterId] = 100; // Start with perfect health
+        
+        // Add to cluster list
+        clusterIndices[clusterId] = allClusterIds.length;
+        allClusterIds.push(clusterId);
+
+        emit ClusterRegistered(
+            clusterId, 
+            nodeAddresses, 
+            uint8(ClusterStorage.ClusterStrategy.ROUND_ROBIN), 
+            uint8(nodeIds.length > 1 ? 1 : 1), 
+            true
+        );
+
+        return clusterId;
+    }
+
+    /**
+     * @dev Update cluster status with blockchain service interface
+     */
+    function updateClusterStatus(
+        string calldata clusterId,
+        string calldata status,
+        uint8 healthScore,
+        uint256 lastUpdated
+    ) external whenNotPaused onlyRole(CLUSTER_MANAGER_ROLE) {
+        require(bytes(clusterId).length > 0, "Invalid clusterId");
+        require(clusterRegistered[clusterId], "Cluster does not exist");
+        require(healthScore <= 100, "Invalid health score");
+        
+        // Convert string status to enum
+        ClusterStorage.ClusterStatus newStatus = ClusterStorage.ClusterStatus.ACTIVE;
+        if (keccak256(abi.encodePacked(status)) == keccak256(abi.encodePacked("inactive"))) {
+            newStatus = ClusterStorage.ClusterStatus.INACTIVE;
+        } else if (keccak256(abi.encodePacked(status)) == keccak256(abi.encodePacked("maintenance"))) {
+            newStatus = ClusterStorage.ClusterStatus.MAINTENANCE;
+        }
+        
+        uint8 oldStatus = clusterStatuses[clusterId];
+        
+        // Update cluster status in storage if available
+        if (address(clusterStorage) != address(0)) {
+            clusterStorage.updateClusterStatus(clusterId, uint8(newStatus));
+        }
+        
+        // Update local tracking
+        clusterStatuses[clusterId] = uint8(newStatus);
+        clusterHealthScores[clusterId] = healthScore;
+        
+        emit ClusterStatusChanged(clusterId, oldStatus, uint8(newStatus));
+    }
+    
+    /**
+     * @dev Get cluster health score
+     */
+    function getClusterHealthScore(string calldata clusterId) external view returns (uint8) {
+        require(clusterRegistered[clusterId], "Cluster does not exist");
+        return clusterHealthScores[clusterId];
+    }
+    
+    /**
+     * @dev Get all cluster IDs
+     */
+    function getAllClusterIds() external view returns (string[] memory) {
+        return allClusterIds;
+    }
+    
+    /**
+     * @dev Set node mapping (for nodeId resolution)
+     */
+    function setNodeMapping(string calldata nodeId, address nodeAddress) external onlyRole(ADMIN_ROLE) {
+        require(bytes(nodeId).length > 0, "Invalid nodeId");
+        require(nodeAddress != address(0), "Invalid node address");
+        
+        nodeIdToAddress[nodeId] = nodeAddress;
+        addressToNodeId[nodeAddress] = nodeId;
     }
 }
