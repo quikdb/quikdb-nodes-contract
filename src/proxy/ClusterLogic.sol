@@ -3,23 +3,38 @@ pragma solidity ^0.8.20;
 
 import "./BaseLogic.sol";
 import "../storage/ClusterStorage.sol";
+import "../libraries/ValidationLibrary.sol";
+import "../libraries/RateLimitingLibrary.sol";
 
 /**
  * @title ClusterLogic
- * @notice Implementation contract for cluster management
+ * @notice Implementation contract for cluster management with production-grade validation
  * @dev This contract implements the business logic for cluster registration and management.
  *      It inherits from BaseLogic and follows the proxy pattern.
  */
 contract ClusterLogic is BaseLogic {
+    using ValidationLibrary for *;
+    using RateLimitingLibrary for *;
+
     // Storage contract reference
     ClusterStorage public clusterStorage;
 
     // Node ID to address mapping (keep for nodeId resolution)
     mapping(string => address) private nodeIdToAddress;
     mapping(address => string) private addressToNodeId;
+    
+    // Geographic distribution tracking
+    mapping(string => string[]) private regionNodes; // region => nodeIds
+    mapping(string => string) private nodeToRegion; // nodeId => region
 
     // Cluster-specific roles
     bytes32 public constant CLUSTER_MANAGER_ROLE = keccak256("CLUSTER_MANAGER_ROLE");
+
+    // Production validation constants
+    uint256 public constant MAX_NODES_PER_CLUSTER = 100;
+    uint256 public constant MIN_NODES_PER_CLUSTER = 1;
+    uint256 public constant MAX_REGIONS_PER_CLUSTER = 10;
+    uint256 public constant MAX_NODES_PER_REGION = 50;
 
     // Cluster operation events
     event ClusterRegistered(
@@ -90,6 +105,9 @@ contract ClusterLogic is BaseLogic {
      * @param minActiveNodes Minimum number of active nodes required
      * @param autoManaged Whether the cluster is automatically managed
      */
+    /**
+     * @dev Register a new cluster with comprehensive production validation
+     */
     function registerCluster(
         string calldata clusterId,
         address[] calldata nodeAddresses,
@@ -103,10 +121,79 @@ contract ClusterLogic is BaseLogic {
         validClusterId(clusterId)
         clusterNotExists(clusterId)
         nonReentrant 
+        rateLimit("registerCluster", RateLimitingLibrary.MAX_CLUSTER_REGISTRATIONS_PER_HOUR, RateLimitingLibrary.HOUR_WINDOW)
+        circuitBreakerCheck("clusterRegistration")
+        emergencyPauseCheck("ClusterLogic") 
     {
-        require(nodeAddresses.length > 0, "No node addresses provided");
-        require(minActiveNodes > 0, "Invalid min active nodes");
-        require(minActiveNodes <= nodeAddresses.length, "Invalid min active nodes");
+        // === PRODUCTION VALIDATION ===
+        
+        // Validate cluster ID format
+        ValidationLibrary.validateId(clusterId);
+        
+        // Validate cluster size
+        ValidationLibrary.validateClusterSize(nodeAddresses.length);
+        
+        // Validate min active nodes
+        ValidationLibrary.validateRange(minActiveNodes, 1, nodeAddresses.length);
+        
+        // Validate all node addresses
+        ValidationLibrary.validateAddresses(nodeAddresses);
+        
+        // Check for duplicate addresses
+        for (uint256 i = 0; i < nodeAddresses.length; i++) {
+            for (uint256 j = i + 1; j < nodeAddresses.length; j++) {
+                ValidationLibrary.validateDifferentAddresses(nodeAddresses[i], nodeAddresses[j]);
+            }
+        }
+
+        // === BUSINESS LOGIC VALIDATION ===
+        require(address(nodeStorage) != address(0), "Node storage not set");
+        
+        string[] memory regions = new string[](nodeAddresses.length);
+        uint256 regionCount = 0;
+        
+        for (uint256 i = 0; i < nodeAddresses.length; i++) {
+            // Check if this address is registered as a node operator
+            string memory nodeId = addressToNodeId[nodeAddresses[i]];
+            if (bytes(nodeId).length > 0) {
+                // If we have a mapping, validate the node exists and is active
+                require(nodeStorage.doesNodeExist(nodeId), "Node does not exist");
+                
+                NodeStorage.NodeInfo memory nodeInfo = nodeStorage.getNodeInfo(nodeId);
+                require(
+                    nodeInfo.status == NodeStorage.NodeStatus.ACTIVE || 
+                    nodeInfo.status == NodeStorage.NodeStatus.LISTED,
+                    "Node is not active or listed"
+                );
+                
+                // Track regions for geographic distribution validation
+                string memory region = nodeToRegion[nodeId];
+                if (bytes(region).length > 0) {
+                    bool regionExists = false;
+                    for (uint256 j = 0; j < regionCount; j++) {
+                        if (keccak256(bytes(regions[j])) == keccak256(bytes(region))) {
+                            regionExists = true;
+                            break;
+                        }
+                    }
+                    if (!regionExists && regionCount < MAX_REGIONS_PER_CLUSTER) {
+                        regions[regionCount] = region;
+                        regionCount++;
+                    }
+                }
+            }
+            // Note: If no mapping exists, we still allow registration but recommend 
+            // using registerClusterFromNodeIds for better validation
+        }
+        
+        // Validate geographic distribution if we have region data
+        if (regionCount >= 2) {
+            string[] memory validRegions = new string[](regionCount);
+            for (uint256 i = 0; i < regionCount; i++) {
+                validRegions[i] = regions[i];
+            }
+            ValidationLibrary.validateGeographicDistribution(validRegions);
+        }
 
         // Create cluster struct
         ClusterStorage.NodeCluster memory cluster = ClusterStorage.NodeCluster({
@@ -195,6 +282,60 @@ contract ClusterLogic is BaseLogic {
     // =============================================================================
 
     /**
+     * @dev Validate nodes for cluster operations
+     * @param nodeIds Array of node identifiers to validate
+     * @return nodeAddresses Array of validated node addresses
+     */
+    function _validateNodes(string[] memory nodeIds) internal view returns (address[] memory nodeAddresses) {
+        require(address(nodeStorage) != address(0), "Node storage not set");
+        
+        nodeAddresses = new address[](nodeIds.length);
+        
+        for (uint256 i = 0; i < nodeIds.length; i++) {
+            string memory nodeId = nodeIds[i];
+            require(bytes(nodeId).length > 0, "Invalid nodeId");
+            
+            // Check if node exists in NodeStorage
+            require(nodeStorage.doesNodeExist(nodeId), "Node does not exist");
+            
+            // Get node information for validation
+            NodeStorage.NodeInfo memory nodeInfo = nodeStorage.getNodeInfo(nodeId);
+            
+            // Validate node status
+            require(
+                nodeInfo.status == NodeStorage.NodeStatus.ACTIVE || 
+                nodeInfo.status == NodeStorage.NodeStatus.LISTED,
+                "Node is not active or listed"
+            );
+            
+            // Validate node address
+            require(nodeInfo.nodeAddress != address(0), "Invalid node address");
+            require(nodeInfo.exists, "Node not properly registered");
+            
+            nodeAddresses[i] = nodeInfo.nodeAddress;
+        }
+    }
+
+    /**
+     * @dev Update node mappings for nodeId to address resolution
+     * @param nodeIds Array of node identifiers
+     */
+    function _updateNodeMappings(string[] memory nodeIds) internal {
+        for (uint256 i = 0; i < nodeIds.length; i++) {
+            string memory nodeId = nodeIds[i];
+            
+            // Get node information
+            NodeStorage.NodeInfo memory nodeInfo = nodeStorage.getNodeInfo(nodeId);
+            
+            // Update mapping for future reference
+            if (nodeIdToAddress[nodeId] == address(0)) {
+                nodeIdToAddress[nodeId] = nodeInfo.nodeAddress;
+                addressToNodeId[nodeInfo.nodeAddress] = nodeId;
+            }
+        }
+    }
+
+    /**
      * @dev Override role check to provide custom error messages
      */
     function _checkRole(bytes32 role) internal view override {
@@ -212,37 +353,68 @@ contract ClusterLogic is BaseLogic {
     /**
      * @dev Register cluster with blockchain service interface (alternative signature)
      */
+    /**
+     * @dev Register cluster from node IDs with comprehensive production validation
+     */
     function registerClusterFromNodeIds(
         string[] calldata nodeIds,
         bytes32 /* clusterConfigHash */,
         bytes32 /* metadataHash */
     ) external whenNotPaused onlyRole(CLUSTER_MANAGER_ROLE) returns (string memory) {
-        require(nodeIds.length > 0, "No nodes provided");
-        require(nodeIds.length <= 100, "Too many nodes"); // Reasonable limit
+        // === PRODUCTION VALIDATION ===
         
-        // Generate unique cluster ID
+        // Validate cluster size
+        ValidationLibrary.validateClusterSize(nodeIds.length);
+        
+        // Validate unique node IDs and format
+        ValidationLibrary.validateUniqueNodeIds(nodeIds);
+        
+        // Generate unique cluster ID with validation
         string memory clusterId = string(abi.encodePacked("cluster_", block.timestamp, "_", block.number));
+        ValidationLibrary.validateId(clusterId);
         require(!clusterStorage.clusterExists(clusterId), "Cluster ID collision");
         
-        // Validate all nodeIds and convert to addresses
-        address[] memory nodeAddresses = new address[](nodeIds.length);
-        for (uint i = 0; i < nodeIds.length; i++) {
-            require(bytes(nodeIds[i]).length > 0, "Invalid nodeId");
-            
-            // Validate that the node exists in NodeStorage
-            require(address(nodeStorage) != address(0), "Node storage not set");
-            require(nodeStorage.doesNodeExist(nodeIds[i]), "Node does not exist");
-            
-            // Get the actual node address from storage
-            address nodeAddr = nodeStorage.getNodeAddress(nodeIds[i]);
-            require(nodeAddr != address(0), "Invalid node address");
-            nodeAddresses[i] = nodeAddr;
-            
-            // Store mapping for future reference
-            if (nodeIdToAddress[nodeIds[i]] == address(0)) {
-                nodeIdToAddress[nodeIds[i]] = nodeAddr;
-                addressToNodeId[nodeAddr] = nodeIds[i];
+        // === GEOGRAPHIC DISTRIBUTION VALIDATION ===
+        string[] memory regions = new string[](nodeIds.length);
+        uint256 regionCount = 0;
+        
+        // Collect regions from nodes for geographic validation
+        for (uint256 i = 0; i < nodeIds.length; i++) {
+            string memory region = nodeToRegion[nodeIds[i]];
+            if (bytes(region).length > 0) {
+                bool regionExists = false;
+                for (uint256 j = 0; j < regionCount; j++) {
+                    if (keccak256(bytes(regions[j])) == keccak256(bytes(region))) {
+                        regionExists = true;
+                        break;
+                    }
+                }
+                if (!regionExists && regionCount < MAX_REGIONS_PER_CLUSTER) {
+                    regions[regionCount] = region;
+                    regionCount++;
+                }
             }
+        }
+        
+        // Validate geographic distribution if we have region data
+        if (regionCount >= 2) {
+            string[] memory validRegions = new string[](regionCount);
+            for (uint256 i = 0; i < regionCount; i++) {
+                validRegions[i] = regions[i];
+            }
+            ValidationLibrary.validateGeographicDistribution(validRegions);
+        }
+        
+        // Validate all nodes using comprehensive validation
+        address[] memory nodeAddresses = _validateNodes(nodeIds);
+
+        // Update node mappings for future reference
+        _updateNodeMappings(nodeIds);
+
+        // Calculate optimal minimum active nodes (at least 1, but recommend redundancy)
+        uint8 minActiveNodes = uint8(nodeIds.length > 1 ? 1 : 1);
+        if (nodeIds.length >= 3) {
+            minActiveNodes = uint8((nodeIds.length * 60) / 100); // 60% for redundancy
         }
 
         // Create and store cluster
@@ -316,6 +488,57 @@ contract ClusterLogic is BaseLogic {
     }
     
     /**
+     * @dev Validate nodes for cluster operations (public helper)
+     * @param nodeIds Array of node identifiers to validate
+     * @return validNodes Array of validated node IDs
+     * @return nodeAddresses Array of corresponding node addresses
+     */
+    function validateNodesForCluster(string[] calldata nodeIds) 
+        external 
+        view 
+        returns (string[] memory validNodes, address[] memory nodeAddresses) 
+    {
+        require(nodeIds.length > 0, "No nodes provided");
+        require(address(nodeStorage) != address(0), "Node storage not set");
+        
+        validNodes = new string[](nodeIds.length);
+        nodeAddresses = new address[](nodeIds.length);
+        uint256 validCount = 0;
+        
+        for (uint256 i = 0; i < nodeIds.length; i++) {
+            string calldata nodeId = nodeIds[i];
+            
+            // Basic validation
+            if (bytes(nodeId).length == 0) continue;
+            if (!nodeStorage.doesNodeExist(nodeId)) continue;
+            
+            NodeStorage.NodeInfo memory nodeInfo = nodeStorage.getNodeInfo(nodeId);
+            
+            // Check if node is available for clusters
+            if (nodeInfo.status != NodeStorage.NodeStatus.ACTIVE &&
+                nodeInfo.status != NodeStorage.NodeStatus.LISTED) continue;
+                
+            // Check valid registration
+            if (nodeInfo.nodeAddress == address(0) || !nodeInfo.exists) continue;
+            
+            validNodes[validCount] = nodeId;
+            nodeAddresses[validCount] = nodeInfo.nodeAddress;
+            validCount++;
+        }
+        
+        // Resize arrays to actual valid count
+        string[] memory finalValidNodes = new string[](validCount);
+        address[] memory finalNodeAddresses = new address[](validCount);
+        
+        for (uint256 i = 0; i < validCount; i++) {
+            finalValidNodes[i] = validNodes[i];
+            finalNodeAddresses[i] = nodeAddresses[i];
+        }
+        
+        return (finalValidNodes, finalNodeAddresses);
+    }
+    
+    /**
      * @dev Set node mapping (for nodeId resolution)
      */
     function setNodeMapping(string calldata nodeId, address nodeAddress) external onlyRole(ADMIN_ROLE) {
@@ -324,5 +547,12 @@ contract ClusterLogic is BaseLogic {
         
         nodeIdToAddress[nodeId] = nodeAddress;
         addressToNodeId[nodeAddress] = nodeId;
+    }
+
+    /**
+     * @dev Get contract name for circuit breaker logging
+     */
+    function _getContractName() internal pure override returns (string memory) {
+        return "ClusterLogic";
     }
 }

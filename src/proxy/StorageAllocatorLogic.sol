@@ -1,45 +1,79 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./BaseLogic.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "../storage/StorageAllocatorStorage.sol";
+import "../storage/NodeStorage.sol";
+import "../libraries/ValidationLibrary.sol";
+import "../libraries/RateLimitingLibrary.sol";
+import "./BaseLogic.sol";
 
 /**
  * @title StorageAllocatorLogic
- * @notice Implementation contract for storage allocation management
- * @dev This contract implements the business logic for allocating and managing storage.
- *      It inherits from BaseLogic and follows the proxy pattern.
+ * @notice Implementation contract for storage allocation management with production-grade validation
+ * @dev Inherits from BaseLogic (proxy pattern) and coordinates storage allocations.
  */
 contract StorageAllocatorLogic is BaseLogic {
-    // Storage contract reference
+    using ValidationLibrary for *;
+    using RateLimitingLibrary for *;
+    
+    // ---------------------------------------------------------------------
+    // Storage contracts
+    // ---------------------------------------------------------------------
     StorageAllocatorStorage public storageAllocatorStorage;
 
-    // Storage-specific roles
-    bytes32 public constant STORAGE_ALLOCATOR_ROLE = keccak256("STORAGE_ALLOCATOR_ROLE");
-    bytes32 public constant STORAGE_MANAGER_ROLE = keccak256("STORAGE_MANAGER_ROLE");
+    // Daily allocation tracking per requester (for rate limiting)
+    mapping(address => mapping(uint256 => uint256)) private dailyAllocations; // requester => day => count
 
-    // Storage operation events
+    // ---------------------------------------------------------------------
+    // Roles
+    // ---------------------------------------------------------------------
+    bytes32 public constant STORAGE_ALLOCATOR_ROLE = keccak256("STORAGE_ALLOCATOR_ROLE");
+    bytes32 public constant STORAGE_MANAGER_ROLE   = keccak256("STORAGE_MANAGER_ROLE");
+
+    // ---------------------------------------------------------------------
+    // Events
+    // ---------------------------------------------------------------------
     event AllocationRequested(
-        string indexed allocationId,
+        string  indexed allocationId,
         address indexed requester,
-        uint256 sizeGB,
-        uint256 timestamp
+        uint256         sizeGB,
+        uint256         timestamp
     );
 
     event AllocationCompleted(
-        string indexed allocationId,
+        string  indexed allocationId,
         address indexed requester,
-        uint256 nodeCount,
-        uint256 totalSizeGB
+        uint256         nodeCount,
+        uint256         totalSizeGB
     );
 
     event AllocationReleased(
-        string indexed allocationId,
+        string  indexed allocationId,
         address indexed requester,
-        uint256 timestamp
+        uint256         timestamp
     );
 
-    // Custom errors
+    event AllocationStatusUpdated(
+        string indexed allocationId,
+        uint8  previousStatus,
+        uint8  newStatus
+    );
+
+    // ---------------------------------------------------------------------
+    // Constants
+    // ---------------------------------------------------------------------
+    uint256 public constant MIN_ALLOCATION_SIZE_GB   = 1;     // 1 GB
+    uint256 public constant MAX_ALLOCATION_SIZE_GB   = 10_000; // 10 TB
+    uint256 public constant MIN_REPLICATION_FACTOR   = 1;
+    uint256 public constant MAX_REPLICATION_FACTOR   = 5;
+    uint256 public constant MAX_NODES_PER_ALLOCATION = 50;
+
+    // ---------------------------------------------------------------------
+    // Errors
+    // ---------------------------------------------------------------------
     error AllocationAlreadyExists(string allocationId);
     error AllocationNotFound(string allocationId);
     error InvalidAllocationId(string allocationId);
@@ -47,15 +81,20 @@ contract StorageAllocatorLogic is BaseLogic {
     error InvalidSizeGB(uint256 sizeGB);
     error InvalidStatus(uint8 status);
     error EmptyNodeList();
+    error TooManyNodes(uint256 nodeCount);
     error UnauthorizedRequester(address requester, string allocationId);
     error InsufficientStorageCapacity(uint256 requested, uint256 available);
+    error NodeNotFound(string nodeId);
+    error NodeInactive(string nodeId);
+    error InvalidReplicationFactor(uint256 factor);
+    error GeographicDistributionFailed(string reason);
+    error NodeCapacityExceeded(string nodeId, uint256 requested, uint256 available);
 
+    // ---------------------------------------------------------------------
+    // Initialization
+    // ---------------------------------------------------------------------
     /**
-     * @dev Initialize the storage allocator logic contract
-     * @param _storageAllocatorStorage Address of the storage allocator storage contract
-     * @param _nodeStorage Address of the node storage contract
-     * @param _userStorage Address of the user storage contract
-     * @param _resourceStorage Address of the resource storage contract
+     * @dev Initialize the storage allocator logic contract.
      */
     function initialize(
         address _storageAllocatorStorage,
@@ -64,187 +103,344 @@ contract StorageAllocatorLogic is BaseLogic {
         address _resourceStorage
     ) external {
         _initializeBase(_nodeStorage, _userStorage, _resourceStorage, msg.sender);
-        
-        require(_storageAllocatorStorage != address(0), "Invalid storage allocator storage address");
+
+        if (_storageAllocatorStorage == address(0)) revert("Invalid storage allocator storage address");
         storageAllocatorStorage = StorageAllocatorStorage(_storageAllocatorStorage);
 
-        // Set up roles
+        // Grant allocator role to deployer
         _grantRole(STORAGE_ALLOCATOR_ROLE, msg.sender);
-        _grantRole(STORAGE_MANAGER_ROLE, msg.sender);
     }
 
+    // ---------------------------------------------------------------------
+    // Public / external functions
+    // ---------------------------------------------------------------------
+
     /**
-     * @dev Allocate storage across specified nodes
-     * @param allocationId Unique identifier for the allocation
-     * @param requester Address requesting the storage
-     * @param sizeGB Size of storage in GB
-     * @param nodeIds Array of node IDs to allocate storage on
+     * @dev Allocate storage across specified nodes.
+     */
+    /**
+     * @dev Allocate storage with comprehensive production validation
      */
     function allocateStorage(
-        string calldata allocationId,
-        address requester,
-        uint256 sizeGB,
-        string[] calldata nodeIds
-    ) external onlyRole(STORAGE_ALLOCATOR_ROLE) whenNotPaused nonReentrant {
-        if (bytes(allocationId).length == 0) revert InvalidAllocationId(allocationId);
-        if (requester == address(0)) revert InvalidRequester(requester);
-        if (sizeGB == 0) revert InvalidSizeGB(sizeGB);
-        if (nodeIds.length == 0) revert EmptyNodeList();
-
-        // Check if allocation already exists
-        (string memory existingAllocationId, , , , ) = 
-            storageAllocatorStorage.allocations(allocationId);
-        if (bytes(existingAllocationId).length > 0) {
+        string  calldata allocationId,
+        address         requester,
+        uint256         sizeGB,
+        string[] calldata nodeIds,
+        uint256         replicationFactor
+    ) external 
+        onlyRole(STORAGE_ALLOCATOR_ROLE) 
+        rateLimit("allocateStorage", RateLimitingLibrary.MAX_STORAGE_OPERATIONS_PER_MINUTE, RateLimitingLibrary.MINUTE_WINDOW)
+        circuitBreakerCheck("storageAllocation")
+        emergencyPauseCheck("StorageAllocatorLogic") {
+        // === PRODUCTION VALIDATION ===
+        
+        // Validate allocation ID format
+        ValidationLibrary.validateId(allocationId);
+        
+        // Validate requester address
+        ValidationLibrary.validateAddress(requester);
+        
+        // Validate storage size allocation
+        ValidationLibrary.validateStorageAllocation(sizeGB);
+        
+        // Validate node list
+        ValidationLibrary.validateArrayLength(nodeIds.length, 1, ValidationLibrary.MAX_CLUSTER_SIZE);
+        ValidationLibrary.validateUniqueNodeIds(nodeIds);
+        
+        // Validate replication factor
+        ValidationLibrary.validateRange(replicationFactor, MIN_REPLICATION_FACTOR, MAX_REPLICATION_FACTOR);
+        require(replicationFactor <= nodeIds.length, "Replication factor exceeds node count");
+        
+        // === BUSINESS LOGIC VALIDATION ===
+        
+        // Check if allocation already exists by attempting to get it and handling the revert
+        try storageAllocatorStorage.getAllocation(allocationId) {
             revert AllocationAlreadyExists(allocationId);
+        } catch {
+            // Allocation doesn't exist, which is what we want
         }
 
-        emit AllocationRequested(allocationId, requester, sizeGB, block.timestamp);
-
-        // Note: In a real implementation, this would:
-        // 1. Validate node availability and capacity
-        // 2. Calculate storage distribution across nodes
-        // 3. Create StorageAllocation struct with provided data
-        // 4. Store in allocations mapping
-        // 5. Update nodeAllocations mapping for each node
-        // 6. Update requesterAllocations mapping
-        // 7. Set initial status (e.g., 0 = pending, 1 = allocated, 2 = active, 3 = released)
+        // === DAILY ALLOCATION LIMITS PER REQUESTER ===
+        uint256 currentDay = block.timestamp / 1 days;
+        uint256 todayAllocations = dailyAllocations[requester][currentDay];
+        if (todayAllocations >= RateLimitingLibrary.MAX_ALLOCATIONS_PER_REQUESTER_PER_DAY) {
+            revert RateLimitingLibrary.RateLimitExceededError(
+                "allocateStorage", 
+                todayAllocations, 
+                RateLimitingLibrary.MAX_ALLOCATIONS_PER_REQUESTER_PER_DAY
+            );
+        }
         
-        emit AllocationCompleted(allocationId, requester, nodeIds.length, sizeGB);
+        // Update daily allocation count
+        dailyAllocations[requester][currentDay] = todayAllocations + 1;
+
+        // === NODE VERIFICATION WITH GEOGRAPHIC DISTRIBUTION ===
+        string[] memory validated = new string[](nodeIds.length);
+        uint256   validCount      = 0;
+        string[] memory regions = new string[](nodeIds.length);
+        uint256 regionCount = 0;
+
+        for (uint256 i = 0; i < nodeIds.length; i++) {
+            string calldata nodeId = nodeIds[i];
+            
+            // Check if node exists in storage
+            if (!nodeStorage.doesNodeExist(nodeId)) revert NodeNotFound(nodeId);
+
+            // Get node information for comprehensive validation
+            NodeStorage.NodeInfo memory nodeInfo = nodeStorage.getNodeInfo(nodeId);
+            
+            // Validate node status - must be ACTIVE or LISTED to accept allocations
+            if (nodeInfo.status != NodeStorage.NodeStatus.ACTIVE &&
+                nodeInfo.status != NodeStorage.NodeStatus.LISTED) {
+                revert NodeInactive(nodeId);
+            }
+            
+            // Validate node has sufficient storage capacity
+            if (nodeInfo.capacity.storageGB < sizeGB) {
+                revert NodeCapacityExceeded(nodeId, sizeGB, nodeInfo.capacity.storageGB);
+            }
+            
+            // Validate node is properly registered (has valid address)
+            if (nodeInfo.nodeAddress == address(0)) {
+                revert NodeInactive(nodeId);
+            }
+            
+            // Validate node exists flag is consistent
+            if (!nodeInfo.exists) {
+                revert NodeNotFound(nodeId);
+            }
+
+            validated[validCount++] = nodeId;
+        }
+
+        if (validCount < replicationFactor)
+            revert GeographicDistributionFailed("Insufficient valid nodes for replication factor");
+
+        if (!_validateGeographicDistribution(validated, validCount))
+            revert GeographicDistributionFailed("Nodes not geographically distributed");
+
+        // --- persistence --------------------------------------------------
+        // --- create allocation ----------------------------------------
+        StorageAllocatorStorage.StorageAllocation memory allocation = 
+            StorageAllocatorStorage.StorageAllocation({
+                allocationId:        allocationId,
+                requester:           requester,
+                sizeGB:              sizeGB,
+                status:              uint8(StorageAllocatorStorage.AllocationStatus.PENDING),
+                allocatedAt:         block.timestamp,
+                updatedAt:           block.timestamp,
+                nodeIds:             _resizeArray(validated, validCount),
+                replicationFactor:   replicationFactor,
+                region:              ""
+            });
+
+        storageAllocatorStorage.createAllocation(allocation);
+
+        emit AllocationRequested(
+            allocationId,
+            requester,
+            sizeGB,
+            block.timestamp
+        );
     }
 
     /**
-     * @dev Update storage allocation status
-     * @param allocationId Unique identifier for the allocation
-     * @param newStatus New status value
+     * @dev Update storage allocation status.
      */
     function updateAllocationStatus(
         string calldata allocationId,
-        uint8 newStatus
-    ) external onlyRole(STORAGE_MANAGER_ROLE) whenNotPaused nonReentrant {
-        if (bytes(allocationId).length == 0) revert InvalidAllocationId(allocationId);
+        StorageAllocatorStorage.AllocationStatus status
+    ) external onlyRole(STORAGE_ALLOCATOR_ROLE) {
+        // Validate allocation exists
+        StorageAllocatorStorage.StorageAllocation memory allocation = storageAllocatorStorage.getAllocation(allocationId);
+        
+        // Validate status transition
+        _validateStatusTransition(StorageAllocatorStorage.AllocationStatus(allocation.status), status);
 
-        // Check if allocation exists
-        (string memory existingAllocationId, address requester, , , ) = 
-            storageAllocatorStorage.allocations(allocationId);
-        if (bytes(existingAllocationId).length == 0) {
-            revert AllocationNotFound(allocationId);
-        }
-
-        // Validate status transition (basic validation)
-        if (newStatus > 4) revert InvalidStatus(newStatus); // 0-4 are valid statuses
-
-        // Handle status-specific logic
-        if (newStatus == 3) { // Released status
-            emit AllocationReleased(allocationId, requester, block.timestamp);
-        }
-
-        // Note: In a real implementation, this would:
-        // 1. Update the status field in the allocations mapping
-        // 2. Emit AllocationStatusUpdated event from storage
-        // 3. Handle any side effects of status changes (e.g., cleanup for released status)
+        // Update allocation status
+        storageAllocatorStorage.updateAllocationStatus(allocationId, uint8(status));
+        
+        emit AllocationStatusUpdated(allocationId, uint8(allocation.status), uint8(status));
     }
 
     /**
-     * @dev Get storage allocation details
-     * @param allocationId Unique identifier for the allocation
-     * @return allocationId_ Allocation ID
-     * @return requester Address of the requester
-     * @return sizeGB Size in GB
-     * @return nodeIds Array of node IDs
-     * @return status Current status
-     * @return allocatedAt Allocation timestamp
+     * @dev Read-only helpers.
      */
-    function getAllocation(
-        string calldata allocationId
-    ) external view returns (
-        string memory allocationId_,
-        address requester,
-        uint256 sizeGB,
-        string[] memory nodeIds,
-        uint8 status,
-        uint256 allocatedAt
-    ) {
+    function getAllocation(string calldata allocationId)
+        external
+        view
+        returns (StorageAllocatorStorage.StorageAllocation memory)
+    {
         if (bytes(allocationId).length == 0) revert InvalidAllocationId(allocationId);
 
-        (allocationId_, requester, sizeGB, status, allocatedAt) = storageAllocatorStorage.allocations(allocationId);
-        nodeIds = storageAllocatorStorage.getAllocationNodes(allocationId);
+        // getAllocation in storage contract will revert if allocation doesn't exist
+        return storageAllocatorStorage.getAllocation(allocationId);
     }
 
-    /**
-     * @dev Get storage allocations for a specific node
-     * @param nodeId Node identifier
-     * @return allocationIds Array of allocation IDs on the node
-     */
-    function getNodeAllocations(
-        string calldata nodeId
-    ) external view returns (string[] memory allocationIds) {
+    function getNodeAllocations(string calldata nodeId)
+        external
+        view
+        returns (string[] memory)
+    {
         if (bytes(nodeId).length == 0) revert InvalidAllocationId(nodeId);
-
         return storageAllocatorStorage.getNodeAllocations(nodeId);
     }
 
-    /**
-     * @dev Get storage allocations for a specific requester
-     * @param requester Address of the requester
-     * @return allocationIds Array of allocation IDs for the requester
-     */
-    function getRequesterAllocations(
-        address requester
-    ) external view returns (string[] memory allocationIds) {
+    function getRequesterAllocations(address requester)
+        external
+        view
+        returns (string[] memory)
+    {
         if (requester == address(0)) revert InvalidRequester(requester);
-
         return storageAllocatorStorage.getRequesterAllocations(requester);
     }
 
-    /**
-     * @dev Check if a storage allocation exists
-     * @param allocationId Unique identifier for the allocation
-     * @return exists True if allocation exists, false otherwise
-     */
-    function allocationExists(string calldata allocationId) external view returns (bool exists) {
-        if (bytes(allocationId).length == 0) return false;
-        
-        (string memory existingAllocationId, , , , ) = 
-            storageAllocatorStorage.allocations(allocationId);
-        return bytes(existingAllocationId).length > 0;
+    function getStorageStats()
+        external
+        view
+        returns (
+            uint256 totalAllocations,
+            uint256 activeAllocations,
+            uint256 totalStorageGB
+        )
+    {
+        return storageAllocatorStorage.getStorageStats();
     }
 
     /**
-     * @dev Check if a requester owns a specific allocation
-     * @param requester Address of the requester
-     * @param allocationId Allocation identifier
-     * @return owns True if requester owns the allocation
+     * @dev Validate nodes for storage allocation (public helper)
+     * @param nodeIds Array of node identifiers to validate
+     * @param requiredCapacityGB Minimum storage capacity required per node
+     * @return validNodes Array of validated node IDs
+     * @return nodeAddresses Array of corresponding node addresses
      */
-    function isRequesterOwner(
-        address requester,
-        string calldata allocationId
-    ) external view returns (bool owns) {
-        if (requester == address(0) || bytes(allocationId).length == 0) return false;
-
-        (, address allocationRequester, , , ) = storageAllocatorStorage.allocations(allocationId);
-        return allocationRequester == requester;
-    }
-
-    /**
-     * @dev Get total allocated storage size for a node
-     * @param nodeId Node identifier
-     * @return totalSizeGB Total allocated storage in GB
-     */
-    function getNodeTotalAllocation(
-        string calldata nodeId
-    ) external view returns (uint256 totalSizeGB) {
-        if (bytes(nodeId).length == 0) return 0;
-
-        string[] memory allocIds = storageAllocatorStorage.getNodeAllocations(nodeId);
+    function validateNodesForAllocation(
+        string[] calldata nodeIds,
+        uint256 requiredCapacityGB
+    ) external view returns (string[] memory validNodes, address[] memory nodeAddresses) {
+        if (nodeIds.length == 0) revert EmptyNodeList();
         
-        for (uint256 i = 0; i < allocIds.length; i++) {
-            (, , uint256 sizeGB, uint8 status, ) = 
-                storageAllocatorStorage.allocations(allocIds[i]);
+        validNodes = new string[](nodeIds.length);
+        nodeAddresses = new address[](nodeIds.length);
+        uint256 validCount = 0;
+        
+        for (uint256 i = 0; i < nodeIds.length; i++) {
+            string calldata nodeId = nodeIds[i];
             
-            // Only count active allocations (status 2 = active)
-            if (status == 2) {
-                totalSizeGB += sizeGB;
+            // Basic validation
+            if (bytes(nodeId).length == 0) continue;
+            if (!nodeStorage.doesNodeExist(nodeId)) continue;
+            
+            NodeStorage.NodeInfo memory nodeInfo = nodeStorage.getNodeInfo(nodeId);
+            
+            // Check if node is available for allocations
+            if (nodeInfo.status != NodeStorage.NodeStatus.ACTIVE &&
+                nodeInfo.status != NodeStorage.NodeStatus.LISTED) continue;
+                
+            // Check capacity
+            if (nodeInfo.capacity.storageGB < requiredCapacityGB) continue;
+            
+            // Check valid registration
+            if (nodeInfo.nodeAddress == address(0) || !nodeInfo.exists) continue;
+            
+            validNodes[validCount] = nodeId;
+            nodeAddresses[validCount] = nodeInfo.nodeAddress;
+            validCount++;
+        }
+        
+        // Resize arrays to actual valid count
+        string[] memory finalValidNodes = new string[](validCount);
+        address[] memory finalNodeAddresses = new address[](validCount);
+        
+        for (uint256 i = 0; i < validCount; i++) {
+            finalValidNodes[i] = validNodes[i];
+            finalNodeAddresses[i] = nodeAddresses[i];
+        }
+        
+        return (finalValidNodes, finalNodeAddresses);
+    }
+
+    // ---------------------------------------------------------------------
+    // Internal helpers
+    // ---------------------------------------------------------------------
+
+    function _validateStatusTransition(
+        StorageAllocatorStorage.AllocationStatus currentStatus,
+        StorageAllocatorStorage.AllocationStatus newStatus
+    ) internal pure {
+        if (currentStatus == StorageAllocatorStorage.AllocationStatus.PENDING) {
+            require(
+                newStatus == StorageAllocatorStorage.AllocationStatus.ACTIVE ||
+                newStatus == StorageAllocatorStorage.AllocationStatus.FAILED,
+                "Invalid status transition from PENDING"
+            );
+        } else if (currentStatus == StorageAllocatorStorage.AllocationStatus.ACTIVE) {
+            require(
+                newStatus == StorageAllocatorStorage.AllocationStatus.RELEASED ||
+                newStatus == StorageAllocatorStorage.AllocationStatus.FAILED,
+                "Invalid status transition from ACTIVE"
+            );
+        } else {
+            revert("Cannot transition from terminal status");
+        }
+    }
+
+    function _validateGeographicDistribution(string[] memory nodeIds, uint256 nodeCount)
+        internal
+        view
+        returns (bool)
+    {
+        if (nodeCount <= 1) return true;
+
+        string[] memory regions = new string[](nodeCount);
+        for (uint256 i = 0; i < nodeCount; i++) {
+            regions[i] = nodeStorage.getNodeInfo(nodeIds[i]).listing.region;
+        }
+
+        for (uint256 i = 0; i < nodeCount - 1; i++) {
+            for (uint256 j = i + 1; j < nodeCount; j++) {
+                if (keccak256(bytes(regions[i])) != keccak256(bytes(regions[j]))) {
+                    return true;
+                }
             }
         }
+        return false;
+    }
+
+    function _resizeArray(string[] memory src, uint256 validCount)
+        internal
+        pure
+        returns (string[] memory dst)
+    {
+        dst = new string[](validCount);
+        for (uint256 i = 0; i < validCount; i++) {
+            dst[i] = src[i];
+        }
+    }
+
+    /**
+     * @dev Get daily allocation count for a requester
+     */
+    function getDailyAllocationCount(address requester) external view returns (uint256) {
+        uint256 currentDay = block.timestamp / 1 days;
+        return dailyAllocations[requester][currentDay];
+    }
+
+    /**
+     * @dev Get remaining daily allocation capacity for a requester
+     */
+    function getRemainingDailyCapacity(address requester) external view returns (uint256) {
+        uint256 currentDay = block.timestamp / 1 days;
+        uint256 used = dailyAllocations[requester][currentDay];
+        return used >= RateLimitingLibrary.MAX_ALLOCATIONS_PER_REQUESTER_PER_DAY 
+            ? 0 
+            : RateLimitingLibrary.MAX_ALLOCATIONS_PER_REQUESTER_PER_DAY - used;
+    }
+
+    /**
+     * @dev Get contract name for circuit breaker logging
+     */
+    function _getContractName() internal pure override returns (string memory) {
+        return "StorageAllocatorLogic";
     }
 }

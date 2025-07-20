@@ -57,7 +57,7 @@ contract BaseLogicTest is BaseTest {
         );
     }
 
-    function testBaseLogic_Initialization() public {
+    function testBaseLogic_Initialization() public view {
         assertEq(baseLogic.VERSION(), 1, "Version should be 1");
         assertEq(address(baseLogic.nodeStorage()), address(nodeStorage), "Node storage should be set");
         assertEq(address(baseLogic.userStorage()), address(userStorage), "User storage should be set");
@@ -264,7 +264,7 @@ contract BaseLogicTest is BaseTest {
         assertEq(address(baseLogic).balance, balanceBefore + amount, "Balance should increase");
     }
 
-    function testBaseLogic_RoleConstants() public {
+    function testBaseLogic_RoleConstants() public view {
         assertEq(baseLogic.ADMIN_ROLE(), baseLogic.DEFAULT_ADMIN_ROLE(), "ADMIN_ROLE should equal DEFAULT_ADMIN_ROLE");
         assertEq(baseLogic.MARKETPLACE_ROLE(), keccak256("MARKETPLACE_ROLE"), "MARKETPLACE_ROLE should match hash");
         assertEq(baseLogic.ORACLE_ROLE(), keccak256("ORACLE_ROLE"), "ORACLE_ROLE should match hash");

@@ -106,9 +106,9 @@ abstract contract BaseTest is Test {
         resourceStorage = new ResourceStorage(admin);
         performanceStorage = new PerformanceStorage(admin);
         clusterStorage = new ClusterStorage(admin);
-        rewardsStorage = new RewardsStorage();
+        rewardsStorage = new RewardsStorage(admin);
         applicationStorage = new ApplicationStorage();
-        storageAllocatorStorage = new StorageAllocatorStorage();
+        storageAllocatorStorage = new StorageAllocatorStorage(admin);
         vm.stopPrank();
     }
 
