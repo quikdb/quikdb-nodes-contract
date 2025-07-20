@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.25;
 
 import "./BaseTest.sol";
 
@@ -8,124 +8,214 @@ import "./BaseTest.sol";
  * @notice Test suite for ApplicationLogic contract functionality
  */
 contract ApplicationLogicTest is BaseTest {
+    string[] private testNodeIds;
+    string constant TEST_APP_ID = "test-app-1";
+    string constant TEST_CONFIG_HASH = "QmTestConfigHash123";
+
+    function setUp() public override {
+        super.setUp();
+        
+        // Prepare test node IDs
+        testNodeIds.push("node-1");
+        testNodeIds.push("node-2");
+        testNodeIds.push("node-3");
+    }
     
     function testApplicationLogic_RegisterApplication() public {
-        string[] memory nodeIds = new string[](2);
-        nodeIds[0] = "node1";
-        nodeIds[1] = "node2";
-        
         vm.startPrank(applicationDeployer);
         
-        vm.expectEmit(true, true, false, false);
-        emit ApplicationLogic.ApplicationRegistered("test-app", user, 2, block.timestamp);
+        vm.expectEmit(true, true, false, true);
+        emit ApplicationLogic.ApplicationRegistered(TEST_APP_ID, user, testNodeIds.length, block.timestamp);
         
         applicationLogic.registerApplication(
-            "test-app",
+            TEST_APP_ID,
             user,
-            nodeIds,
-            "config-hash-123"
+            testNodeIds,
+            TEST_CONFIG_HASH
+        );
+
+        // Verify application was stored correctly
+        (
+            string memory appId,
+            address deployer,
+            string[] memory nodeIds,
+            uint8 status,
+            uint256 deployedAt,
+            string memory configHash
+        ) = applicationLogic.getApplication(TEST_APP_ID);
+
+        assertEq(appId, TEST_APP_ID);
+        assertEq(deployer, user);
+        assertEq(nodeIds.length, testNodeIds.length);
+        assertEq(status, 0); // pending status
+        assertEq(deployedAt, block.timestamp);
+        assertEq(configHash, TEST_CONFIG_HASH);
+
+        // Verify application exists
+        assertTrue(applicationLogic.applicationExists(TEST_APP_ID));
+
+        // Verify deployer ownership
+        assertTrue(applicationLogic.isDeployerOwner(user, TEST_APP_ID));
+        assertFalse(applicationLogic.isDeployerOwner(admin, TEST_APP_ID));
+
+        vm.stopPrank();
+    }
+
+    function testApplicationLogic_RegisterApplication_AlreadyExists() public {
+        vm.startPrank(applicationDeployer);
+        
+        // Register first time
+        applicationLogic.registerApplication(
+            TEST_APP_ID,
+            user,
+            testNodeIds,
+            TEST_CONFIG_HASH
+        );
+
+        // Try to register again
+        vm.expectRevert(abi.encodeWithSelector(ApplicationLogic.ApplicationAlreadyExists.selector, TEST_APP_ID));
+        applicationLogic.registerApplication(
+            TEST_APP_ID,
+            user,
+            testNodeIds,
+            TEST_CONFIG_HASH
         );
         
         vm.stopPrank();
     }
     
     function testApplicationLogic_RegisterApplication_OnlyAuthorized() public {
-        string[] memory nodeIds = new string[](1);
-        nodeIds[0] = "node1";
-        
         vm.startPrank(user); // Unauthorized user
         
         vm.expectRevert();
         applicationLogic.registerApplication(
-            "test-app",
+            TEST_APP_ID,
             user,
-            nodeIds,
-            "config-hash-123"
+            testNodeIds,
+            TEST_CONFIG_HASH
         );
         
         vm.stopPrank();
     }
     
     function testApplicationLogic_RegisterApplication_InvalidAppId() public {
-        string[] memory nodeIds = new string[](1);
-        nodeIds[0] = "node1";
-        
         vm.startPrank(applicationDeployer);
         
-        vm.expectRevert();
+        vm.expectRevert(abi.encodeWithSelector(ApplicationLogic.InvalidApplicationId.selector, ""));
         applicationLogic.registerApplication(
             "", // Invalid app ID
             user,
-            nodeIds,
-            "config-hash-123"
+            testNodeIds,
+            TEST_CONFIG_HASH
         );
         
         vm.stopPrank();
     }
     
     function testApplicationLogic_RegisterApplication_InvalidDeployer() public {
-        string[] memory nodeIds = new string[](1);
-        nodeIds[0] = "node1";
-        
         vm.startPrank(applicationDeployer);
         
-        vm.expectRevert();
+        vm.expectRevert(abi.encodeWithSelector(ApplicationLogic.InvalidDeployer.selector, address(0)));
         applicationLogic.registerApplication(
-            "test-app",
+            TEST_APP_ID,
             address(0), // Invalid deployer
-            nodeIds,
-            "config-hash-123"
+            testNodeIds,
+            TEST_CONFIG_HASH
         );
         
         vm.stopPrank();
     }
     
     function testApplicationLogic_RegisterApplication_EmptyNodeList() public {
-        string[] memory nodeIds = new string[](0); // Empty array
+        string[] memory emptyNodeIds = new string[](0); // Empty array
         
         vm.startPrank(applicationDeployer);
         
-        vm.expectRevert();
+        vm.expectRevert(ApplicationLogic.EmptyNodeList.selector);
         applicationLogic.registerApplication(
-            "test-app",
+            TEST_APP_ID,
             user,
-            nodeIds,
-            "config-hash-123"
+            emptyNodeIds,
+            TEST_CONFIG_HASH
         );
         
         vm.stopPrank();
     }
     
     function testApplicationLogic_UpdateStatus() public {
+        // First register an application
         vm.startPrank(applicationDeployer);
+        applicationLogic.registerApplication(
+            TEST_APP_ID,
+            user,
+            testNodeIds,
+            TEST_CONFIG_HASH
+        );
+        vm.stopPrank();
+
+        // Update status - need application manager role
+        vm.startPrank(admin); // admin has manager role
         
-        // Note: This test may fail because application doesn't exist in storage
-        // In real implementation, we'd register first, then update
-        vm.expectRevert();
-        applicationLogic.updateStatus("test-app", 1);
+        vm.expectEmit(true, true, false, true);
+        emit ApplicationLogic.ApplicationStatusChanged(TEST_APP_ID, user, 0, 1);
+        
+        applicationLogic.updateStatus(TEST_APP_ID, 1);
+
+        // Verify status was updated
+        (, , , uint8 status, , ) = applicationLogic.getApplication(TEST_APP_ID);
+        assertEq(status, 1);
+        
+        vm.stopPrank();
+    }
+
+    function testApplicationLogic_UpdateStatus_ApplicationNotFound() public {
+        vm.startPrank(admin);
+        
+        vm.expectRevert(abi.encodeWithSelector(ApplicationLogic.ApplicationNotFound.selector, "nonexistent"));
+        applicationLogic.updateStatus("nonexistent", 1);
+        
+        vm.stopPrank();
+    }
+
+    function testApplicationLogic_UpdateStatus_InvalidStatus() public {
+        // First register an application
+        vm.startPrank(applicationDeployer);
+        applicationLogic.registerApplication(TEST_APP_ID, user, testNodeIds, TEST_CONFIG_HASH);
+        vm.stopPrank();
+
+        vm.startPrank(admin);
+        
+        vm.expectRevert(abi.encodeWithSelector(ApplicationLogic.InvalidStatus.selector, 5));
+        applicationLogic.updateStatus(TEST_APP_ID, 5); // Status > 4 is invalid
         
         vm.stopPrank();
     }
     
     function testApplicationLogic_UpdateStatus_OnlyAuthorized() public {
+        // First register an application
+        vm.startPrank(applicationDeployer);
+        applicationLogic.registerApplication(TEST_APP_ID, user, testNodeIds, TEST_CONFIG_HASH);
+        vm.stopPrank();
+
         vm.startPrank(user); // Unauthorized user
         
         vm.expectRevert();
-        applicationLogic.updateStatus("test-app", 1);
+        applicationLogic.updateStatus(TEST_APP_ID, 1);
         
         vm.stopPrank();
     }
     
     function testApplicationLogic_UpdateStatus_InvalidAppId() public {
-        vm.startPrank(applicationDeployer);
+        vm.startPrank(admin);
         
-        vm.expectRevert();
+        vm.expectRevert(abi.encodeWithSelector(ApplicationLogic.InvalidApplicationId.selector, ""));
         applicationLogic.updateStatus("", 1); // Invalid app ID
         
         vm.stopPrank();
     }
     
     function testApplicationLogic_GetApplication() public view {
+        // Test nonexistent application
         (
             string memory appId,
             address deployer,
@@ -145,25 +235,67 @@ contract ApplicationLogicTest is BaseTest {
     }
     
     function testApplicationLogic_GetApplication_InvalidAppId() public {
-        vm.expectRevert();
+        vm.expectRevert(abi.encodeWithSelector(ApplicationLogic.InvalidApplicationId.selector, ""));
         applicationLogic.getApplication("");
     }
     
-    function testApplicationLogic_GetDeployerApps() public view {
+    function testApplicationLogic_GetDeployerApps() public {
+        // Initially empty
         string[] memory apps = applicationLogic.getDeployerApps(user);
-        
-        // Should return empty array initially
         assertEq(apps.length, 0, "Should return empty apps array initially");
+
+        // Register multiple applications
+        vm.startPrank(applicationDeployer);
+        applicationLogic.registerApplication("app-1", user, testNodeIds, "hash1");
+        applicationLogic.registerApplication("app-2", user, testNodeIds, "hash2");
+        vm.stopPrank();
+
+        // Should return both applications
+        apps = applicationLogic.getDeployerApps(user);
+        assertEq(apps.length, 2);
+        assertEq(apps[0], "app-1");
+        assertEq(apps[1], "app-2");
     }
     
     function testApplicationLogic_GetDeployerApps_InvalidDeployer() public {
-        vm.expectRevert();
+        vm.expectRevert(abi.encodeWithSelector(ApplicationLogic.InvalidDeployer.selector, address(0)));
         applicationLogic.getDeployerApps(address(0));
     }
+
+    function testApplicationLogic_GetNodeApps() public {
+        // Register applications on specific nodes
+        vm.startPrank(applicationDeployer);
+        
+        string[] memory node1Apps = new string[](1);
+        node1Apps[0] = "node-1";
+        
+        applicationLogic.registerApplication("app-1", user, node1Apps, "hash1");
+        applicationLogic.registerApplication("app-2", user, node1Apps, "hash2");
+        vm.stopPrank();
+
+        // Check node apps
+        string[] memory apps = applicationLogic.getNodeApps("node-1");
+        assertEq(apps.length, 2);
+        assertEq(apps[0], "app-1");
+        assertEq(apps[1], "app-2");
+
+        // Non-existent node should return empty
+        apps = applicationLogic.getNodeApps("nonexistent-node");
+        assertEq(apps.length, 0);
+    }
     
-    function testApplicationLogic_ApplicationExists() public view {
+    function testApplicationLogic_ApplicationExists() public {
         bool exists = applicationLogic.applicationExists("nonexistent-app");
         assertFalse(exists, "Nonexistent app should return false");
+
+        // Register application
+        vm.startPrank(applicationDeployer);
+        applicationLogic.registerApplication(TEST_APP_ID, user, testNodeIds, TEST_CONFIG_HASH);
+        vm.stopPrank();
+
+        // Should now exist
+        exists = applicationLogic.applicationExists(TEST_APP_ID);
+        assertTrue(exists, "Registered app should return true");
     }
     
     function testApplicationLogic_ApplicationExists_InvalidAppId() public view {
@@ -171,9 +303,21 @@ contract ApplicationLogicTest is BaseTest {
         assertFalse(exists, "Empty app ID should return false");
     }
     
-    function testApplicationLogic_IsDeployerOwner() public view {
+    function testApplicationLogic_IsDeployerOwner() public {
         bool owns = applicationLogic.isDeployerOwner(user, "nonexistent-app");
         assertFalse(owns, "Should return false for nonexistent app");
+
+        // Register application
+        vm.startPrank(applicationDeployer);
+        applicationLogic.registerApplication(TEST_APP_ID, user, testNodeIds, TEST_CONFIG_HASH);
+        vm.stopPrank();
+
+        // Check ownership
+        owns = applicationLogic.isDeployerOwner(user, TEST_APP_ID);
+        assertTrue(owns, "Deployer should own their app");
+
+        owns = applicationLogic.isDeployerOwner(admin, TEST_APP_ID);
+        assertFalse(owns, "Different address should not own the app");
     }
     
     function testApplicationLogic_IsDeployerOwner_InvalidParams() public view {
@@ -182,5 +326,74 @@ contract ApplicationLogicTest is BaseTest {
         
         bool owns2 = applicationLogic.isDeployerOwner(user, "");
         assertFalse(owns2, "Should return false for invalid app ID");
+    }
+
+    function testApplicationLogic_PausedFunctionality() public {
+        // Pause the contract
+        vm.startPrank(admin);
+        applicationLogic.pause();
+        vm.stopPrank();
+
+        // Should revert when paused
+        vm.startPrank(applicationDeployer);
+        vm.expectRevert();
+        applicationLogic.registerApplication(TEST_APP_ID, user, testNodeIds, TEST_CONFIG_HASH);
+        vm.stopPrank();
+
+        vm.startPrank(admin);
+        vm.expectRevert();
+        applicationLogic.updateStatus(TEST_APP_ID, 1);
+        vm.stopPrank();
+
+        // Unpause and try again
+        vm.startPrank(admin);
+        applicationLogic.unpause();
+        vm.stopPrank();
+
+        vm.startPrank(applicationDeployer);
+        applicationLogic.registerApplication(TEST_APP_ID, user, testNodeIds, TEST_CONFIG_HASH);
+        vm.stopPrank();
+    }
+
+    function testApplicationLogic_MultipleApplicationsAndOperations() public {
+        vm.startPrank(applicationDeployer);
+
+        // Register multiple applications with different node configurations
+        string[] memory app1Nodes = new string[](2);
+        app1Nodes[0] = "node-1";
+        app1Nodes[1] = "node-2";
+
+        string[] memory app2Nodes = new string[](1);
+        app2Nodes[0] = "node-3";
+
+        applicationLogic.registerApplication("multi-app-1", user, app1Nodes, "hash1");
+        applicationLogic.registerApplication("multi-app-2", user, app2Nodes, "hash2");
+
+        vm.stopPrank();
+
+        // Update statuses
+        vm.startPrank(admin);
+        applicationLogic.updateStatus("multi-app-1", 1);
+        applicationLogic.updateStatus("multi-app-2", 2);
+        vm.stopPrank();
+
+        // Verify deployer apps
+        string[] memory deployerApps = applicationLogic.getDeployerApps(user);
+        assertEq(deployerApps.length, 2);
+
+        // Verify node apps
+        string[] memory node1Apps = applicationLogic.getNodeApps("node-1");
+        assertEq(node1Apps.length, 1);
+        assertEq(node1Apps[0], "multi-app-1");
+
+        string[] memory node3Apps = applicationLogic.getNodeApps("node-3");
+        assertEq(node3Apps.length, 1);
+        assertEq(node3Apps[0], "multi-app-2");
+
+        // Verify application details
+        (, , , uint8 status1, , ) = applicationLogic.getApplication("multi-app-1");
+        (, , , uint8 status2, , ) = applicationLogic.getApplication("multi-app-2");
+        assertEq(status1, 1);
+        assertEq(status2, 2);
     }
 }

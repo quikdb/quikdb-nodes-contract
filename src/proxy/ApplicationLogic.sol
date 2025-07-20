@@ -75,7 +75,7 @@ contract ApplicationLogic is BaseLogic {
         string calldata appId,
         address deployer,
         string[] calldata nodeIds,
-        string calldata /* configHash */
+        string calldata configHash
     ) external onlyRole(APPLICATION_DEPLOYER_ROLE) whenNotPaused nonReentrant {
         if (bytes(appId).length == 0) revert InvalidApplicationId(appId);
         if (deployer == address(0)) revert InvalidDeployer(deployer);
@@ -87,16 +87,10 @@ contract ApplicationLogic is BaseLogic {
             revert ApplicationAlreadyExists(appId);
         }
 
-        emit ApplicationRegistered(appId, deployer, nodeIds.length, block.timestamp);
+        // Register application in storage
+        applicationStorage.registerApplication(appId, deployer, nodeIds, configHash);
 
-        // Note: In a real implementation, this would:
-        // 1. Create Application struct with provided data
-        // 2. Store in applications mapping
-        // 3. Update deployerApps mapping
-        // 4. Update nodeApps mappings for each node
-        // 5. Set initial status (e.g., 0 = pending, 1 = deployed, 2 = failed)
-        
-        // For now, we emit the event to indicate successful registration
+        emit ApplicationRegistered(appId, deployer, nodeIds.length, block.timestamp);
     }
 
     /**
@@ -120,12 +114,10 @@ contract ApplicationLogic is BaseLogic {
         // Validate status transition (basic validation)
         if (newStatus > 4) revert InvalidStatus(newStatus); // 0-4 are valid statuses
 
-        emit ApplicationStatusChanged(appId, deployer, currentStatus, newStatus);
+        // Update status in storage
+        applicationStorage.updateApplicationStatus(appId, newStatus);
 
-        // Note: In a real implementation, this would:
-        // 1. Update the status field in the applications mapping
-        // 2. Emit ApplicationStatusUpdated event from storage
-        // 3. Handle any side effects of status changes
+        emit ApplicationStatusChanged(appId, deployer, currentStatus, newStatus);
     }
 
     /**

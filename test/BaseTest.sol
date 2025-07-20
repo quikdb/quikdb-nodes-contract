@@ -266,6 +266,7 @@ abstract contract BaseTest is Test {
         resourceStorage.setLogicContract(address(resourceLogicProxy));
         performanceStorage.setLogicContract(address(performanceLogicProxy));
         clusterStorage.setLogicContract(address(clusterLogicProxy));
+        applicationStorage.setLogicContract(address(applicationLogicProxy));
 
         // Set performance storage in the logic contract
         performanceLogic.setPerformanceStorage(address(performanceStorage));
