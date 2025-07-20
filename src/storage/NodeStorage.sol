@@ -51,6 +51,19 @@ contract NodeStorage is AccessControl {
         string gpuType; // GPU type/model
     }
 
+    // Gas-optimized node capacity with better packing
+    struct OptimizedNodeCapacity {
+        uint32 cpuCores; // 4 bytes - up to 4B cores
+        uint32 ramGB; // 4 bytes - up to 4TB RAM  
+        uint32 storageGB; // 4 bytes - up to 4TB storage
+        uint32 gpuCount; // 4 bytes - up to 4B GPUs
+        // Total: 16 bytes (fits in 1 slot)
+        uint64 registeredAt; // 8 bytes
+        uint64 lastUpdated; // 8 bytes  
+        // Second slot: 16 bytes
+        string gpuType; // Dynamic, separate storage
+    }
+
     // Node metrics structure
     struct NodeMetrics {
         uint256 uptimePercentage; // Uptime percentage (0-10000 for 0.00%-100.00%)
@@ -59,6 +72,19 @@ contract NodeStorage is AccessControl {
         uint256 totalEarnings; // Total earnings in wei
         uint256 lastHeartbeat; // Last heartbeat timestamp
         uint256 avgResponseTime; // Average response time in ms
+    }
+
+    // Gas-optimized node metrics with better packing
+    struct OptimizedNodeMetrics {
+        uint16 uptimePercentage; // 2 bytes - 0-65535 (0.00%-655.35%)
+        uint32 totalJobs; // 4 bytes - up to 4B jobs
+        uint32 successfulJobs; // 4 bytes - up to 4B jobs
+        uint16 avgResponseTime; // 2 bytes - up to 65s response time
+        // Total: 12 bytes
+        uint32 padding; // 4 bytes padding to align to 16 bytes
+        uint64 totalEarnings; // 8 bytes - scaled by 1e12 for precision
+        uint64 lastHeartbeat; // 8 bytes - timestamp
+        // Second slot: 16 bytes
     }
 
     // Node listing information
@@ -70,6 +96,20 @@ contract NodeStorage is AccessControl {
         string[] supportedServices; // List of supported services
         uint256 minJobDuration; // Minimum job duration in hours
         uint256 maxJobDuration; // Maximum job duration in hours
+    }
+
+    // Gas-optimized node listing with better packing
+    struct OptimizedNodeListing {
+        bool isListed; // 1 byte
+        uint8 availability; // 1 byte - 0-100%
+        uint16 minJobDuration; // 2 bytes - up to 65k hours
+        uint16 maxJobDuration; // 2 bytes - up to 65k hours
+        uint16 padding; // 2 bytes padding
+        // Total: 8 bytes
+        uint64 hourlyRate; // 8 bytes - scaled rate
+        // Second part: 8 bytes, total 16 bytes
+        string region; // Dynamic storage
+        string[] supportedServices; // Dynamic storage
     }
 
     // Extended node information (for new features)

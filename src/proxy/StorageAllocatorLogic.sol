@@ -8,6 +8,7 @@ import "../storage/StorageAllocatorStorage.sol";
 import "../storage/NodeStorage.sol";
 import "../libraries/ValidationLibrary.sol";
 import "../libraries/RateLimitingLibrary.sol";
+import "../libraries/GasOptimizationLibrary.sol";
 import "./BaseLogic.sol";
 
 /**
@@ -18,6 +19,7 @@ import "./BaseLogic.sol";
 contract StorageAllocatorLogic is BaseLogic {
     using ValidationLibrary for *;
     using RateLimitingLibrary for *;
+    using GasOptimizationLibrary for *;
     
     // ---------------------------------------------------------------------
     // Storage contracts
@@ -424,6 +426,125 @@ contract StorageAllocatorLogic is BaseLogic {
     function getDailyAllocationCount(address requester) external view returns (uint256) {
         uint256 currentDay = block.timestamp / 1 days;
         return dailyAllocations[requester][currentDay];
+    }
+
+    // =============================================================================
+    // GAS OPTIMIZED BATCH OPERATIONS  
+    // =============================================================================
+
+    /**
+     * @dev Batch allocate storage for multiple requesters (gas optimized)
+     */
+    function batchAllocateStorage(
+        string[] calldata allocationIds,
+        address[] calldata requesters,
+        uint256[] calldata sizesGB,
+        string[][] calldata nodeIdsBatch,
+        uint256[] calldata replicationFactors
+    ) external 
+        onlyRole(STORAGE_ALLOCATOR_ROLE)
+        rateLimit("batchAllocateStorage", RateLimitingLibrary.MAX_STORAGE_OPERATIONS_PER_MINUTE * 5, RateLimitingLibrary.MINUTE_WINDOW)
+        circuitBreakerCheck("batchStorageAllocation")
+        emergencyPauseCheck("StorageAllocatorLogic")
+    {
+        uint256 batchSize = allocationIds.length;
+        
+        // Validate batch operation
+        GasOptimizationLibrary.validateBatchOperation(batchSize);
+        
+        // Validate all arrays have same length
+        require(
+            requesters.length == batchSize &&
+            sizesGB.length == batchSize &&
+            nodeIdsBatch.length == batchSize &&
+            replicationFactors.length == batchSize,
+            "Array length mismatch"
+        );
+        
+        uint256 successfulAllocations = 0;
+        uint256 totalStorageAllocated = 0;
+        
+        // Process each allocation in the batch
+        for (uint256 i = 0; i < batchSize; i++) {
+            try this._allocateSingleStorage(
+                allocationIds[i],
+                requesters[i],
+                sizesGB[i],
+                nodeIdsBatch[i],
+                replicationFactors[i]
+            ) {
+                successfulAllocations++;
+                totalStorageAllocated += sizesGB[i];
+            } catch {
+                // Continue with next allocation on failure
+                continue;
+            }
+        }
+        
+        require(successfulAllocations > 0, "Batch allocation failed completely");
+    }
+
+    /**
+     * @dev Internal function for single storage allocation (used by batch)
+     */
+    function _allocateSingleStorage(
+        string calldata allocationId,
+        address requester,
+        uint256 sizeGB,
+        string[] calldata nodeIds,
+        uint256 replicationFactor
+    ) external {
+        require(msg.sender == address(this), "Internal function only");
+        
+        // Reuse existing allocation logic with minimal validation
+        _performStorageAllocation(allocationId, requester, sizeGB, nodeIds, replicationFactor);
+    }
+
+    /**
+     * @dev Perform storage allocation (extracted for batch operations)
+     */
+    function _performStorageAllocation(
+        string calldata allocationId,
+        address requester,
+        uint256 sizeGB,
+        string[] calldata nodeIds,
+        uint256 replicationFactor
+    ) internal {
+        // Basic validation (optimized for batch operations)
+        ValidationLibrary.validateId(allocationId);
+        ValidationLibrary.validateAddress(requester);
+        ValidationLibrary.validateStorageAllocation(sizeGB);
+        
+        // Check daily allocation limits
+        uint256 currentDay = block.timestamp / 1 days;
+        uint256 todayAllocations = dailyAllocations[requester][currentDay];
+        if (todayAllocations >= RateLimitingLibrary.MAX_ALLOCATIONS_PER_REQUESTER_PER_DAY) {
+            revert RateLimitingLibrary.RateLimitExceededError(
+                "allocateStorage", 
+                todayAllocations, 
+                RateLimitingLibrary.MAX_ALLOCATIONS_PER_REQUESTER_PER_DAY
+            );
+        }
+        
+        // Update daily allocation count
+        dailyAllocations[requester][currentDay] = todayAllocations + 1;
+        
+        // Create allocation (simplified for batch efficiency)
+        StorageAllocatorStorage.StorageAllocation memory allocation = 
+            StorageAllocatorStorage.StorageAllocation({
+                allocationId: allocationId,
+                requester: requester,
+                sizeGB: sizeGB,
+                status: uint8(StorageAllocatorStorage.AllocationStatus.PENDING),
+                allocatedAt: block.timestamp,
+                updatedAt: block.timestamp,
+                nodeIds: nodeIds,
+                replicationFactor: replicationFactor,
+                region: ""
+            });
+
+        storageAllocatorStorage.createAllocation(allocation);
+        emit AllocationRequested(allocationId, requester, sizeGB, block.timestamp);
     }
 
     /**

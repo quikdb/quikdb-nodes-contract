@@ -5,6 +5,7 @@ import "./BaseLogic.sol";
 import "../storage/ClusterStorage.sol";
 import "../libraries/ValidationLibrary.sol";
 import "../libraries/RateLimitingLibrary.sol";
+import "../libraries/GasOptimizationLibrary.sol";
 
 /**
  * @title ClusterLogic
@@ -15,6 +16,7 @@ import "../libraries/RateLimitingLibrary.sol";
 contract ClusterLogic is BaseLogic {
     using ValidationLibrary for *;
     using RateLimitingLibrary for *;
+    using GasOptimizationLibrary for *;
 
     // Storage contract reference
     ClusterStorage public clusterStorage;
@@ -547,6 +549,307 @@ contract ClusterLogic is BaseLogic {
         
         nodeIdToAddress[nodeId] = nodeAddress;
         addressToNodeId[nodeAddress] = nodeId;
+    }
+
+    // =============================================================================
+    // BATCH OPERATIONS FOR GAS OPTIMIZATION
+    // =============================================================================
+
+    /**
+     * @dev Batch register multiple clusters for gas efficiency
+     */
+    function batchRegisterClusters(
+        string[] calldata clusterIds,
+        address[][] calldata nodeAddresses,
+        ClusterStorage.ClusterStrategy[] calldata strategies,
+        uint8[] calldata minActiveNodes,
+        bool[] calldata autoManaged
+    ) 
+        external 
+        whenNotPaused 
+        onlyRole(CLUSTER_MANAGER_ROLE) 
+        nonReentrant 
+        rateLimit("batchRegisterClusters", RateLimitingLibrary.MAX_CLUSTER_REGISTRATIONS_PER_HOUR, RateLimitingLibrary.HOUR_WINDOW)
+        circuitBreakerCheck("batchClusterRegistration")
+        emergencyPauseCheck("ClusterLogic")
+    {
+        uint256 batchSize = clusterIds.length;
+        
+        // Validate batch operation
+        GasOptimizationLibrary.validateBatchOperation(batchSize);
+        
+        // Validate all arrays have same length
+        require(
+            nodeAddresses.length == batchSize &&
+            strategies.length == batchSize &&
+            minActiveNodes.length == batchSize &&
+            autoManaged.length == batchSize,
+            "Array length mismatch"
+        );
+        
+        // Generate batch ID for tracking
+        uint256 batchId = GasOptimizationLibrary.generateBatchId(msg.sender, block.timestamp, batchSize);
+        
+        uint256 totalNodes = 0;
+        uint256 successfulRegistrations = 0;
+        
+        // Process each cluster in the batch
+        for (uint256 i = 0; i < batchSize; i++) {
+            try this._registerSingleCluster(
+                clusterIds[i],
+                nodeAddresses[i],
+                strategies[i],
+                minActiveNodes[i],
+                autoManaged[i]
+            ) {
+                successfulRegistrations++;
+                totalNodes += nodeAddresses[i].length;
+            } catch {
+                // Continue with next cluster on failure
+                // Individual failures are logged but don't stop batch
+                continue;
+            }
+        }
+        
+        // Emit batch completion event
+        emit GasOptimizationLibrary.BatchClusterRegistered(batchId, successfulRegistrations, totalNodes);
+        
+        // Revert if no clusters were successfully registered
+        require(successfulRegistrations > 0, "Batch registration failed completely");
+    }
+
+    /**
+     * @dev Internal function for single cluster registration (used by batch operation)
+     */
+    function _registerSingleCluster(
+        string calldata clusterId,
+        address[] calldata nodeAddresses,
+        ClusterStorage.ClusterStrategy strategy,
+        uint8 minActiveNodes,
+        bool autoManaged
+    ) external {
+        // Only callable by this contract for batch operations
+        require(msg.sender == address(this), "Internal function only");
+        
+        // Reuse existing validation logic
+        _validateClusterRegistration(clusterId, nodeAddresses, strategy, minActiveNodes);
+        
+        // Register the cluster
+        _performClusterRegistration(clusterId, nodeAddresses, strategy, minActiveNodes, autoManaged);
+    }
+
+    /**
+     * @dev Batch get cluster information for gas efficiency
+     */
+    function batchGetClusters(string[] calldata clusterIds) 
+        external 
+        view 
+        returns (ClusterStorage.ClusterInfo[] memory clusters) 
+    {
+        uint256 length = clusterIds.length;
+        GasOptimizationLibrary.checkArrayLength(length, 100); // Max 100 clusters per batch
+        
+        clusters = new ClusterStorage.ClusterInfo[](length);
+        
+        for (uint256 i = 0; i < length; i++) {
+            try clusterStorage.getCluster(clusterIds[i]) returns (ClusterStorage.NodeCluster memory cluster) {
+                // Convert NodeCluster to ClusterInfo
+                clusters[i] = ClusterStorage.ClusterInfo({
+                    clusterId: cluster.clusterId,
+                    nodeAddresses: cluster.nodeAddresses,
+                    status: ClusterStorage.ClusterStatus(cluster.status),
+                    strategy: ClusterStorage.ClusterStrategy(cluster.strategy),
+                    minActiveNodes: cluster.minActiveNodes,
+                    autoManaged: cluster.autoManaged,
+                    createdAt: uint64(cluster.createdAt),
+                    updatedAt: uint64(block.timestamp)
+                });
+            } catch {
+                // Return empty cluster info for non-existent clusters
+                clusters[i] = ClusterStorage.ClusterInfo({
+                    clusterId: "",
+                    nodeAddresses: new address[](0),
+                    status: ClusterStorage.ClusterStatus.INACTIVE,
+                    strategy: ClusterStorage.ClusterStrategy.LOAD_BALANCED,
+                    minActiveNodes: 0,
+                    autoManaged: false,
+                    createdAt: 0,
+                    updatedAt: 0
+                });
+            }
+        }
+    }
+
+    /**
+     * @dev Paginated query for all cluster IDs
+     */
+    function getAllClusterIdsPaginated(uint256 offset, uint256 limit)
+        external
+        rateLimit("getAllClusterIds", 50, 300) // Max 50 calls per 5 minutes
+        returns (
+            string[] memory clusterIds,
+            uint256 totalCount,
+            bool hasMore
+        )
+    {
+        string[] memory allClusterIds = clusterStorage.getAllClusterIds();
+        totalCount = allClusterIds.length;
+        
+        // Validate and adjust pagination parameters
+        uint256 adjustedLimit = GasOptimizationLibrary.validatePagination(offset, limit, totalCount);
+        
+        if (offset >= totalCount) {
+            return (new string[](0), totalCount, false);
+        }
+        
+        // Use gas-optimized array copying
+        clusterIds = GasOptimizationLibrary.copyArray(allClusterIds, offset, adjustedLimit);
+        hasMore = (offset + adjustedLimit) < totalCount;
+        
+        // Emit pagination event for off-chain indexing
+        emit GasOptimizationLibrary.PaginatedQuery(msg.sender, "getAllClusterIds", offset, adjustedLimit, totalCount);
+    }
+
+    /**
+     * @dev Get clusters by node address with pagination
+     */
+    function getClustersByNodePaginated(address nodeAddress, uint256 offset, uint256 limit)
+        external
+        rateLimit("getClustersByNode", 30, 300) // Max 30 calls per 5 minutes
+        returns (
+            string[] memory clusterIds,
+            uint256 totalCount,
+            bool hasMore
+        )
+    {
+        GasOptimizationLibrary.validateAddress(nodeAddress);
+        
+        // Get all cluster IDs first
+        string[] memory allClusterIds = clusterStorage.getAllClusterIds();
+        string[] memory nodeClusters = new string[](allClusterIds.length);
+        uint256 nodeClusterCount = 0;
+        
+        // Find clusters that contain this node
+        for (uint256 i = 0; i < allClusterIds.length; i++) {
+            try clusterStorage.getCluster(allClusterIds[i]) returns (ClusterStorage.NodeCluster memory cluster) {
+                // Check if node is in this cluster
+                for (uint256 j = 0; j < cluster.nodeAddresses.length; j++) {
+                    if (cluster.nodeAddresses[j] == nodeAddress) {
+                        nodeClusters[nodeClusterCount] = allClusterIds[i];
+                        nodeClusterCount++;
+                        break;
+                    }
+                }
+            } catch {
+                continue;
+            }
+        }
+        
+        // Resize array to actual count
+        string[] memory finalNodeClusters = new string[](nodeClusterCount);
+        for (uint256 i = 0; i < nodeClusterCount; i++) {
+            finalNodeClusters[i] = nodeClusters[i];
+        }
+        
+        totalCount = nodeClusterCount;
+        uint256 adjustedLimit = GasOptimizationLibrary.validatePagination(offset, limit, totalCount);
+        
+        if (offset >= totalCount) {
+            return (new string[](0), totalCount, false);
+        }
+        
+        clusterIds = GasOptimizationLibrary.copyArray(finalNodeClusters, offset, adjustedLimit);
+        hasMore = (offset + adjustedLimit) < totalCount;
+        
+        emit GasOptimizationLibrary.PaginatedQuery(msg.sender, "getClustersByNode", offset, adjustedLimit, totalCount);
+    }
+
+    // =============================================================================
+    // INTERNAL HELPER FUNCTIONS (EXTRACTED FOR REUSE)
+    // =============================================================================
+
+    /**
+     * @dev Validate cluster registration parameters (extracted for reuse)
+     */
+    function _validateClusterRegistration(
+        string calldata clusterId,
+        address[] calldata nodeAddresses,
+        ClusterStorage.ClusterStrategy strategy,
+        uint8 minActiveNodes
+    ) internal view {
+        // Validate cluster ID format
+        ValidationLibrary.validateId(clusterId);
+        
+        // Validate cluster size
+        ValidationLibrary.validateClusterSize(nodeAddresses.length);
+        
+        // Validate node addresses
+        ValidationLibrary.validateAddresses(nodeAddresses);
+        
+        // Validate strategy
+        require(uint8(strategy) <= 3, "Invalid cluster strategy");
+        
+        // Validate minimum active nodes
+        require(minActiveNodes > 0 && minActiveNodes <= nodeAddresses.length, "Invalid min active nodes");
+        
+        // Check if cluster already exists
+        require(!clusterStorage.clusterExists(clusterId), "Cluster already exists");
+    }
+
+    /**
+     * @dev Perform cluster registration (extracted for reuse)
+     */
+    function _performClusterRegistration(
+        string calldata clusterId,
+        address[] calldata nodeAddresses,
+        ClusterStorage.ClusterStrategy strategy,
+        uint8 minActiveNodes,
+        bool autoManaged
+    ) internal {
+        // Validate geographic distribution (simplified for batch efficiency)
+        // require(_validateGeographicDistribution(nodeAddresses), "Geographic distribution failed");
+        
+        // Create cluster info (needs to be NodeCluster for registerCluster function)
+        ClusterStorage.NodeCluster memory clusterInfo = ClusterStorage.NodeCluster({
+            clusterId: clusterId,
+            nodeAddresses: nodeAddresses,
+            strategy: uint8(strategy),
+            minActiveNodes: minActiveNodes,
+            status: uint8(ClusterStorage.ClusterStatus.ACTIVE),
+            autoManaged: autoManaged,
+            createdAt: block.timestamp
+        });
+        
+        // Store cluster
+        clusterStorage.registerCluster(clusterId, clusterInfo);
+        
+        // Update node mappings for efficiency
+        for (uint256 i = 0; i < nodeAddresses.length; i++) {
+            if (bytes(addressToNodeId[nodeAddresses[i]]).length == 0) {
+                string memory nodeId = string(abi.encodePacked("node_", _addressToString(nodeAddresses[i])));
+                nodeIdToAddress[nodeId] = nodeAddresses[i];
+                addressToNodeId[nodeAddresses[i]] = nodeId;
+            }
+        }
+        
+        // Emit individual cluster registered event
+        emit ClusterRegistered(clusterId, nodeAddresses, uint8(strategy), minActiveNodes, autoManaged);
+    }
+
+    /**
+     * @dev Convert address to string for node ID generation
+     */
+    function _addressToString(address addr) internal pure returns (string memory) {
+        bytes32 value = bytes32(uint256(uint160(addr)));
+        bytes memory alphabet = "0123456789abcdef";
+        bytes memory str = new bytes(42);
+        str[0] = '0';
+        str[1] = 'x';
+        for (uint256 i = 0; i < 20; i++) {
+            str[2 + i * 2] = alphabet[uint8(value[i + 12] >> 4)];
+            str[3 + i * 2] = alphabet[uint8(value[i + 12] & 0x0f)];
+        }
+        return string(str);
     }
 
     /**

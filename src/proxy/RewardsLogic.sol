@@ -7,6 +7,7 @@ import "./BaseLogic.sol";
 import "../storage/RewardsStorage.sol";
 import "../libraries/ValidationLibrary.sol";
 import "../libraries/RateLimitingLibrary.sol";
+import "../libraries/GasOptimizationLibrary.sol";
 
 /**
  * @title RewardsLogic
@@ -17,6 +18,7 @@ import "../libraries/RateLimitingLibrary.sol";
 contract RewardsLogic is BaseLogic {
     using ValidationLibrary for *;
     using RateLimitingLibrary for *;
+    using GasOptimizationLibrary for *;
 
     // Storage contract reference
     RewardsStorage public rewardsStorage;
@@ -24,6 +26,18 @@ contract RewardsLogic is BaseLogic {
     // Node ID to address mapping for rewards
     mapping(string => address) private nodeIdToAddress;
     mapping(address => string) private addressToNodeId;
+    
+    // Struct to reduce stack depth in batch operations
+    struct BatchRewardParams {
+        address[] nodeOperators;
+        string[] nodeIds;
+        uint256[] baseAmounts;
+        uint8[] rewardTypes;
+        uint256[] uptimeScores;
+        uint256[] performanceScores;
+        uint256[] qualityScores;
+        string[] periods;
+    }
     
     // Daily and monthly reward tracking for caps
     mapping(address => mapping(uint256 => uint256)) private dailyRewards; // operator => day => amount
@@ -69,6 +83,12 @@ contract RewardsLogic is BaseLogic {
         uint256 totalAmount,
         uint256 successfulDistributions,
         uint256 failedDistributions
+    );
+
+    event RewardCalculationBatch(
+        uint256 indexed batchId,
+        uint256 successfulCalculations,
+        uint256 failedCalculations
     );
 
     event OperatorSlashed(
@@ -302,45 +322,177 @@ contract RewardsLogic is BaseLogic {
     }
 
     /**
-     * @dev Batch distribute multiple rewards for efficiency
+     * @dev Gas-optimized batch distribute multiple rewards
      */
     function batchDistributeRewards(
         bytes32[] calldata rewardIds
-    ) external onlyRole(REWARDS_DISTRIBUTOR_ROLE) whenNotPaused nonReentrant {
+    ) external 
+        onlyRole(REWARDS_DISTRIBUTOR_ROLE) 
+        whenNotPaused 
+        nonReentrant 
+        rateLimit("batchDistributeRewards", RateLimitingLibrary.MAX_REWARD_DISTRIBUTIONS_PER_MINUTE * 10, RateLimitingLibrary.MINUTE_WINDOW)
+        circuitBreakerCheck("batchRewardDistribution")
+        emergencyPauseCheck("RewardsLogic")
+    {
+        uint256 batchSize = rewardIds.length;
+        
+        // Validate batch operation
+        GasOptimizationLibrary.validateBatchOperation(batchSize);
+        
+        // Generate batch ID for tracking
+        uint256 batchId = GasOptimizationLibrary.generateBatchId(msg.sender, block.timestamp, batchSize);
+        
         uint256 totalAmount = 0;
         uint256 successfulDistributions = 0;
         uint256 failedDistributions = 0;
 
-        // First pass: validate and calculate total amount
-        for (uint256 i = 0; i < rewardIds.length; i++) {
-            RewardsStorage.RewardRecord memory record = rewardsStorage.getRewardRecord(rewardIds[i]);
-            
-            if (record.nodeOperator != address(0) && !record.distributed) {
-                totalAmount += record.amount;
-            }
-        }
+        // Pre-allocate arrays for gas efficiency
+        address[] memory operators = GasOptimizationLibrary.allocateAddressArray(batchSize);
+        uint256[] memory amounts = new uint256[](batchSize);
+        bool[] memory validRecords = new bool[](batchSize);
 
-        // Validate total balance
-        _validateSufficientBalance(totalAmount);
-
-        // Second pass: distribute rewards
-        for (uint256 i = 0; i < rewardIds.length; i++) {
-            bytes32 rewardId = rewardIds[i];
-            
-            RewardsStorage.RewardRecord memory record = rewardsStorage.getRewardRecord(rewardId);
-            
-            if (record.nodeOperator != address(0) && !record.distributed) {
-                try this.distributeReward(rewardId) {
-                    successfulDistributions++;
-                } catch {
+        // First pass: validate and calculate total amount (gas optimized)
+        for (uint256 i = 0; i < batchSize; i++) {
+            try rewardsStorage.getRewardRecord(rewardIds[i]) returns (RewardsStorage.RewardRecord memory record) {
+                if (record.nodeOperator != address(0) && !record.distributed) {
+                    operators[i] = record.nodeOperator;
+                    amounts[i] = record.amount;
+                    validRecords[i] = true;
+                    totalAmount += record.amount;
+                } else {
+                    validRecords[i] = false;
                     failedDistributions++;
                 }
-            } else {
+            } catch {
+                validRecords[i] = false;
                 failedDistributions++;
             }
         }
 
+        // Validate total balance once
+        _validateSufficientBalance(totalAmount);
+
+        // Second pass: distribute rewards (gas optimized)
+        for (uint256 i = 0; i < batchSize; i++) {
+            if (validRecords[i]) {
+                try this._distributeSingleReward(rewardIds[i], operators[i], amounts[i]) {
+                    successfulDistributions++;
+                } catch {
+                    failedDistributions++;
+                }
+            }
+        }
+
+        // Emit optimized batch event
+        GasOptimizationLibrary.emitBatchEvent(batchId, successfulDistributions, totalAmount, "reward");
+        
         emit BatchRewardDistribution(totalAmount, successfulDistributions, failedDistributions);
+        
+        // Require at least some distributions succeeded
+        require(successfulDistributions > 0, "Batch distribution failed completely");
+    }
+
+    /**
+     * @dev Internal function for single reward distribution (used by batch)
+     */
+    function _distributeSingleReward(bytes32 rewardId, address operator, uint256 amount) external {
+        require(msg.sender == address(this), "Internal function only");
+        
+        // Perform actual transfer
+        _performRewardTransfer(operator, amount);
+        
+        // Update storage to mark as distributed
+        rewardsStorage.updateRewardDistribution(rewardId, true);
+    }
+
+    /**
+     * @dev Batch calculate multiple rewards for gas efficiency
+     */
+    function batchCalculateRewards(
+        BatchRewardParams calldata params
+    ) external 
+        onlyRole(REWARDS_CALCULATOR_ROLE) 
+        whenNotPaused 
+        nonReentrant 
+        rateLimit("batchCalculateRewards", RateLimitingLibrary.MAX_REWARD_DISTRIBUTIONS_PER_MINUTE * 5, RateLimitingLibrary.MINUTE_WINDOW)
+        circuitBreakerCheck("batchRewardCalculation")
+        emergencyPauseCheck("RewardsLogic")
+        returns (bytes32[] memory rewardIds) 
+    {
+        uint256 batchSize = params.nodeOperators.length;
+        
+        // Validate batch operation and array lengths
+        GasOptimizationLibrary.validateBatchOperation(batchSize);
+        require(
+            params.nodeIds.length == batchSize &&
+            params.baseAmounts.length == batchSize &&
+            params.rewardTypes.length == batchSize &&
+            params.uptimeScores.length == batchSize &&
+            params.performanceScores.length == batchSize &&
+            params.qualityScores.length == batchSize &&
+            params.periods.length == batchSize,
+            "Array length mismatch"
+        );
+        
+        // Generate batch ID for tracking
+        uint256 batchId = GasOptimizationLibrary.generateBatchId(msg.sender, block.timestamp, batchSize);
+        
+        rewardIds = new bytes32[](batchSize);
+        uint256 successfulCalculations = 0;
+        
+        // Process each reward calculation
+        for (uint256 i = 0; i < batchSize; i++) {
+            try this._calculateSingleReward(
+                params.nodeOperators[i],
+                params.nodeIds[i],
+                params.baseAmounts[i],
+                params.rewardTypes[i],
+                params.uptimeScores[i],
+                params.performanceScores[i],
+                params.qualityScores[i],
+                params.periods[i]
+            ) returns (bytes32 rewardId) {
+                rewardIds[i] = rewardId;
+                successfulCalculations++;
+            } catch {
+                rewardIds[i] = bytes32(0);
+                // Continue with next calculation on failure
+                continue;
+            }
+        }
+        
+        // Emit batch calculation event
+        emit RewardCalculationBatch(batchId, successfulCalculations, batchSize - successfulCalculations);
+        
+        require(successfulCalculations > 0, "Batch calculation failed completely");
+    }
+
+    /**
+     * @dev Internal function for single reward calculation (used by batch)
+     */
+    function _calculateSingleReward(
+        address nodeOperator,
+        string calldata nodeId,
+        uint256 baseAmount,
+        uint8 rewardType,
+        uint256 uptimeScore,
+        uint256 performanceScore,
+        uint256 qualityScore,
+        string calldata period
+    ) external returns (bytes32) {
+        require(msg.sender == address(this), "Internal function only");
+        
+        // Reuse existing calculation logic with minimal validation
+        return _performRewardCalculation(
+            nodeOperator,
+            nodeId,
+            baseAmount,
+            rewardType,
+            uptimeScore,
+            performanceScore,
+            qualityScore,
+            period
+        );
     }
 
     /**
@@ -599,6 +751,178 @@ contract RewardsLogic is BaseLogic {
         uint256 currentMonth = block.timestamp / 30 days;
         uint256 used = monthlyRewards[operator][currentMonth];
         return used >= MAX_MONTHLY_REWARDS ? 0 : MAX_MONTHLY_REWARDS - used;
+    }
+
+    // =============================================================================
+    // BATCH OPERATIONS AND PAGINATED QUERIES
+    // =============================================================================
+
+    /**
+     * @dev Paginated reward history with gas optimization
+     */
+    function getRewardHistoryPaginated(
+        address nodeOperator,
+        uint256 offset,
+        uint256 limit
+    ) external validNodeOperator(nodeOperator) returns (
+        bytes32[] memory rewardIds,
+        uint256[] memory amounts,
+        uint256[] memory distributionDates,
+        uint8[] memory rewardTypes,
+        bool[] memory distributedFlags,
+        uint256 totalCount,
+        bool hasMore
+    ) {
+        // Get all reward IDs for the operator
+        bytes32[] memory allRewardIds = rewardsStorage.getOperatorRewardHistory(nodeOperator, 0, type(uint256).max);
+        totalCount = allRewardIds.length;
+        
+        // Validate and adjust pagination
+        uint256 adjustedLimit = GasOptimizationLibrary.validatePagination(offset, limit, totalCount);
+        
+        if (offset >= totalCount) {
+            return (new bytes32[](0), new uint256[](0), new uint256[](0), new uint8[](0), new bool[](0), totalCount, false);
+        }
+        
+        // Calculate actual length for this page
+        uint256 pageLength = offset + adjustedLimit > totalCount ? totalCount - offset : adjustedLimit;
+        
+        // Pre-allocate arrays for gas efficiency
+        rewardIds = new bytes32[](pageLength);
+        amounts = new uint256[](pageLength);
+        distributionDates = new uint256[](pageLength);
+        rewardTypes = new uint8[](pageLength);
+        distributedFlags = new bool[](pageLength);
+        
+        // Populate arrays efficiently
+        for (uint256 i = 0; i < pageLength; i++) {
+            bytes32 rewardId = allRewardIds[offset + i];
+            rewardIds[i] = rewardId;
+            
+            RewardsStorage.RewardRecord memory record = rewardsStorage.getRewardRecord(rewardId);
+            amounts[i] = record.amount;
+            distributionDates[i] = record.distributionDate;
+            rewardTypes[i] = record.rewardType;
+            distributedFlags[i] = record.distributed;
+        }
+        
+        hasMore = (offset + pageLength) < totalCount;
+        
+        // Emit pagination event for off-chain indexing
+        emit GasOptimizationLibrary.PaginatedQuery(msg.sender, "getRewardHistory", offset, pageLength, totalCount);
+    }
+
+    /**
+     * @dev Batch get reward records for gas efficiency
+     */
+    function batchGetRewardRecords(bytes32[] calldata rewardIds)
+        external
+        view
+        returns (RewardsStorage.RewardRecord[] memory records)
+    {
+        uint256 length = rewardIds.length;
+        GasOptimizationLibrary.checkArrayLength(length, 100); // Max 100 records per batch
+        
+        records = new RewardsStorage.RewardRecord[](length);
+        
+        for (uint256 i = 0; i < length; i++) {
+            try rewardsStorage.getRewardRecord(rewardIds[i]) returns (RewardsStorage.RewardRecord memory record) {
+                records[i] = record;
+            } catch {
+                // Return empty record for non-existent rewards
+                records[i] = RewardsStorage.RewardRecord({
+                    nodeOperator: address(0),
+                    amount: 0,
+                    distributionDate: 0,
+                    rewardType: 0,
+                    distributed: false,
+                    calculatedAt: 0,
+                    uptimeScore: 0,
+                    performanceScore: 0,
+                    qualityScore: 0,
+                    nodeId: "",
+                    period: ""
+                });
+            }
+        }
+    }
+
+    // =============================================================================
+    // INTERNAL HELPER FUNCTIONS (EXTRACTED FOR REUSE)
+    // =============================================================================
+
+    /**
+     * @dev Internal reward calculation function (extracted for batch operations)
+     */
+    function _performRewardCalculation(
+        address nodeOperator,
+        string calldata nodeId,
+        uint256 baseAmount,
+        uint8 rewardType,
+        uint256 uptimeScore,
+        uint256 performanceScore,
+        uint256 qualityScore,
+        string calldata period
+    ) internal returns (bytes32) {
+        // Calculate performance-based reward adjustment
+        uint256 adjustedAmount = _calculatePerformanceAdjustedReward(
+            baseAmount,
+            uptimeScore,
+            performanceScore,
+            qualityScore
+        );
+
+        // Validate adjusted amount
+        ValidationLibrary.validateRewardAmount(adjustedAmount);
+        
+        // Check daily and monthly limits
+        uint256 currentDay = block.timestamp / 1 days;
+        uint256 currentMonth = block.timestamp / 30 days;
+        
+        uint256 todayRewards = dailyRewards[nodeOperator][currentDay];
+        if (todayRewards + adjustedAmount > MAX_DAILY_REWARDS) {
+            revert DailyRewardLimitExceeded(nodeOperator, adjustedAmount);
+        }
+        
+        uint256 monthlyRewardAmount = monthlyRewards[nodeOperator][currentMonth];
+        if (monthlyRewardAmount + adjustedAmount > MAX_MONTHLY_REWARDS) {
+            revert MonthlyRewardLimitExceeded(nodeOperator, adjustedAmount);
+        }
+        
+        // Update reward tracking
+        dailyRewards[nodeOperator][currentDay] = todayRewards + adjustedAmount;
+        monthlyRewards[nodeOperator][currentMonth] = monthlyRewardAmount + adjustedAmount;
+
+        // Generate unique reward ID
+        bytes32 rewardId = keccak256(
+            abi.encodePacked(
+                nodeOperator,
+                nodeId,
+                adjustedAmount,
+                block.timestamp,
+                rewardType,
+                period
+            )
+        );
+
+        // Create reward record
+        RewardsStorage.RewardRecord memory newRecord = RewardsStorage.RewardRecord({
+            nodeOperator: nodeOperator,
+            amount: adjustedAmount,
+            distributionDate: 0,
+            rewardType: rewardType,
+            distributed: false,
+            calculatedAt: block.timestamp,
+            uptimeScore: uptimeScore,
+            performanceScore: performanceScore,
+            qualityScore: qualityScore,
+            nodeId: nodeId,
+            period: period
+        });
+
+        rewardsStorage.storeRewardRecord(rewardId, newRecord);
+
+        return rewardId;
     }
 
     /**

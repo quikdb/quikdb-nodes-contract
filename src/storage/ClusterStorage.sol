@@ -42,6 +42,20 @@ contract ClusterStorage is AccessControl {
         uint256 createdAt; // Timestamp when cluster was created
     }
 
+    // Gas-optimized cluster info struct with better packing
+    struct ClusterInfo {
+        string clusterId; // Dynamic size, stored separately
+        address[] nodeAddresses; // Dynamic size, stored separately
+        ClusterStatus status; // 1 byte
+        ClusterStrategy strategy; // 1 byte  
+        uint8 minActiveNodes; // 1 byte
+        bool autoManaged; // 1 byte
+        // Total: 4 bytes + dynamic data
+        uint64 createdAt; // 8 bytes (sufficient for timestamps until year 2554)
+        uint64 updatedAt; // 8 bytes
+        // Second slot: 16 bytes total
+    }
+
     // Storage mappings
     mapping(string => NodeCluster) public clusters; // clusterId => NodeCluster
     mapping(string => bool) public clusterExists; // clusterId => exists
