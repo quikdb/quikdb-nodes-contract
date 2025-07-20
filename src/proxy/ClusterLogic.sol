@@ -14,19 +14,9 @@ contract ClusterLogic is BaseLogic {
     // Storage contract reference
     ClusterStorage public clusterStorage;
 
-    // Node ID to address mapping
+    // Node ID to address mapping (keep for nodeId resolution)
     mapping(string => address) private nodeIdToAddress;
     mapping(address => string) private addressToNodeId;
-    
-    // Cluster tracking
-    mapping(string => bool) private clusterRegistered;
-    mapping(string => uint256) private clusterCreationTimes;
-    mapping(string => uint8) private clusterStatuses;
-    mapping(string => uint8) private clusterHealthScores;
-    
-    // Arrays for tracking all clusters
-    string[] private allClusterIds;
-    mapping(string => uint256) private clusterIndices;
 
     // Cluster-specific roles
     bytes32 public constant CLUSTER_MANAGER_ROLE = keccak256("CLUSTER_MANAGER_ROLE");
@@ -220,9 +210,9 @@ contract ClusterLogic is BaseLogic {
     // =============================================================================
 
     /**
-     * @dev Register cluster with blockchain service interface
+     * @dev Register cluster with blockchain service interface (alternative signature)
      */
-    function registerCluster(
+    function registerClusterFromNodeIds(
         string[] calldata nodeIds,
         bytes32 /* clusterConfigHash */,
         bytes32 /* metadataHash */
@@ -232,16 +222,20 @@ contract ClusterLogic is BaseLogic {
         
         // Generate unique cluster ID
         string memory clusterId = string(abi.encodePacked("cluster_", block.timestamp, "_", block.number));
-        require(!clusterRegistered[clusterId], "Cluster ID collision");
+        require(!clusterStorage.clusterExists(clusterId), "Cluster ID collision");
         
         // Validate all nodeIds and convert to addresses
         address[] memory nodeAddresses = new address[](nodeIds.length);
         for (uint i = 0; i < nodeIds.length; i++) {
             require(bytes(nodeIds[i]).length > 0, "Invalid nodeId");
             
-            // For now, generate deterministic address from nodeId
-            // In real implementation, you'd validate that these nodes exist
-            address nodeAddr = address(uint160(uint256(keccak256(abi.encodePacked(nodeIds[i])))));
+            // Validate that the node exists in NodeStorage
+            require(address(nodeStorage) != address(0), "Node storage not set");
+            require(nodeStorage.doesNodeExist(nodeIds[i]), "Node does not exist");
+            
+            // Get the actual node address from storage
+            address nodeAddr = nodeStorage.getNodeAddress(nodeIds[i]);
+            require(nodeAddr != address(0), "Invalid node address");
             nodeAddresses[i] = nodeAddr;
             
             // Store mapping for future reference
@@ -252,29 +246,17 @@ contract ClusterLogic is BaseLogic {
         }
 
         // Create and store cluster
-        if (address(clusterStorage) != address(0)) {
-            ClusterStorage.NodeCluster memory cluster = ClusterStorage.NodeCluster({
-                clusterId: clusterId,
-                nodeAddresses: nodeAddresses,
-                strategy: uint8(ClusterStorage.ClusterStrategy.ROUND_ROBIN),
-                minActiveNodes: uint8(nodeIds.length > 1 ? 1 : 1),
-                status: uint8(ClusterStorage.ClusterStatus.ACTIVE),
-                autoManaged: true,
-                createdAt: block.timestamp
-            });
-            
-            clusterStorage.registerCluster(clusterId, cluster);
-        }
+        ClusterStorage.NodeCluster memory cluster = ClusterStorage.NodeCluster({
+            clusterId: clusterId,
+            nodeAddresses: nodeAddresses,
+            strategy: uint8(ClusterStorage.ClusterStrategy.ROUND_ROBIN),
+            minActiveNodes: uint8(nodeIds.length > 1 ? 1 : 1),
+            status: uint8(ClusterStorage.ClusterStatus.ACTIVE),
+            autoManaged: true,
+            createdAt: block.timestamp
+        });
         
-        // Update local tracking
-        clusterRegistered[clusterId] = true;
-        clusterCreationTimes[clusterId] = block.timestamp;
-        clusterStatuses[clusterId] = uint8(ClusterStorage.ClusterStatus.ACTIVE);
-        clusterHealthScores[clusterId] = 100; // Start with perfect health
-        
-        // Add to cluster list
-        clusterIndices[clusterId] = allClusterIds.length;
-        allClusterIds.push(clusterId);
+        clusterStorage.registerCluster(clusterId, cluster);
 
         emit ClusterRegistered(
             clusterId, 
@@ -297,7 +279,7 @@ contract ClusterLogic is BaseLogic {
         uint256 /* lastUpdated */
     ) external whenNotPaused onlyRole(CLUSTER_MANAGER_ROLE) {
         require(bytes(clusterId).length > 0, "Invalid clusterId");
-        require(clusterRegistered[clusterId], "Cluster does not exist");
+        require(clusterStorage.clusterExists(clusterId), "Cluster does not exist");
         require(healthScore <= 100, "Invalid health score");
         
         // Convert string status to enum
@@ -308,16 +290,13 @@ contract ClusterLogic is BaseLogic {
             newStatus = ClusterStorage.ClusterStatus.MAINTENANCE;
         }
         
-        uint8 oldStatus = clusterStatuses[clusterId];
+        // Get current status from storage
+        ClusterStorage.NodeCluster memory currentCluster = clusterStorage.getCluster(clusterId);
+        uint8 oldStatus = currentCluster.status;
         
-        // Update cluster status in storage if available
-        if (address(clusterStorage) != address(0)) {
-            clusterStorage.updateClusterStatus(clusterId, uint8(newStatus));
-        }
-        
-        // Update local tracking
-        clusterStatuses[clusterId] = uint8(newStatus);
-        clusterHealthScores[clusterId] = healthScore;
+        // Update cluster status and health score in storage
+        clusterStorage.updateClusterStatus(clusterId, uint8(newStatus));
+        clusterStorage.updateClusterHealthScore(clusterId, healthScore);
         
         emit ClusterStatusChanged(clusterId, oldStatus, uint8(newStatus));
     }
@@ -326,15 +305,14 @@ contract ClusterLogic is BaseLogic {
      * @dev Get cluster health score
      */
     function getClusterHealthScore(string calldata clusterId) external view returns (uint8) {
-        require(clusterRegistered[clusterId], "Cluster does not exist");
-        return clusterHealthScores[clusterId];
+        return clusterStorage.getClusterHealthScore(clusterId);
     }
     
     /**
      * @dev Get all cluster IDs
      */
     function getAllClusterIds() external view returns (string[] memory) {
-        return allClusterIds;
+        return clusterStorage.getAllClusterIds();
     }
     
     /**

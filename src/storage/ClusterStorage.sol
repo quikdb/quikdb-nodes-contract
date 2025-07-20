@@ -45,6 +45,9 @@ contract ClusterStorage is AccessControl {
     // Storage mappings
     mapping(string => NodeCluster) public clusters; // clusterId => NodeCluster
     mapping(string => bool) public clusterExists; // clusterId => exists
+    mapping(string => uint8) public clusterHealthScores; // clusterId => health score (0-100)
+    string[] public allClusterIds; // Array of all cluster IDs for enumeration
+    mapping(string => uint256) public clusterIndices; // clusterId => index in allClusterIds array
     uint256 public clusterCount; // Total number of clusters
 
     // Events
@@ -98,6 +101,12 @@ contract ClusterStorage is AccessControl {
         
         clusters[clusterId] = cluster;
         clusterExists[clusterId] = true;
+        clusterHealthScores[clusterId] = 100; // Start with perfect health
+        
+        // Add to allClusterIds array
+        clusterIndices[clusterId] = allClusterIds.length;
+        allClusterIds.push(clusterId);
+        
         clusterCount++;
         
         emit ClusterRegistered(
@@ -132,5 +141,34 @@ contract ClusterStorage is AccessControl {
     function getCluster(string calldata clusterId) external view returns (NodeCluster memory) {
         require(clusterExists[clusterId], "Cluster does not exist");
         return clusters[clusterId];
+    }
+
+    /**
+     * @dev Update cluster health score
+     * @param clusterId Cluster identifier
+     * @param healthScore New health score (0-100)
+     */
+    function updateClusterHealthScore(string calldata clusterId, uint8 healthScore) external onlyLogic {
+        require(clusterExists[clusterId], "Cluster does not exist");
+        require(healthScore <= 100, "Invalid health score");
+        clusterHealthScores[clusterId] = healthScore;
+    }
+
+    /**
+     * @dev Get cluster health score
+     * @param clusterId Cluster identifier
+     * @return Health score (0-100)
+     */
+    function getClusterHealthScore(string calldata clusterId) external view returns (uint8) {
+        require(clusterExists[clusterId], "Cluster does not exist");
+        return clusterHealthScores[clusterId];
+    }
+
+    /**
+     * @dev Get all cluster IDs
+     * @return Array of all cluster IDs
+     */
+    function getAllClusterIds() external view returns (string[] memory) {
+        return allClusterIds;
     }
 }
