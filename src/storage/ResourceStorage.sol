@@ -3,18 +3,43 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "../interfaces/IResourceTypes.sol";
+import "../interfaces/IUserStorage.sol";
 
 /**
  * @title ResourceStorage
  * @dev Storage contract for resource-related data (listings, allocations, etc.)
  * @notice This contract is immutable and stores all resource data permanently
+ * @dev Includes cross-contract verification with UserStorage for wallet consistency
  */
 contract ResourceStorage is AccessControl, IResourceTypes {
     bytes32 public constant LOGIC_ROLE = keccak256("LOGIC_ROLE");
 
+    // Cross-contract references for wallet verification
+    IUserStorage public userStorage;
+
     // Access control modifier
     modifier onlyLogic() {
         require(hasRole(LOGIC_ROLE, msg.sender), "Caller is not Logic contract");
+        _;
+    }
+
+    // Wallet verification modifier
+    modifier onlyRegisteredUser(address userAddress) {
+        require(address(userStorage) != address(0), "UserStorage not set");
+        require(userStorage.isUserRegistered(userAddress), "User not registered");
+        _;
+    }
+
+    // Rate limiting modifier
+    modifier rateLimited(address walletAddress) {
+        _checkRateLimit(walletAddress);
+        _;
+    }
+
+    // Wallet address validation modifier
+    modifier validWalletAddress(address walletAddress) {
+        require(walletAddress != address(0), "Invalid wallet address");
+        require(walletAddress != address(this), "Cannot use contract address");
         _;
     }
 
@@ -33,6 +58,25 @@ contract ResourceStorage is AccessControl, IResourceTypes {
     mapping(string => bytes32[]) internal listingsByRegion;
     mapping(address => bytes32[]) internal customerAllocations;
 
+    // Wallet activity tracking for audit trails
+    mapping(address => uint256) private walletLastActivity;           // wallet to last activity timestamp
+    mapping(address => uint256) private walletOperationCount;         // wallet to total operations count
+    mapping(address => bytes32[]) private walletRecentOperations;     // wallet to recent operation hashes (last 10)
+    
+    // Rate limiting for wallet operations
+    mapping(address => uint256) private walletHourlyOperations;       // wallet to operations in current hour
+    mapping(address => uint256) private walletHourlyResetTime;        // wallet to hour reset timestamp
+    
+    // Wallet-based resource statistics
+    mapping(address => uint256) private walletActiveListings;         // wallet to active listing count
+    mapping(address => uint256) private walletTotalRevenue;           // wallet to total revenue from resources
+    mapping(address => uint256) private walletActiveAllocations;      // wallet to active allocation count
+    
+    // Security parameters
+    uint256 private constant MAX_OPERATIONS_PER_HOUR = 25;           // Rate limit for operations per wallet
+    uint256 private constant MAX_RECENT_OPERATIONS = 10;             // Maximum recent operations to track
+    uint256 private constant MAX_LISTINGS_PER_PROVIDER = 100;        // Maximum listings per provider
+
     // Resource statistics using optimized types
     uint32 private nextListingId;
     uint32 private nextAllocationId;
@@ -43,8 +87,29 @@ contract ResourceStorage is AccessControl, IResourceTypes {
     uint32 public totalAllocations;
     uint32 public activeAllocations;
 
-    // Events
+    // Enhanced events with wallet address indexing
     event ResourceDataUpdated(bytes32 indexed id, string action);
+    
+    event WalletOperationPerformed(
+        address indexed walletAddress,
+        bytes32 indexed operationHash,
+        string operationType,
+        bytes32 resourceId,
+        uint256 timestamp
+    );
+    
+    event WalletRateLimitExceeded(
+        address indexed walletAddress,
+        uint256 operationCount,
+        uint256 timestamp
+    );
+    
+    event ResourceProviderRegistered(
+        address indexed providerAddress,
+        bytes32 indexed resourceId,
+        string resourceType,
+        uint256 timestamp
+    );
 
     constructor(address admin) {
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
@@ -56,6 +121,15 @@ contract ResourceStorage is AccessControl, IResourceTypes {
      */
     function setLogicContract(address logicContract) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _grantRole(LOGIC_ROLE, logicContract);
+    }
+
+    /**
+     * @dev Set the UserStorage contract address for cross-contract verification
+     * @param userStorageAddress Address of the UserStorage contract
+     */
+    function setUserStorage(address userStorageAddress) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(userStorageAddress != address(0), "Invalid UserStorage address");
+        userStorage = IUserStorage(userStorageAddress);
     }
 
     // =============================================================================
@@ -438,6 +512,166 @@ contract ResourceStorage is AccessControl, IResourceTypes {
      */
     function getListingMetrics(bytes32 listingId) external view returns (PerformanceMetrics memory) {
         return listingMetrics[listingId];
+    }
+
+    // =============================================================================
+    // WALLET CONSISTENCY AND AUDIT TRAIL FUNCTIONS
+    // =============================================================================
+
+    /**
+     * @dev Get wallet activity statistics
+     * @param walletAddress The wallet address to query
+     * @return lastActivity Timestamp of last activity
+     * @return operationCount Total operations performed
+     * @return activeListings Number of active listings
+     * @return totalRevenue Total revenue from resources
+     * @return activeAllocs Number of active allocations
+     */
+    function getWalletActivity(address walletAddress) 
+        external 
+        view 
+        returns (
+            uint256 lastActivity,
+            uint256 operationCount,
+            uint256 activeListings,
+            uint256 totalRevenue,
+            uint256 activeAllocs
+        ) 
+    {
+        return (
+            walletLastActivity[walletAddress],
+            walletOperationCount[walletAddress],
+            walletActiveListings[walletAddress],
+            walletTotalRevenue[walletAddress],
+            walletActiveAllocations[walletAddress]
+        );
+    }
+
+    /**
+     * @dev Check if wallet can perform operations (rate limit check)
+     * @param walletAddress The wallet address to check
+     * @return canOperate Whether the wallet can perform operations
+     * @return operationsLeft Number of operations left in current hour
+     */
+    function checkWalletRateLimit(address walletAddress) 
+        external 
+        view 
+        returns (bool canOperate, uint256 operationsLeft) 
+    {
+        // Check if hour has reset
+        if (block.timestamp >= walletHourlyResetTime[walletAddress] + 1 hours) {
+            return (true, MAX_OPERATIONS_PER_HOUR);
+        }
+        
+        uint256 currentOperations = walletHourlyOperations[walletAddress];
+        canOperate = currentOperations < MAX_OPERATIONS_PER_HOUR;
+        operationsLeft = canOperate ? MAX_OPERATIONS_PER_HOUR - currentOperations : 0;
+        
+        return (canOperate, operationsLeft);
+    }
+
+    /**
+     * @dev Verify wallet is registered and can provide resources
+     * @param walletAddress The wallet address to verify
+     * @return isRegistered Whether wallet is registered in UserStorage
+     * @return isVerified Whether wallet is verified in UserStorage
+     * @return canProvide Whether wallet can provide resources
+     */
+    function verifyWalletStatus(address walletAddress) 
+        external 
+        view 
+        returns (bool isRegistered, bool isVerified, bool canProvide) 
+    {
+        if (address(userStorage) == address(0)) {
+            return (false, false, false);
+        }
+        
+        isRegistered = userStorage.isUserRegistered(walletAddress);
+        isVerified = userStorage.isUserVerified(walletAddress);
+        canProvide = isRegistered; // Can provide if registered
+        
+        return (isRegistered, isVerified, canProvide);
+    }
+
+    // =============================================================================
+    // INTERNAL HELPER FUNCTIONS
+    // =============================================================================
+
+    /**
+     * @dev Internal function to check and enforce rate limiting
+     * @param walletAddress The wallet address to check
+     */
+    function _checkRateLimit(address walletAddress) internal {
+        uint256 currentTime = block.timestamp;
+        uint256 resetTime = walletHourlyResetTime[walletAddress];
+        
+        // Reset counter if hour has passed
+        if (currentTime >= resetTime + 1 hours) {
+            walletHourlyOperations[walletAddress] = 0;
+            walletHourlyResetTime[walletAddress] = currentTime;
+        }
+        
+        require(
+            walletHourlyOperations[walletAddress] < MAX_OPERATIONS_PER_HOUR,
+            "Rate limit exceeded for wallet"
+        );
+        
+        walletHourlyOperations[walletAddress]++;
+        
+        // Emit rate limit warning if close to limit
+        if (walletHourlyOperations[walletAddress] >= MAX_OPERATIONS_PER_HOUR - 2) {
+            emit WalletRateLimitExceeded(
+                walletAddress,
+                walletHourlyOperations[walletAddress],
+                currentTime
+            );
+        }
+    }
+
+    /**
+     * @dev Internal function to update wallet activity tracking
+     * @param walletAddress The wallet address
+     * @param operationType Type of operation performed
+     * @param resourceId Related resource ID
+     */
+    function _updateWalletActivity(
+        address walletAddress,
+        string memory operationType,
+        bytes32 resourceId
+    ) internal {
+        walletLastActivity[walletAddress] = block.timestamp;
+        walletOperationCount[walletAddress]++;
+        
+        // Generate operation hash for tracking
+        bytes32 operationHash = keccak256(
+            abi.encodePacked(
+                walletAddress,
+                operationType,
+                resourceId,
+                block.timestamp,
+                walletOperationCount[walletAddress]
+            )
+        );
+        
+        // Add to recent operations (maintain only last MAX_RECENT_OPERATIONS)
+        bytes32[] storage recentOps = walletRecentOperations[walletAddress];
+        if (recentOps.length >= MAX_RECENT_OPERATIONS) {
+            // Shift array left to remove oldest operation
+            for (uint256 i = 0; i < MAX_RECENT_OPERATIONS - 1; i++) {
+                recentOps[i] = recentOps[i + 1];
+            }
+            recentOps[MAX_RECENT_OPERATIONS - 1] = operationHash;
+        } else {
+            recentOps.push(operationHash);
+        }
+        
+        emit WalletOperationPerformed(
+            walletAddress,
+            operationHash,
+            operationType,
+            resourceId,
+            block.timestamp
+        );
     }
 
     // =============================================================================
