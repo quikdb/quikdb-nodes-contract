@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./BaseLogic.sol";
 import "../storage/RewardsStorage.sol";
+import "../tokens/QuiksToken.sol";
 import "../libraries/ValidationLibrary.sol";
 import "../libraries/RateLimitingLibrary.sol";
 import "../libraries/GasOptimizationLibrary.sol";
@@ -45,6 +46,9 @@ contract RewardsLogic is BaseLogic {
 
     // Reward token contract (if using ERC20 instead of ETH)
     IERC20 public rewardToken;
+    
+    // QuiksToken contract for minting rewards
+    QuiksToken public quiksToken;
     
     // Production-grade constants (using ValidationLibrary values)
     uint256 public constant MIN_REWARD_AMOUNT = ValidationLibrary.MIN_REWARD_AMOUNT;
@@ -145,6 +149,10 @@ contract RewardsLogic is BaseLogic {
         rewardsStorage = RewardsStorage(_rewardsStorage);
 
         if (_rewardToken != address(0)) {
+            // First try to set as QuiksToken
+            quiksToken = QuiksToken(_rewardToken);
+            
+            // Also set as regular ERC20 for compatibility
             rewardToken = IERC20(_rewardToken);
         }
 
@@ -670,6 +678,11 @@ contract RewardsLogic is BaseLogic {
      * @dev Validate sufficient balance for reward distribution
      */
     function _validateSufficientBalance(uint256 amount) internal view {
+        // Skip balance validation for QUIKS token since we mint new tokens
+        if (address(quiksToken) != address(0)) {
+            return;
+        }
+        
         uint256 available;
         
         if (address(rewardToken) != address(0)) {
@@ -684,15 +697,26 @@ contract RewardsLogic is BaseLogic {
     }
 
     /**
-     * @dev Perform actual reward transfer (ETH or ERC20)
+     * @dev Perform actual reward transfer (ETH, ERC20, or mint QUIKS)
      */
     function _performRewardTransfer(address recipient, uint256 amount) internal {
-        if (address(rewardToken) != address(0)) {
-            // ERC20 token transfer
+        if (address(quiksToken) != address(0)) {
+            // Mint QUIKS tokens as reward
+            try quiksToken.mintRewards(
+                recipient, 
+                amount, 
+                "Node operator performance reward"
+            ) {
+                // Minting successful
+            } catch {
+                revert TransferFailed(recipient, amount);
+            }
+        } else if (address(rewardToken) != address(0)) {
+            // ERC20 token transfer (fallback)
             bool success = rewardToken.transfer(recipient, amount);
             if (!success) revert TransferFailed(recipient, amount);
         } else {
-            // ETH transfer
+            // ETH transfer (legacy fallback)
             (bool success, ) = recipient.call{value: amount}("");
             if (!success) revert TransferFailed(recipient, amount);
         }

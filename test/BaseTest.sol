@@ -22,6 +22,7 @@ import "../src/storage/ApplicationStorage.sol";
 import "../src/storage/StorageAllocatorStorage.sol";
 import "../src/storage/DeploymentStorage.sol";
 import "../src/storage/LogAccessStorage.sol";
+import "../src/tokens/QuiksToken.sol";
 import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 
@@ -79,6 +80,9 @@ abstract contract BaseTest is Test {
     // Proxy admin
     ProxyAdmin internal proxyAdmin;
 
+    // Token contracts
+    QuiksToken internal quiksToken;
+
     // Proxied contracts
     NodeLogic internal nodeLogic;
     UserLogic internal userLogic;
@@ -92,6 +96,7 @@ abstract contract BaseTest is Test {
 
     function setUp() public virtual {
         _deployStorageContracts();
+        _deployTokenContracts();
         _deployImplementationContracts();
         _deployProxyInfrastructure();
         _deployProxies();
@@ -115,6 +120,20 @@ abstract contract BaseTest is Test {
         storageAllocatorStorage = new StorageAllocatorStorage(admin);
         deploymentStorage = new DeploymentStorage(admin);
         logAccessStorage = new LogAccessStorage();
+        vm.stopPrank();
+    }
+
+    function _deployTokenContracts() internal {
+        vm.startPrank(admin);
+        // Deploy QUIKS token with initial supply for testing
+        uint256 initialSupply = 1000000 * 1e18; // 1 million QUIKS tokens
+        quiksToken = new QuiksToken(
+            initialSupply,
+            admin,          // admin role
+            admin           // minter role (will be updated to rewardsLogic later)
+        );
+        console.log("QUIKS Token deployed at:", address(quiksToken));
+        console.log("Initial supply:", initialSupply / 1e18, "QUIKS tokens");
         vm.stopPrank();
     }
 
@@ -210,7 +229,7 @@ abstract contract BaseTest is Test {
                 address(nodeStorage),
                 address(userStorage),
                 address(resourceStorage),
-                address(0) // No reward token for testing
+                address(quiksToken) // Use QUIKS token for rewards
             )
         );
 
@@ -312,6 +331,23 @@ abstract contract BaseTest is Test {
         deploymentStorage.grantRole(deploymentLogicRole, admin);
         logAccessStorage.grantRole(logAccessLogicRole, admin);
         rewardsStorage.grantRole(rewardsLogicRole, admin);
+        
+        // Grant MINTER_ROLE to RewardsLogic for QUIKS token
+        quiksToken.grantRole(quiksToken.MINTER_ROLE(), address(rewardsLogicProxy));
+        console.log("Granted MINTER_ROLE to RewardsLogic for QUIKS token");
+        
+        // Check if QUIKS token is properly set in RewardsLogic
+        console.log("Checking QUIKS token integration...");
+        try rewardsLogic.quiksToken() returns (QuiksToken token) {
+            if (address(token) != address(0)) {
+                console.log("RewardsLogic has QUIKS token set at:", address(token));
+            } else {
+                console.log("RewardsLogic QUIKS token is address(0)");
+            }
+        } catch {
+            console.log("Failed to query QUIKS token from RewardsLogic");
+        }
+        
         vm.stopPrank();
     }
 
