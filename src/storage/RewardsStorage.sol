@@ -295,7 +295,7 @@ contract RewardsStorage is AccessControl {
         operatorRewardHistory[record.nodeOperator].push(rewardId);
         nodeRewardHistory[record.nodeId].push(rewardId);
         
-        totalRewards++;
+        totalRewards += record.amount; // Fix: Add amount instead of just incrementing
         if (!record.distributed) {
             pendingRewards += record.amount;
         }
@@ -318,6 +318,7 @@ contract RewardsStorage is AccessControl {
             totalDistributed += record.amount;
             pendingRewards -= record.amount;
             operatorTotalRewards[record.nodeOperator] += record.amount;
+            operatorLastRewardTime[record.nodeOperator] = block.timestamp; // Fix: Update last reward time
             emit RewardDistributed(rewardId, record.nodeOperator, record.amount, record.rewardType, block.timestamp);
         } else {
             totalDistributed -= record.amount;

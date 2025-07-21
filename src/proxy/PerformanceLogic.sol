@@ -208,65 +208,6 @@ contract PerformanceLogic is BaseLogic {
     // =============================================================================
     // MISSING BLOCKCHAIN SERVICE METHODS
     // =============================================================================
-
-    /**
-     * @dev Record daily metrics with blockchain service interface
-     */
-    function recordDailyMetrics(
-        string calldata nodeId,
-        uint256 date,
-        bytes32 metricsHash
-    ) external whenNotPaused onlyRole(PERFORMANCE_RECORDER_ROLE) validNodeId(nodeId) validDate(date) {
-        require(bytes(nodeId).length > 0, "Invalid nodeId");
-        require(date > 0, "Invalid date");
-        require(!metricsRecorded[nodeId][date], "Metrics already recorded for this date");
-        
-        // Extract metrics from hash (simplified approach - in production you'd have a more sophisticated encoding)
-        // For now, we'll derive reasonable values from the hash
-        uint256 hashValue = uint256(metricsHash);
-        
-        // Generate deterministic but reasonable metrics from hash
-        uint16 uptime = uint16((hashValue % 1000) + 9000); // 90-99.99%
-        uint32 responseTime = uint32((hashValue >> 16) % 500 + 50); // 50-550ms
-        uint32 throughput = uint32((hashValue >> 32) % 10000 + 1000); // 1000-11000 ops/sec
-        uint64 storageUsed = uint64((hashValue >> 48) % 1000000000); // 0-1GB
-        uint16 networkLatency = uint16((hashValue >> 64) % 200 + 10); // 10-210ms
-        uint16 errorRate = uint16((hashValue >> 80) % 500); // 0-5%
-        
-        // Calculate daily score based on metrics
-        uint8 dailyScore = calculateDailyScore(uptime, responseTime, errorRate, networkLatency);
-        
-        // Validate ranges
-        require(uptime <= MAX_UPTIME, "Invalid uptime");
-        require(responseTime <= MAX_RESPONSE_TIME, "Invalid response time");
-        require(errorRate <= MAX_ERROR_RATE, "Invalid error rate");
-        require(dailyScore <= MAX_DAILY_SCORE, "Invalid daily score");
-
-        // Create metrics struct
-        PerformanceStorage.DailyMetrics memory metrics = PerformanceStorage.DailyMetrics({
-            nodeId: nodeId,
-            date: date,
-            uptime: uptime,
-            responseTime: responseTime,
-            throughput: throughput,
-            storageUsed: storageUsed,
-            networkLatency: networkLatency,
-            errorRate: errorRate,
-            dailyScore: dailyScore
-        });
-
-        // Store metrics if storage is available
-        if (address(performanceStorage) != address(0)) {
-            performanceStorage.recordDailyMetrics(nodeId, metrics);
-        }
-        
-        // Update local tracking
-        metricsRecorded[nodeId][date] = true;
-        nodeDates[nodeId].push(date);
-        nodeLatestScores[nodeId] = dailyScore;
-
-        emit MetricsRecorded(nodeId, date, dailyScore, responseTime, uptime);
-    }
     
     /**
      * @dev Calculate daily score based on performance metrics

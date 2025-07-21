@@ -273,6 +273,24 @@ contract UserStorage is AccessControl {
     }
 
     /**
+     * @dev Update user type
+     * @param userAddress Address of the user
+     * @param newUserType New user type
+     */
+    function updateUserType(address userAddress, UserType newUserType) external onlyLogic {
+        require(registeredUsers[userAddress], "User not registered");
+        require(users[userAddress].profile.isActive, "User is not active");
+
+        UserType oldUserType = users[userAddress].profile.userType;
+        require(oldUserType != newUserType, "User type is already set to this value");
+
+        users[userAddress].profile.userType = newUserType;
+        users[userAddress].profile.updatedAt = block.timestamp;
+
+        emit UserDataUpdated(userAddress, "userType");
+    }
+
+    /**
      * @dev Verify user
      * @param userAddress Address of the user
      */

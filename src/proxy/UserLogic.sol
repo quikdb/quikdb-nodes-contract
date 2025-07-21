@@ -104,6 +104,24 @@ contract UserLogic is BaseLogic {
     }
 
     /**
+     * @dev Update user type (e.g., from CONSUMER to PROVIDER)
+     * @param userAddress Address of the user
+     * @param newUserType New user type to set
+     */
+    function updateUserType(address userAddress, UserStorage.UserType newUserType)
+        external
+        whenNotPaused
+        onlyRole(AUTH_SERVICE_ROLE)
+    {
+        require(userAddress != address(0), "Invalid user address");
+        userStorage.updateUserType(userAddress, newUserType);
+        
+        // Get the updated profile to emit the event
+        UserStorage.UserProfile memory profile = userStorage.getUserProfile(userAddress);
+        emit UserProfileUpdated(userAddress, profile.profileHash, block.timestamp);
+    }
+
+    /**
      * @dev Delete a user and all associated data
      */
     function deleteUser(address userAddress) external whenNotPaused onlyRole(AUTH_SERVICE_ROLE) {

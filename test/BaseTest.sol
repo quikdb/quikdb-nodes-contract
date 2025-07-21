@@ -20,6 +20,8 @@ import "../src/storage/ClusterStorage.sol";
 import "../src/storage/RewardsStorage.sol";
 import "../src/storage/ApplicationStorage.sol";
 import "../src/storage/StorageAllocatorStorage.sol";
+import "../src/storage/DeploymentStorage.sol";
+import "../src/storage/LogAccessStorage.sol";
 import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 
@@ -49,6 +51,8 @@ abstract contract BaseTest is Test {
     RewardsStorage internal rewardsStorage;
     ApplicationStorage internal applicationStorage;
     StorageAllocatorStorage internal storageAllocatorStorage;
+    DeploymentStorage internal deploymentStorage;
+    LogAccessStorage internal logAccessStorage;
 
     // Logic implementation contracts
     NodeLogic internal nodeLogicImpl;
@@ -109,6 +113,8 @@ abstract contract BaseTest is Test {
         rewardsStorage = new RewardsStorage(admin);
         applicationStorage = new ApplicationStorage();
         storageAllocatorStorage = new StorageAllocatorStorage(admin);
+        deploymentStorage = new DeploymentStorage(admin);
+        logAccessStorage = new LogAccessStorage();
         vm.stopPrank();
     }
 
@@ -203,7 +209,8 @@ abstract contract BaseTest is Test {
                 address(rewardsStorage),
                 address(nodeStorage),
                 address(userStorage),
-                address(resourceStorage)
+                address(resourceStorage),
+                address(0) // No reward token for testing
             )
         );
 
@@ -266,13 +273,18 @@ abstract contract BaseTest is Test {
         resourceStorage.setLogicContract(address(resourceLogicProxy));
         performanceStorage.setLogicContract(address(performanceLogicProxy));
         clusterStorage.setLogicContract(address(clusterLogicProxy));
+        rewardsStorage.setLogicContract(address(rewardsLogicProxy));
         applicationStorage.setLogicContract(address(applicationLogicProxy));
+        deploymentStorage.setLogicContract(address(applicationLogicProxy));
 
         // Set performance storage in the logic contract
         performanceLogic.setPerformanceStorage(address(performanceStorage));
 
         // Set cluster storage in the logic contract
         clusterLogic.setClusterStorage(address(clusterStorage));
+        
+        // Configure DeploymentStorage with UserStorage reference
+        deploymentStorage.setUserStorage(address(userStorage));
 
         vm.stopPrank();
     }
@@ -289,6 +301,17 @@ abstract contract BaseTest is Test {
         applicationLogic.grantRole(applicationLogic.APPLICATION_MANAGER_ROLE(), applicationDeployer);
         storageAllocatorLogic.grantRole(storageAllocatorLogic.STORAGE_ALLOCATOR_ROLE(), storageAllocator);
         storageAllocatorLogic.grantRole(storageAllocatorLogic.STORAGE_MANAGER_ROLE(), storageAllocator);
+        
+        // Grant LOGIC_ROLE to applicationLogic for LogAccessStorage
+        logAccessStorage.grantRole(logAccessStorage.LOGIC_ROLE(), address(applicationLogicProxy));
+        
+        // Grant LOGIC_ROLE to admin (deployer) for DeploymentStorage and LogAccessStorage  
+        bytes32 deploymentLogicRole = deploymentStorage.LOGIC_ROLE();
+        bytes32 logAccessLogicRole = logAccessStorage.LOGIC_ROLE();
+        bytes32 rewardsLogicRole = rewardsStorage.LOGIC_ROLE();
+        deploymentStorage.grantRole(deploymentLogicRole, admin);
+        logAccessStorage.grantRole(logAccessLogicRole, admin);
+        rewardsStorage.grantRole(rewardsLogicRole, admin);
         vm.stopPrank();
     }
 
