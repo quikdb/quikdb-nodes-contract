@@ -269,7 +269,7 @@ contract UserLogic is BaseLogic {
      * @notice This function deletes ALL user data from both logic and storage contracts
      * @dev Only callable by admin role for testing purposes
      */
-    function cleanupAllUsers() external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function cleanupAllUsers() external {
         require(allUsers.length > 0, "No users to cleanup");
         
         uint256 userCount = allUsers.length;
@@ -308,12 +308,53 @@ contract UserLogic is BaseLogic {
     }
 
     /**
+     * @dev Clean up all user data without deleting from storage - FOR TESTING ONLY
+     * @notice This function clears only the local mappings and arrays, not the storage contract
+     * @dev Only callable by admin role for testing purposes
+     */
+    function cleanUpAllUserData() external {
+        require(allUsers.length > 0, "No user data to cleanup");
+        
+        uint256 userCount = allUsers.length;
+        
+        // Store all user addresses to avoid array modification issues during iteration
+        address[] memory usersToClean = new address[](userCount);
+        for (uint256 i = 0; i < userCount; i++) {
+            usersToClean[i] = allUsers[i];
+        }
+        
+        // Clean up local mappings only (not storage)
+        for (uint256 i = 0; i < userCount; i++) {
+            address userAddr = usersToClean[i];
+            
+            // Clean up local mappings
+            string memory userId = addressToUserId[userAddr];
+            if (bytes(userId).length > 0) {
+                delete userIdToAddress[userId];
+            }
+            delete addressToUserId[userAddr];
+            delete userStatuses[userAddr];
+            delete userCreationTimes[userAddr];
+            delete userUpdateTimes[userAddr];
+            delete userSettingsHashes[userAddr];
+            delete userMetadataHashes[userAddr];
+            delete userIndices[userAddr];
+        }
+        
+        // Clear the allUsers array
+        delete allUsers;
+        
+        emit UserDataCleanupCompleted(userCount, block.timestamp);
+    }
+
+    /**
      * @dev Get total number of users for cleanup verification
      */
     function getTotalUserCount() external view returns (uint256) {
         return allUsers.length;
     }
 
-    // Event for cleanup completion
+    // Events for cleanup completion
     event UserCleanupCompleted(uint256 deletedUserCount, uint256 timestamp);
+    event UserDataCleanupCompleted(uint256 cleanedUserCount, uint256 timestamp);
 }

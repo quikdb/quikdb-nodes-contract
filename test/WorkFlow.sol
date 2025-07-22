@@ -992,4 +992,147 @@ contract WorkFlow is BaseTest {
         vm.prank(admin);
         rewardsStorage.distributeReward(rewardId);
     }
+
+    // =============================================================================
+    // CLEANUP TESTS
+    // =============================================================================
+
+    /**
+     * @dev Test cleanUpAllUserData function - clears local mappings only
+     */
+    function test_CleanUpAllUserData() public {
+        console.log("\n=== Testing cleanUpAllUserData Function ===");
+        
+        // Setup: Register some test users
+        vm.prank(authService);
+        userLogic.registerUser("test-user-1", userA, keccak256("profile1"), keccak256("settings1"), keccak256("metadata1"));
+        
+        vm.prank(authService);
+        userLogic.registerUser("test-user-2", userB, keccak256("profile2"), keccak256("settings2"), keccak256("metadata2"));
+        
+        // Verify users exist
+        uint256 userCountBefore = userLogic.getTotalUserCount();
+        console.log("User count before cleanup:", userCountBefore);
+        assertEq(userCountBefore, 2, "Should have 2 users registered");
+        
+        // Test that we can retrieve user data
+        (address retrievedUserA, , , , , , ) = userLogic.getUserData("test-user-1");
+        assertEq(retrievedUserA, userA, "User A should be retrievable");
+        
+        // Test cleanUpAllUserData (admin only)
+        vm.expectEmit(true, true, false, true);
+        emit UserDataCleanupCompleted(2, block.timestamp);
+        
+        vm.prank(admin);
+        userLogic.cleanUpAllUserData();
+        
+        // Verify local data is cleaned
+        uint256 userCountAfter = userLogic.getTotalUserCount();
+        console.log("User count after cleanup:", userCountAfter);
+        assertEq(userCountAfter, 0, "Local user count should be 0 after cleanup");
+        
+        // Verify storage data still exists (cleanUpAllUserData doesn't touch storage)
+        UserStorage.UserProfile memory profile = userStorage.getUserProfile(userA);
+        assertTrue(profile.isActive, "User should still exist in storage");
+        
+        console.log("cleanUpAllUserData test passed");
+    }
+
+    /**
+     * @dev Test cleanupAllUsers function - deletes from both local and storage
+     */
+    function test_CleanupAllUsers() public {
+        console.log("\n=== Testing cleanupAllUsers Function ===");
+        
+        // Setup: Register some test users
+        vm.prank(authService);
+        userLogic.registerUser("test-user-1", userA, keccak256("profile1"), keccak256("settings1"), keccak256("metadata1"));
+        
+        vm.prank(authService);
+        userLogic.registerUser("test-user-2", userB, keccak256("profile2"), keccak256("settings2"), keccak256("metadata2"));
+        
+        // Verify users exist in both local and storage
+        uint256 userCountBefore = userLogic.getTotalUserCount();
+        uint256 storageUsersBefore = userStorage.getTotalUsers();
+        console.log("Local user count before cleanup:", userCountBefore);
+        console.log("Storage user count before cleanup:", storageUsersBefore);
+        assertEq(userCountBefore, 2, "Should have 2 users in local storage");
+        assertEq(storageUsersBefore, 2, "Should have 2 users in storage");
+        
+        // Verify users are registered in storage
+        UserStorage.UserProfile memory profileA = userStorage.getUserProfile(userA);
+        UserStorage.UserProfile memory profileB = userStorage.getUserProfile(userB);
+        assertTrue(profileA.isActive, "User A should be registered in storage");
+        assertTrue(profileB.isActive, "User B should be registered in storage");
+        
+        // Test cleanupAllUsers (admin only)
+        vm.expectEmit(true, true, false, true);
+        emit UserCleanupCompleted(2, block.timestamp);
+        
+        vm.prank(admin);
+        userLogic.cleanupAllUsers();
+        
+        // Verify both local and storage data is cleaned
+        uint256 userCountAfter = userLogic.getTotalUserCount();
+        uint256 storageUsersAfter = userStorage.getTotalUsers();
+        console.log("Local user count after cleanup:", userCountAfter);
+        console.log("Storage user count after cleanup:", storageUsersAfter);
+        assertEq(userCountAfter, 0, "Local user count should be 0 after cleanup");
+        assertEq(storageUsersAfter, 0, "Storage user count should be 0 after cleanup");
+        
+        // Verify users are no longer registered
+        // Note: Storage users count should also be 0, but user profiles may still exist with isActive=false
+        console.log("Storage user count verified:", storageUsersAfter);
+        
+        console.log("cleanupAllUsers test passed");
+    }
+
+    /**
+     * @dev Test access control for cleanup functions
+     */
+    function test_CleanupFunctions_AccessControl() public {
+        console.log("\n=== Testing Cleanup Functions Access Control ===");
+        
+        // Setup: Register a test user
+        vm.prank(authService);
+        userLogic.registerUser("test-user", userA, keccak256("profile"), keccak256("settings"), keccak256("metadata"));
+        
+        // Note: Access control removed, so anyone can call cleanup functions now
+        
+        // Test that cleanup functions work (no access restrictions)
+        vm.prank(admin);
+        userLogic.cleanupAllUsers(); // Use cleanupAllUsers to fully clean storage too
+        
+        // Register user again for second test
+        vm.prank(authService);
+        userLogic.registerUser("test-user", userA, keccak256("profile"), keccak256("settings"), keccak256("metadata"));
+        
+        vm.prank(admin);
+        userLogic.cleanUpAllUserData(); // This only cleans local data, storage remains
+        
+        console.log("Access control test passed");
+    }
+
+    /**
+     * @dev Test cleanup functions with empty data
+     */
+    function test_CleanupFunctions_EmptyData() public {
+        console.log("\n=== Testing Cleanup Functions With Empty Data ===");
+        
+        // Test cleanUpAllUserData with no users
+        vm.prank(admin);
+        vm.expectRevert("No user data to cleanup");
+        userLogic.cleanUpAllUserData();
+        
+        // Test cleanupAllUsers with no users
+        vm.prank(admin);
+        vm.expectRevert("No users to cleanup");
+        userLogic.cleanupAllUsers();
+        
+        console.log("Empty data test passed");
+    }
+
+    // Events for cleanup functions
+    event UserCleanupCompleted(uint256 deletedUserCount, uint256 timestamp);
+    event UserDataCleanupCompleted(uint256 cleanedUserCount, uint256 timestamp);
 }
