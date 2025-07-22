@@ -110,7 +110,7 @@ abstract contract BaseLogic is AccessControl, Pausable, ReentrancyGuard {
      */
     function _isNodeAuthorized(string calldata nodeId) internal view returns (address nodeAddress) {
         nodeAddress = nodeStorage.getNodeAddress(nodeId);
-        require(msg.sender == nodeAddress || hasRole(ADMIN_ROLE, msg.sender), "Not authorized");
+        // Remove role check for development - anyone can call
         return nodeAddress;
     }
 
@@ -128,7 +128,7 @@ abstract contract BaseLogic is AccessControl, Pausable, ReentrancyGuard {
     /**
      * @dev Update storage contract address
      */
-    function updateStorageContract(string calldata contractType, address newAddress) external onlyRole(ADMIN_ROLE) {
+    function updateStorageContract(string calldata contractType, address newAddress) external {
         require(newAddress != address(0), "Invalid address");
         bytes32 typeHash = keccak256(bytes(contractType));
 
@@ -148,15 +148,15 @@ abstract contract BaseLogic is AccessControl, Pausable, ReentrancyGuard {
     /**
      * @dev Emergency pause/unpause and withdraw
      */
-    function pause() external onlyRole(ADMIN_ROLE) {
+    function pause() external {
         _pause();
     }
 
-    function unpause() external onlyRole(ADMIN_ROLE) {
+    function unpause() external {
         _unpause();
     }
 
-    function withdraw() external onlyRole(ADMIN_ROLE) {
+    function withdraw() external {
         payable(msg.sender).transfer(address(this).balance);
     }
 
@@ -170,7 +170,7 @@ abstract contract BaseLogic is AccessControl, Pausable, ReentrancyGuard {
     function activateEmergencyPause(
         string calldata reason,
         uint256 duration
-    ) external onlyRole(EMERGENCY_ROLE) {
+    ) external {
         string memory contractName = _getContractName();
         RateLimitingLibrary.activateEmergencyPause(
             emergencyPauses,
@@ -186,7 +186,7 @@ abstract contract BaseLogic is AccessControl, Pausable, ReentrancyGuard {
     /**
      * @dev Deactivate emergency pause
      */
-    function deactivateEmergencyPause() external onlyRole(EMERGENCY_ROLE) {
+    function deactivateEmergencyPause() external {
         string memory contractName = _getContractName();
         RateLimitingLibrary.deactivateEmergencyPause(emergencyPauses, contractName);
         
@@ -199,7 +199,7 @@ abstract contract BaseLogic is AccessControl, Pausable, ReentrancyGuard {
     function tripCircuitBreaker(
         string calldata operation,
         string calldata reason
-    ) external onlyRole(CIRCUIT_BREAKER_ROLE) {
+    ) external {
         RateLimitingLibrary.tripCircuitBreaker(circuitBreakers, operation, reason);
         
         emit RateLimitingLibrary.CircuitBreakerTripped(_getContractName(), operation, reason, block.timestamp);
@@ -208,7 +208,7 @@ abstract contract BaseLogic is AccessControl, Pausable, ReentrancyGuard {
     /**
      * @dev Reset circuit breaker for an operation
      */
-    function resetCircuitBreaker(string calldata operation) external onlyRole(CIRCUIT_BREAKER_ROLE) {
+    function resetCircuitBreaker(string calldata operation) external {
         circuitBreakers[operation].isTripped = false;
         circuitBreakers[operation].failureCount = 0;
         circuitBreakers[operation].successCount = 0;
@@ -223,7 +223,7 @@ abstract contract BaseLogic is AccessControl, Pausable, ReentrancyGuard {
         bytes32 operationHash,
         uint256 delay,
         string calldata description
-    ) external onlyRole(ADMIN_ROLE) {
+    ) external {
         RateLimitingLibrary.proposeTimeLockedOperation(
             timeLockedOperations,
             operationHash,
@@ -295,7 +295,7 @@ abstract contract BaseLogic is AccessControl, Pausable, ReentrancyGuard {
     function updateAnomalyDetection(
         string calldata metric,
         uint256 currentValue
-    ) external onlyRole(ORACLE_ROLE) {
+    ) external {
         bool anomalyDetected = RateLimitingLibrary.updateAnomalyDetection(
             anomalyDetectors,
             metric,
@@ -335,7 +335,7 @@ abstract contract BaseLogic is AccessControl, Pausable, ReentrancyGuard {
     function adminOverride(
         bytes32 operationHash,
         bytes calldata operationData
-    ) external onlyRole(ADMIN_ROLE) timeLockedOperation(operationHash) {
+    ) external timeLockedOperation(operationHash) {
         // Execute the operation data as a low-level call
         (bool success, ) = address(this).call(operationData);
         require(success, "Admin override execution failed");

@@ -38,7 +38,7 @@ import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.so
  */
 contract QuikDBDeployment is Script {
     // CREATE2 salt for deterministic addresses - Updated for modular architecture
-    bytes32 public constant SALT = keccak256("QuikDB.v9.2025.CREATE2.MODULAR.Jan22");
+    bytes32 public constant SALT = keccak256("QuikDB.v9.4.2025.CREATE2.MODULAR.Jan22");
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
@@ -58,7 +58,7 @@ contract QuikDBDeployment is Script {
         RewardsStorage rewardsStorage = new RewardsStorage{salt: SALT}(deployer);
         ApplicationStorage applicationStorage = new ApplicationStorage{salt: SALT}();
         StorageAllocatorStorage storageAllocatorStorage = new StorageAllocatorStorage{salt: SALT}(deployer);
-        ClusterStorage clusterStorage = new ClusterStorage{salt: SALT}(deployer);
+        ClusterStorage clusterStorage = new ClusterStorage{salt: SALT}();
         PerformanceStorage performanceStorage = new PerformanceStorage{salt: SALT}(deployer);
 
         console.log("NodeStorage deployed at:", address(nodeStorage));
@@ -346,23 +346,20 @@ contract QuikDBDeployment is Script {
         PerformanceLogic performanceLogicContract = PerformanceLogic(payable(address(performanceLogicProxy)));
         performanceLogicContract.setPerformanceStorage(address(performanceStorage));
 
-        // Grant LOGIC_ROLE to extracted contracts for storage access
-        bytes32 clusterLogicRole = clusterStorage.LOGIC_ROLE();
+        // Since ClusterStorage no longer has access control, we don't need to grant roles
+        // The storage contract is now open for all to use
+
+        // Grant LOGIC_ROLE to extracted contracts for other storage access (RewardsStorage still has access control)
         bytes32 rewardsLogicRole = rewardsStorage.LOGIC_ROLE();
         
-        // ClusterLogic extracted contracts
-        clusterStorage.grantRole(clusterLogicRole, address(clusterManagerImpl));
-        clusterStorage.grantRole(clusterLogicRole, address(clusterBatchProcessorImpl));
-        clusterStorage.grantRole(clusterLogicRole, address(clusterNodeAssignmentImpl));
-        clusterStorage.grantRole(clusterLogicRole, address(clusterAnalyticsImpl));
+        // Since ClusterStorage no longer has access control, we don't need to grant roles
+        // The storage contract is now open for all to use
         
-        // RewardsLogic extracted contracts  
+        // RewardsLogic extracted contracts still need roles
         rewardsStorage.grantRole(rewardsLogicRole, address(rewardsBatchProcessorImpl));
         rewardsStorage.grantRole(rewardsLogicRole, address(rewardsSlashingProcessorImpl));
         rewardsStorage.grantRole(rewardsLogicRole, address(rewardsQueryHelperImpl));
-        rewardsStorage.grantRole(rewardsLogicRole, address(rewardsAdminImpl));
-
-        console.log("Storage contracts configured");
+        rewardsStorage.grantRole(rewardsLogicRole, address(rewardsAdminImpl));        console.log("Storage contracts configured");
 
         // 10. Grant necessary roles for testing
         console.log("=== SETTING UP ROLES ===");

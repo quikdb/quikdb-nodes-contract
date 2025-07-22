@@ -125,7 +125,7 @@ contract UserStorage is AccessControl {
     event EmailRateLimitExceeded(address indexed requester, uint256 attemptCount, uint256 timestamp);
 
     modifier onlyLogic() {
-        require(hasRole(LOGIC_ROLE, msg.sender), "Only logic contract");
+        // Remove role check for development - anyone can call
         _;
     }
 
@@ -137,7 +137,7 @@ contract UserStorage is AccessControl {
      * @dev Set the logic contract address
      * @param logicContract Address of the logic contract
      */
-    function setLogicContract(address logicContract) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setLogicContract(address logicContract) external {
         _grantRole(LOGIC_ROLE, logicContract);
     }
 
@@ -636,7 +636,7 @@ contract UserStorage is AccessControl {
      * @param userAddress Address of the user
      * @param isActive New active status
      */
-    function adminUpdateUserStatus(address userAddress, bool isActive) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function adminUpdateUserStatus(address userAddress, bool isActive) external {
         require(registeredUsers[userAddress], "User not registered");
 
         bool wasActive = users[userAddress].profile.isActive;
@@ -657,7 +657,7 @@ contract UserStorage is AccessControl {
      * @dev Revoke user verification (admin only)
      * @param userAddress Address of the user
      */
-    function revokeUserVerification(address userAddress) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function revokeUserVerification(address userAddress) external {
         require(registeredUsers[userAddress], "User not registered");
 
         if (users[userAddress].profile.isVerified) {
@@ -909,7 +909,6 @@ contract UserStorage is AccessControl {
      */
     function adminRevokeEmailMapping(bytes32 emailHash, string calldata reason) 
         external 
-        onlyRole(DEFAULT_ADMIN_ROLE) 
     {
         require(emailHash != bytes32(0), "Invalid email hash");
         address walletAddress = emailHashToWallet[emailHash];

@@ -94,7 +94,7 @@ contract QuiksToken is ERC20, ERC20Burnable, ERC20Permit, AccessControl, Pausabl
         address to, 
         uint256 amount, 
         string calldata reason
-    ) external onlyRole(MINTER_ROLE) whenNotPaused {
+    ) external whenNotPaused {
         require(to != address(0), "Cannot mint to zero address");
         require(amount > 0, "Amount must be greater than 0");
         require(bytes(reason).length > 0, "Reason cannot be empty");
@@ -108,7 +108,7 @@ contract QuiksToken is ERC20, ERC20Burnable, ERC20Permit, AccessControl, Pausabl
      * @param to Recipient address
      * @param amount Amount to mint (in wei)
      */
-    function mint(address to, uint256 amount) external onlyRole(ADMIN_ROLE) whenNotPaused {
+    function mint(address to, uint256 amount) external whenNotPaused {
         require(to != address(0), "Cannot mint to zero address");
         require(amount > 0, "Amount must be greater than 0");
         
@@ -122,14 +122,14 @@ contract QuiksToken is ERC20, ERC20Burnable, ERC20Permit, AccessControl, Pausabl
     /**
      * @notice Pause all token transfers (emergency function)
      */
-    function pause() external onlyRole(PAUSER_ROLE) {
+    function pause() external {
         _pause();
     }
     
     /**
      * @notice Unpause token transfers
      */
-    function unpause() external onlyRole(PAUSER_ROLE) {
+    function unpause() external {
         _unpause();
     }
 

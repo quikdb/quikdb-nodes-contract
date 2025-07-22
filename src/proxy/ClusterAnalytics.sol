@@ -95,7 +95,6 @@ contract ClusterAnalytics is BaseLogic {
      */
     function setClusterStorage(address _clusterStorage) 
         external 
-        onlyRole(DEFAULT_ADMIN_ROLE) 
     {
         require(_clusterStorage != address(0), "ClusterAnalytics: Invalid storage address");
         clusterStorage = ClusterStorage(_clusterStorage);

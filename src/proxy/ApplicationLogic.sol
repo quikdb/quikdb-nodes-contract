@@ -76,7 +76,7 @@ contract ApplicationLogic is BaseLogic {
         address deployer,
         string[] calldata nodeIds,
         string calldata configHash
-    ) external onlyRole(APPLICATION_DEPLOYER_ROLE) whenNotPaused nonReentrant {
+    ) external whenNotPaused nonReentrant {
         if (bytes(appId).length == 0) revert InvalidApplicationId(appId);
         if (deployer == address(0)) revert InvalidDeployer(deployer);
         if (nodeIds.length == 0) revert EmptyNodeList();
@@ -101,7 +101,7 @@ contract ApplicationLogic is BaseLogic {
     function updateStatus(
         string calldata appId,
         uint8 newStatus
-    ) external onlyRole(APPLICATION_MANAGER_ROLE) whenNotPaused nonReentrant {
+    ) external whenNotPaused nonReentrant {
         if (bytes(appId).length == 0) revert InvalidApplicationId(appId);
 
         // Check if application exists

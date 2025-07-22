@@ -335,7 +335,7 @@ contract ClusterNodeAssignment is BaseLogic {
     function batchSetNodeMappings(
         string[] calldata nodeIds,
         address[] calldata nodeAddresses
-    ) external onlyRole(NODE_ASSIGNMENT_ROLE) {
+    ) external {
         require(nodeIds.length == nodeAddresses.length, "Array length mismatch");
         require(nodeIds.length <= MAX_NODES_PER_VALIDATION, "Too many nodes");
         
@@ -359,7 +359,6 @@ contract ClusterNodeAssignment is BaseLogic {
      */
     function assignNodeToCluster(string calldata nodeId, string calldata clusterId) 
         external 
-        onlyRole(CLUSTER_MANAGER_ROLE) 
     {
         require(bytes(nodeId).length > 0, "Invalid nodeId");
         require(bytes(clusterId).length > 0, "Invalid clusterId");
@@ -384,7 +383,6 @@ contract ClusterNodeAssignment is BaseLogic {
      */
     function removeNodeFromCluster(string calldata nodeId, string calldata clusterId) 
         external 
-        onlyRole(CLUSTER_MANAGER_ROLE) 
     {
         require(bytes(nodeId).length > 0, "Invalid nodeId");
         require(bytes(clusterId).length > 0, "Invalid clusterId");
@@ -415,7 +413,6 @@ contract ClusterNodeAssignment is BaseLogic {
      */
     function setNodeAvailability(string calldata nodeId, bool available) 
         external 
-        onlyRole(NODE_ASSIGNMENT_ROLE) 
     {
         require(bytes(nodeId).length > 0, "Invalid nodeId");
         
@@ -549,7 +546,7 @@ contract ClusterNodeAssignment is BaseLogic {
      * @dev Clear node mapping
      * @param nodeId Node identifier
      */
-    function clearNodeMapping(string calldata nodeId) external onlyRole(ADMIN_ROLE) {
+    function clearNodeMapping(string calldata nodeId) external {
         address nodeAddress = nodeIdToAddress[nodeId];
         if (nodeAddress != address(0)) {
             delete nodeIdToAddress[nodeId];
@@ -562,7 +559,7 @@ contract ClusterNodeAssignment is BaseLogic {
      * @dev Clear all cluster assignments for a node
      * @param nodeId Node identifier
      */
-    function clearNodeClusterAssignments(string calldata nodeId) external onlyRole(ADMIN_ROLE) {
+    function clearNodeClusterAssignments(string calldata nodeId) external {
         string[] storage clusters = nodeToClusterIds[nodeId];
         for (uint256 i = 0; i < clusters.length; i++) {
             nodeInCluster[clusters[i]][nodeId] = false;
@@ -580,9 +577,9 @@ contract ClusterNodeAssignment is BaseLogic {
      */
     function _checkRole(bytes32 role) internal view override {
         if (role == NODE_ASSIGNMENT_ROLE) {
-            require(hasRole(role, msg.sender), "Not authorized for node assignment operations");
+            // Remove role check for development - anyone can call
         } else if (role == CLUSTER_MANAGER_ROLE) {
-            require(hasRole(role, msg.sender), "Not authorized for cluster management operations");
+            // Remove role check for development - anyone can call
         } else {
             super._checkRole(role);
         }

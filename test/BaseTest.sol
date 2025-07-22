@@ -146,7 +146,7 @@ abstract contract BaseTest is Test {
         userStorage = new UserStorage(admin);
         resourceStorage = new ResourceStorage(admin);
         performanceStorage = new PerformanceStorage(admin);
-        clusterStorage = new ClusterStorage(admin);
+        clusterStorage = new ClusterStorage();
         rewardsStorage = new RewardsStorage(admin);
         applicationStorage = new ApplicationStorage();
         storageAllocatorStorage = new StorageAllocatorStorage(admin);
@@ -438,7 +438,7 @@ abstract contract BaseTest is Test {
         userStorage.setLogicContract(address(userLogicProxy));
         resourceStorage.setLogicContract(address(resourceLogicProxy));
         performanceStorage.setLogicContract(address(performanceLogicProxy));
-        clusterStorage.setLogicContract(address(clusterLogicProxy));
+        // NOTE: ClusterStorage no longer has access control or setLogicContract method
         rewardsStorage.setLogicContract(address(rewardsLogicProxy));
         applicationStorage.setLogicContract(address(applicationLogicProxy));
         deploymentStorage.setLogicContract(address(applicationLogicProxy));
@@ -480,7 +480,7 @@ abstract contract BaseTest is Test {
         userLogic.grantRole(userLogic.AUTH_SERVICE_ROLE(), authService);
         performanceLogic.grantRole(performanceLogic.PERFORMANCE_RECORDER_ROLE(), performanceRecorder);
         clusterLogic.grantRole(clusterLogic.CLUSTER_MANAGER_ROLE(), clusterManagerOperator);
-        clusterManager.grantRole(clusterManager.CLUSTER_MANAGER_ROLE(), clusterManagerOperator);
+        // ClusterManager no longer uses role-based access control
         clusterBatchProcessor.grantRole(clusterBatchProcessor.CLUSTER_MANAGER_ROLE(), clusterManagerOperator);
         clusterNodeAssignment.grantRole(clusterNodeAssignment.NODE_ASSIGNMENT_ROLE(), clusterManagerOperator);
         clusterAnalytics.grantRole(clusterAnalytics.ANALYTICS_ROLE(), clusterManagerOperator);
@@ -522,11 +522,7 @@ abstract contract BaseTest is Test {
         }
 
         // Grant LOGIC_ROLE to extracted contracts to access storage
-        // ClusterLogic extracted contracts
-        clusterStorage.grantRole(clusterStorage.LOGIC_ROLE(), address(clusterManager));
-        clusterStorage.grantRole(clusterStorage.LOGIC_ROLE(), address(clusterBatchProcessor));
-        clusterStorage.grantRole(clusterStorage.LOGIC_ROLE(), address(clusterNodeAssignment));
-        clusterStorage.grantRole(clusterStorage.LOGIC_ROLE(), address(clusterAnalytics));
+        // NOTE: ClusterStorage no longer has access control - it's open to all callers
         
         // RewardsLogic extracted contracts
         rewardsStorage.grantRole(rewardsStorage.LOGIC_ROLE(), address(rewardsBatchProcessor));

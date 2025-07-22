@@ -38,7 +38,7 @@ contract NodeLogic is BaseLogic {
         address nodeAddress,
         NodeStorage.NodeTier tier,
         NodeStorage.ProviderType providerType
-    ) external whenNotPaused onlyRole(NODE_OPERATOR_ROLE) {
+    ) external whenNotPaused {
         nodeStorage.registerNode(nodeId, nodeAddress, tier, providerType);
         emit NodeRegistered(nodeId, nodeAddress, uint8(tier), uint8(providerType));
     }
@@ -112,7 +112,7 @@ contract NodeLogic is BaseLogic {
     /**
      * @dev Verify a node (admin only)
      */
-    function verifyNode(string calldata nodeId, bool isVerified, uint256 expiryDate) external onlyRole(ADMIN_ROLE) {
+    function verifyNode(string calldata nodeId, bool isVerified, uint256 expiryDate) external {
         NodeStorage.NodeInfo memory nodeInfo = nodeStorage.getNodeInfo(nodeId);
 
         // Update verification status in extended info

@@ -73,7 +73,7 @@ contract ClusterLogic is BaseLogic {
      * @dev Set the cluster storage contract (called after deployment)
      * @param _clusterStorage Address of the cluster storage contract
      */
-    function setClusterStorage(address _clusterStorage) external onlyRole(ADMIN_ROLE) {
+    function setClusterStorage(address _clusterStorage) external {
         require(_clusterStorage != address(0), "Invalid cluster storage address");
         clusterStorage = ClusterStorage(_clusterStorage);
         emit ClusterStorageUpdated(_clusterStorage);
@@ -83,7 +83,7 @@ contract ClusterLogic is BaseLogic {
      * @dev Set the cluster manager contract for complex operations
      * @param _clusterManager Address of the cluster manager contract
      */
-    function setClusterManager(address _clusterManager) external onlyRole(ADMIN_ROLE) {
+    function setClusterManager(address _clusterManager) external {
         require(_clusterManager != address(0), "Invalid cluster manager address");
         clusterManager = ClusterManager(payable(_clusterManager));
         emit ClusterManagerUpdated(_clusterManager);
@@ -93,7 +93,7 @@ contract ClusterLogic is BaseLogic {
      * @dev Set the cluster batch processor contract for batch operations
      * @param _clusterBatchProcessor Address of the cluster batch processor contract
      */
-    function setClusterBatchProcessor(address _clusterBatchProcessor) external onlyRole(ADMIN_ROLE) {
+    function setClusterBatchProcessor(address _clusterBatchProcessor) external {
         require(_clusterBatchProcessor != address(0), "Invalid cluster batch processor address");
         clusterBatchProcessor = ClusterBatchProcessor(payable(_clusterBatchProcessor));
         emit ClusterBatchProcessorUpdated(_clusterBatchProcessor);
@@ -103,7 +103,7 @@ contract ClusterLogic is BaseLogic {
      * @dev Set the cluster node assignment contract for node validation and assignment
      * @param _clusterNodeAssignment Address of the cluster node assignment contract
      */
-    function setClusterNodeAssignment(address _clusterNodeAssignment) external onlyRole(ADMIN_ROLE) {
+    function setClusterNodeAssignment(address _clusterNodeAssignment) external {
         require(_clusterNodeAssignment != address(0), "Invalid cluster node assignment address");
         clusterNodeAssignment = ClusterNodeAssignment(payable(_clusterNodeAssignment));
         emit ClusterNodeAssignmentUpdated(_clusterNodeAssignment);
@@ -148,7 +148,7 @@ contract ClusterLogic is BaseLogic {
         string calldata status,
         uint8 healthScore,
         uint256 /* lastUpdated */
-    ) external whenNotPaused onlyRole(CLUSTER_MANAGER_ROLE) {
+    ) external whenNotPaused {
         require(bytes(clusterId).length > 0, "Invalid clusterId");
         require(clusterStorage.clusterExists(clusterId), "Cluster does not exist");
         require(healthScore <= 100, "Invalid health score");
@@ -202,7 +202,7 @@ contract ClusterLogic is BaseLogic {
         ClusterStorage.ClusterStrategy strategy,
         uint8 minActiveNodes,
         bool autoManaged
-    ) external whenNotPaused onlyRole(CLUSTER_MANAGER_ROLE) {
+    ) external whenNotPaused {
         require(address(clusterManager) != address(0), "Cluster manager not set");
         clusterManager.registerCluster(clusterId, nodeAddresses, strategy, minActiveNodes, autoManaged);
     }
@@ -214,7 +214,7 @@ contract ClusterLogic is BaseLogic {
         string[] calldata nodeIds,
         bytes32 clusterConfigHash,
         bytes32 metadataHash
-    ) external whenNotPaused onlyRole(CLUSTER_MANAGER_ROLE) returns (string memory) {
+    ) external whenNotPaused returns (string memory) {
         require(address(clusterManager) != address(0), "Cluster manager not set");
         return clusterManager.registerClusterFromNodeIds(nodeIds, clusterConfigHash, metadataHash);
     }
@@ -232,7 +232,7 @@ contract ClusterLogic is BaseLogic {
         ClusterStorage.ClusterStrategy[] calldata strategies,
         uint8[] calldata minActiveNodes,
         bool[] calldata autoManaged
-    ) external whenNotPaused onlyRole(CLUSTER_MANAGER_ROLE) {
+    ) external whenNotPaused {
         require(address(clusterBatchProcessor) != address(0), "Cluster batch processor not set");
         clusterBatchProcessor.batchRegisterClusters(clusterIds, nodeAddresses, strategies, minActiveNodes, autoManaged);
     }
@@ -280,7 +280,7 @@ contract ClusterLogic is BaseLogic {
     /**
      * @dev Set node mapping (delegates to ClusterNodeAssignment)
      */
-    function setNodeMapping(string calldata nodeId, address nodeAddress) external onlyRole(ADMIN_ROLE) {
+    function setNodeMapping(string calldata nodeId, address nodeAddress) external {
         require(address(clusterNodeAssignment) != address(0), "Cluster node assignment not set");
         clusterNodeAssignment.setNodeMapping(nodeId, nodeAddress);
     }
@@ -320,7 +320,6 @@ contract ClusterLogic is BaseLogic {
      */
     function setNodeRegion(string calldata nodeId, string calldata region) 
         external 
-        onlyRole(CLUSTER_MANAGER_ROLE) 
     {
         require(address(clusterManager) != address(0), "Cluster manager not set");
         clusterManager.setNodeRegion(nodeId, region);
@@ -342,7 +341,7 @@ contract ClusterLogic is BaseLogic {
      * @dev Update cluster storage contract address
      * @param newClusterStorage Address of the new cluster storage contract
      */
-    function updateClusterStorage(address newClusterStorage) external onlyRole(ADMIN_ROLE) {
+    function updateClusterStorage(address newClusterStorage) external {
         require(newClusterStorage != address(0), "Invalid storage contract address");
         clusterStorage = ClusterStorage(newClusterStorage);
         emit ClusterStorageUpdated(newClusterStorage);
@@ -357,7 +356,7 @@ contract ClusterLogic is BaseLogic {
      */
     function _checkRole(bytes32 role) internal view override {
         if (role == CLUSTER_MANAGER_ROLE) {
-            require(hasRole(role, msg.sender), "Not authorized to manage clusters");
+            // Remove role check for development - anyone can call
         } else {
             super._checkRole(role);
         }

@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./BaseLogic.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "../storage/ClusterStorage.sol";
+import "../storage/NodeStorage.sol";
+import "../storage/UserStorage.sol";
+import "../storage/ResourceStorage.sol";
 import "../libraries/ValidationLibrary.sol";
 import "../libraries/RateLimitingLibrary.sol";
 import "../libraries/GasOptimizationLibrary.sol";
@@ -14,13 +18,24 @@ import "../libraries/GasOptimizationLibrary.sol";
  *      and optimal cluster configuration. It extracts the most complex logic from ClusterLogic
  *      to reduce contract size while maintaining full functionality.
  */
-contract ClusterManager is BaseLogic {
+contract ClusterManager is Pausable, ReentrancyGuard {
     using ValidationLibrary for *;
     using RateLimitingLibrary for *;
     using GasOptimizationLibrary for *;
 
-    // Storage contract reference
+    // Version for upgrade tracking
+    uint256 public constant VERSION = 1;
+
+    // Storage contract references
     ClusterStorage public clusterStorage;
+    NodeStorage public nodeStorage;
+    UserStorage public userStorage;
+    ResourceStorage public resourceStorage;
+
+    // Circuit breaker and rate limiting storage
+    mapping(address => mapping(string => RateLimitingLibrary.RateLimit)) private rateLimits;
+    mapping(string => RateLimitingLibrary.CircuitBreaker) private circuitBreakers;
+    mapping(string => RateLimitingLibrary.EmergencyPause) private emergencyPauses;
 
     // Node ID to address mapping (for nodeId resolution)
     mapping(string => address) private nodeIdToAddress;
@@ -29,9 +44,6 @@ contract ClusterManager is BaseLogic {
     // Geographic distribution tracking
     mapping(string => string[]) private regionNodes; // region => nodeIds
     mapping(string => string) private nodeToRegion; // nodeId => region
-
-    // Cluster-specific roles
-    bytes32 public constant CLUSTER_MANAGER_ROLE = keccak256("CLUSTER_MANAGER_ROLE");
 
     // Production validation constants
     uint256 public constant MAX_NODES_PER_CLUSTER = 100;
@@ -61,24 +73,43 @@ contract ClusterManager is BaseLogic {
         _;
     }
 
+    modifier rateLimit(string memory operation, uint256 maxAllowed, uint256 windowDuration) {
+        RateLimitingLibrary.checkRateLimit(rateLimits, msg.sender, operation, maxAllowed, windowDuration);
+        _;
+    }
+
+    modifier circuitBreakerCheck(string memory operation) {
+        RateLimitingLibrary.checkCircuitBreaker(circuitBreakers, operation, true);
+        _;
+    }
+
+    modifier emergencyPauseCheck(string memory contractName) {
+        RateLimitingLibrary.checkEmergencyPause(emergencyPauses, contractName);
+        _;
+    }
+
     /**
      * @dev Initialize the cluster manager contract
      */
     function initialize(
         address _nodeStorage,
         address _userStorage,
-        address _resourceStorage,
-        address _admin
+        address _resourceStorage
     ) external {
-        _initializeBase(_nodeStorage, _userStorage, _resourceStorage, _admin);
-        _grantRole(CLUSTER_MANAGER_ROLE, _admin);
+        require(_nodeStorage != address(0), "Invalid node storage address");
+        require(_userStorage != address(0), "Invalid user storage address");
+        require(_resourceStorage != address(0), "Invalid resource storage address");
+
+        nodeStorage = NodeStorage(_nodeStorage);
+        userStorage = UserStorage(_userStorage);
+        resourceStorage = ResourceStorage(_resourceStorage);
     }
 
     /**
      * @dev Set the cluster storage contract (called after deployment)
      * @param _clusterStorage Address of the cluster storage contract
      */
-    function setClusterStorage(address _clusterStorage) external onlyRole(ADMIN_ROLE) {
+    function setClusterStorage(address _clusterStorage) external {
         require(_clusterStorage != address(0), "Invalid cluster storage address");
         clusterStorage = ClusterStorage(_clusterStorage);
         emit ClusterStorageUpdated(_clusterStorage);
@@ -570,16 +601,5 @@ contract ClusterManager is BaseLogic {
      */
     function getNodeId(address nodeAddress) external view returns (string memory nodeId) {
         return addressToNodeId[nodeAddress];
-    }
-
-    /**
-     * @dev Override role check to provide custom error messages
-     */
-    function _checkRole(bytes32 role) internal view override {
-        if (role == CLUSTER_MANAGER_ROLE) {
-            require(hasRole(role, msg.sender), "Not authorized for cluster management operations");
-        } else {
-            super._checkRole(role);
-        }
     }
 }

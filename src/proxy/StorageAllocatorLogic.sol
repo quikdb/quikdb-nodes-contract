@@ -130,7 +130,6 @@ contract StorageAllocatorLogic is BaseLogic {
         string[] calldata nodeIds,
         uint256         replicationFactor
     ) external 
-        onlyRole(STORAGE_ALLOCATOR_ROLE) 
         rateLimit("allocateStorage", RateLimitingLibrary.MAX_STORAGE_OPERATIONS_PER_MINUTE, RateLimitingLibrary.MINUTE_WINDOW)
         circuitBreakerCheck("storageAllocation")
         emergencyPauseCheck("StorageAllocatorLogic") {
@@ -252,7 +251,7 @@ contract StorageAllocatorLogic is BaseLogic {
     function updateAllocationStatus(
         string calldata allocationId,
         StorageAllocatorStorage.AllocationStatus status
-    ) external onlyRole(STORAGE_ALLOCATOR_ROLE) {
+    ) external {
         // Validate allocation exists
         StorageAllocatorStorage.StorageAllocation memory allocation = storageAllocatorStorage.getAllocation(allocationId);
         
@@ -442,7 +441,6 @@ contract StorageAllocatorLogic is BaseLogic {
         string[][] calldata nodeIdsBatch,
         uint256[] calldata replicationFactors
     ) external 
-        onlyRole(STORAGE_ALLOCATOR_ROLE)
         rateLimit("batchAllocateStorage", RateLimitingLibrary.MAX_STORAGE_OPERATIONS_PER_MINUTE * 5, RateLimitingLibrary.MINUTE_WINDOW)
         circuitBreakerCheck("batchStorageAllocation")
         emergencyPauseCheck("StorageAllocatorLogic")

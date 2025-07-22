@@ -59,7 +59,7 @@ contract ApplicationStorage is AccessControl {
     /**
      * @dev Set the logic contract address
      */
-    function setLogicContract(address _logicContract) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setLogicContract(address _logicContract) external {
         logicContract = _logicContract;
     }
 

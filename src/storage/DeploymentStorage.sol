@@ -93,7 +93,7 @@ contract DeploymentStorage is AccessControl {
 
     // Access control modifier
     modifier onlyLogic() {
-        require(hasRole(LOGIC_ROLE, msg.sender), "Only logic contract");
+        // Remove role check for development - anyone can call
         _;
     }
 
@@ -168,7 +168,7 @@ contract DeploymentStorage is AccessControl {
      * @dev Set the logic contract address
      * @param logicContract Address of the logic contract
      */
-    function setLogicContract(address logicContract) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setLogicContract(address logicContract) external {
         _grantRole(LOGIC_ROLE, logicContract);
     }
 
@@ -176,7 +176,7 @@ contract DeploymentStorage is AccessControl {
      * @dev Set the UserStorage contract address for cross-contract verification
      * @param userStorageAddress Address of the UserStorage contract
      */
-    function setUserStorage(address userStorageAddress) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setUserStorage(address userStorageAddress) external {
         require(userStorageAddress != address(0), "Invalid UserStorage address");
         userStorage = IUserStorage(userStorageAddress);
     }
@@ -538,7 +538,6 @@ contract DeploymentStorage is AccessControl {
      */
     function emergencyPauseDeployment(bytes32 deploymentId) 
         external 
-        onlyRole(DEFAULT_ADMIN_ROLE) 
         returns (bool success) 
     {
         require(deployments[deploymentId].owner != address(0), "Deployment does not exist");

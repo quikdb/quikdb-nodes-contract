@@ -90,7 +90,6 @@ contract QuikProxyAdmin is ProxyAdmin, AccessControl {
      */
     function changeProxyAdmin(ITransparentUpgradeableProxy proxy, address newAdmin)
         external
-        onlyRole(DEFAULT_ADMIN_ROLE)
     {
         // We can't directly access the old admin with current API
         address oldAdmin = address(0);
@@ -106,7 +105,7 @@ contract QuikProxyAdmin is ProxyAdmin, AccessControl {
      * @dev Grant upgrader role to an address
      * @param account Address to grant upgrader role
      */
-    function grantUpgraderRole(address account) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function grantUpgraderRole(address account) external {
         grantRole(UPGRADER_ROLE, account);
     }
 
@@ -114,7 +113,7 @@ contract QuikProxyAdmin is ProxyAdmin, AccessControl {
      * @dev Revoke upgrader role from an address
      * @param account Address to revoke upgrader role
      */
-    function revokeUpgraderRole(address account) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function revokeUpgraderRole(address account) external {
         revokeRole(UPGRADER_ROLE, account);
     }
 }

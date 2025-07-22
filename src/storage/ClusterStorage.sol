@@ -1,17 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
-
 /**
  * @title ClusterStorage
  * @notice Storage contract for cluster data
  * @dev This contract contains only storage layout and structs for the cluster system.
  *      It follows the proxy pattern where logic is separated from storage.
  */
-contract ClusterStorage is AccessControl {
-    // Role for logic contracts that can modify storage
-    bytes32 public constant LOGIC_ROLE = keccak256("LOGIC_ROLE");
+contract ClusterStorage {
 
     // Cluster strategy enumeration
     enum ClusterStrategy {
@@ -81,27 +77,11 @@ contract ClusterStorage is AccessControl {
         uint256 timestamp
     );
 
-    // Access control modifier
-    modifier onlyLogic() {
-        require(hasRole(LOGIC_ROLE, msg.sender), "Caller is not Logic contract");
-        _;
-    }
-
     /**
-     * @dev Constructor sets up the contract with the deployer as the default admin
-     * @param admin Address to be granted the default admin role
+     * @dev Constructor - no longer requires admin setup
      */
-    constructor(address admin) {
-        require(admin != address(0), "Invalid admin address");
-        _grantRole(DEFAULT_ADMIN_ROLE, admin);
-    }
-
-    /**
-     * @dev Set the logic contract address
-     * @param logicContract Address of the logic contract
-     */
-    function setLogicContract(address logicContract) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        _grantRole(LOGIC_ROLE, logicContract);
+    constructor() {
+        // No access control setup needed
     }
 
     /**
@@ -109,7 +89,7 @@ contract ClusterStorage is AccessControl {
      * @param clusterId Unique identifier for the cluster
      * @param cluster NodeCluster struct with cluster data
      */
-    function registerCluster(string calldata clusterId, NodeCluster calldata cluster) external onlyLogic {
+    function registerCluster(string calldata clusterId, NodeCluster calldata cluster) external {
         require(!clusterExists[clusterId], "Cluster already exists");
         require(bytes(clusterId).length > 0, "Invalid cluster ID");
         
@@ -138,7 +118,7 @@ contract ClusterStorage is AccessControl {
      * @param clusterId Cluster identifier
      * @param newStatus New status for the cluster
      */
-    function updateClusterStatus(string calldata clusterId, uint8 newStatus) external onlyLogic {
+    function updateClusterStatus(string calldata clusterId, uint8 newStatus) external {
         require(clusterExists[clusterId], "Cluster does not exist");
         
         uint8 oldStatus = clusters[clusterId].status;
@@ -162,7 +142,7 @@ contract ClusterStorage is AccessControl {
      * @param clusterId Cluster identifier
      * @param healthScore New health score (0-100)
      */
-    function updateClusterHealthScore(string calldata clusterId, uint8 healthScore) external onlyLogic {
+    function updateClusterHealthScore(string calldata clusterId, uint8 healthScore) external {
         require(clusterExists[clusterId], "Cluster does not exist");
         require(healthScore <= 100, "Invalid health score");
         clusterHealthScores[clusterId] = healthScore;

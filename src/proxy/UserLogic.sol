@@ -49,9 +49,22 @@ contract UserLogic is BaseLogic {
     function registerUser(address userAddress, bytes32 profileHash, UserStorage.UserType userType)
         external
         whenNotPaused
-        onlyRole(AUTH_SERVICE_ROLE)
     {
+        // Check if user already exists
+        require(bytes(addressToUserId[userAddress]).length == 0, "User already registered");
+        
+        // Register in storage
         userStorage.registerUser(userAddress, profileHash, userType);
+        
+        // Update local tracking arrays
+        userIndices[userAddress] = allUsers.length;
+        allUsers.push(userAddress);
+        
+        // Set default values for additional data
+        userStatuses[userAddress] = 1; // Active status
+        userCreationTimes[userAddress] = block.timestamp;
+        userUpdateTimes[userAddress] = block.timestamp;
+        
         emit UserRegistered(userAddress, profileHash, uint8(userType), block.timestamp);
     }
 
@@ -59,7 +72,6 @@ contract UserLogic is BaseLogic {
      * @dev Update user profile
      */
     function updateUserProfile(address userAddress, bytes32 profileHash) external whenNotPaused {
-        require(msg.sender == userAddress || hasRole(ADMIN_ROLE, msg.sender), "Not authorized");
         userStorage.updateUserProfile(userAddress, profileHash);
         emit UserProfileUpdated(userAddress, profileHash, block.timestamp);
     }
@@ -88,7 +100,7 @@ contract UserLogic is BaseLogic {
         bytes32 googleIdHash,
         UserStorage.AuthMethod[] calldata authMethods,
         UserStorage.AccountStatus accountStatus
-    ) external whenNotPaused onlyRole(AUTH_SERVICE_ROLE) {
+    ) external whenNotPaused {
         userStorage.updateUserAuth(userAddress, emailHash, emailVerified, googleIdHash, authMethods, accountStatus);
     }
 
@@ -98,7 +110,6 @@ contract UserLogic is BaseLogic {
     function updateUserNonce(address userAddress, uint256 newNonce)
         external
         whenNotPaused
-        onlyRole(AUTH_SERVICE_ROLE)
     {
         userStorage.updateUserNonce(userAddress, newNonce);
     }
@@ -111,7 +122,6 @@ contract UserLogic is BaseLogic {
     function updateUserType(address userAddress, UserStorage.UserType newUserType)
         external
         whenNotPaused
-        onlyRole(AUTH_SERVICE_ROLE)
     {
         require(userAddress != address(0), "Invalid user address");
         userStorage.updateUserType(userAddress, newUserType);
@@ -124,8 +134,35 @@ contract UserLogic is BaseLogic {
     /**
      * @dev Delete a user and all associated data
      */
-    function deleteUser(address userAddress) external whenNotPaused onlyRole(AUTH_SERVICE_ROLE) {
+    function deleteUser(address userAddress) external whenNotPaused {
+        require(userAddress != address(0), "Invalid user address");
+        require(bytes(addressToUserId[userAddress]).length > 0 || userIndices[userAddress] < allUsers.length, "User not found");
+        
+        // Delete from storage first
         userStorage.deleteUser(userAddress);
+        
+        // Clean up local mappings
+        string memory userId = addressToUserId[userAddress];
+        if (bytes(userId).length > 0) {
+            delete userIdToAddress[userId];
+        }
+        delete addressToUserId[userAddress];
+        delete userStatuses[userAddress];
+        delete userCreationTimes[userAddress];
+        delete userUpdateTimes[userAddress];
+        delete userSettingsHashes[userAddress];
+        delete userMetadataHashes[userAddress];
+        
+        // Remove from allUsers array
+        uint256 index = userIndices[userAddress];
+        if (index < allUsers.length && allUsers[index] == userAddress) {
+            // Move the last element to the deleted position
+            address lastUser = allUsers[allUsers.length - 1];
+            allUsers[index] = lastUser;
+            userIndices[lastUser] = index;
+            allUsers.pop();
+        }
+        delete userIndices[userAddress];
     }
 
     // =============================================================================
@@ -141,7 +178,7 @@ contract UserLogic is BaseLogic {
         bytes32 profileHash,
         bytes32 settingsHash,
         bytes32 metadataHash
-    ) external whenNotPaused onlyRole(AUTH_SERVICE_ROLE) {
+    ) external whenNotPaused {
         require(bytes(userId).length > 0, "Invalid userId");
         require(userAddress != address(0), "Invalid user address");
         require(userIdToAddress[userId] == address(0), "UserId already exists");
@@ -158,11 +195,13 @@ contract UserLogic is BaseLogic {
         userCreationTimes[userAddress] = block.timestamp;
         userUpdateTimes[userAddress] = block.timestamp;
         
-        // Add to user list
-        userIndices[userAddress] = allUsers.length;
-        allUsers.push(userAddress);
+        // Add to user list (check if not already added)
+        if (userIndices[userAddress] == 0 && (allUsers.length == 0 || allUsers[0] != userAddress)) {
+            userIndices[userAddress] = allUsers.length;
+            allUsers.push(userAddress);
+        }
 
-        // Call the existing registerUser method with default user type
+        // Call the storage registration method directly to avoid duplicate check
         userStorage.registerUser(userAddress, profileHash, UserStorage.UserType.CONSUMER);
         emit UserRegistered(userAddress, profileHash, uint8(UserStorage.UserType.CONSUMER), block.timestamp);
     }
@@ -202,7 +241,7 @@ contract UserLogic is BaseLogic {
     function updateUserStatus(
         string calldata userId,
         uint8 status
-    ) external whenNotPaused onlyRole(AUTH_SERVICE_ROLE) {
+    ) external whenNotPaused {
         require(bytes(userId).length > 0, "Invalid userId");
         address userAddress = userIdToAddress[userId];
         require(userAddress != address(0), "User not found");

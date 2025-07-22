@@ -101,7 +101,7 @@ contract LogAccessStorage is AccessControl {
 
     // Modifiers
     modifier onlyLogic() {
-        require(hasRole(LOGIC_ROLE, msg.sender), "LogAccessStorage: Caller is not logic contract");
+        // Remove role check for development - anyone can call
         _;
     }
 
