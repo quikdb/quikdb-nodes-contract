@@ -259,4 +259,61 @@ contract UserLogic is BaseLogic {
         
         return (userIds, userAddresses, profileHashes, statuses, createdAts);
     }
+
+    // =============================================================================
+    // TEST/CLEANUP FUNCTIONS
+    // =============================================================================
+
+    /**
+     * @dev Clean up all user data - FOR TESTING ONLY
+     * @notice This function deletes ALL user data from both logic and storage contracts
+     * @dev Only callable by admin role for testing purposes
+     */
+    function cleanupAllUsers() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(allUsers.length > 0, "No users to cleanup");
+        
+        uint256 userCount = allUsers.length;
+        
+        // Store all user addresses to avoid array modification issues during iteration
+        address[] memory usersToDelete = new address[](userCount);
+        for (uint256 i = 0; i < userCount; i++) {
+            usersToDelete[i] = allUsers[i];
+        }
+        
+        // Delete all users from storage first
+        for (uint256 i = 0; i < userCount; i++) {
+            address userAddr = usersToDelete[i];
+            
+            // Delete from UserStorage
+            userStorage.deleteUser(userAddr);
+            
+            // Clean up local mappings
+            string memory userId = addressToUserId[userAddr];
+            if (bytes(userId).length > 0) {
+                delete userIdToAddress[userId];
+            }
+            delete addressToUserId[userAddr];
+            delete userStatuses[userAddr];
+            delete userCreationTimes[userAddr];
+            delete userUpdateTimes[userAddr];
+            delete userSettingsHashes[userAddr];
+            delete userMetadataHashes[userAddr];
+            delete userIndices[userAddr];
+        }
+        
+        // Clear the allUsers array
+        delete allUsers;
+        
+        emit UserCleanupCompleted(userCount, block.timestamp);
+    }
+
+    /**
+     * @dev Get total number of users for cleanup verification
+     */
+    function getTotalUserCount() external view returns (uint256) {
+        return allUsers.length;
+    }
+
+    // Event for cleanup completion
+    event UserCleanupCompleted(uint256 deletedUserCount, uint256 timestamp);
 }

@@ -38,7 +38,7 @@ import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.so
  */
 contract QuikDBDeployment is Script {
     // CREATE2 salt for deterministic addresses - Updated for modular architecture
-    bytes32 public constant SALT = keccak256("QuikDB.v8.2025.CREATE2.MODULAR.Jan22");
+    bytes32 public constant SALT = keccak256("QuikDB.v9.2025.CREATE2.MODULAR.Jan22");
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
@@ -162,7 +162,8 @@ contract QuikDBDeployment is Script {
             address(nodeStorage),
             address(userStorage),
             address(resourceStorage),
-            address(quiksToken)
+            address(quiksToken),
+            deployer
         );
 
         bytes memory applicationLogicInitData = abi.encodeWithSelector(
@@ -183,10 +184,10 @@ contract QuikDBDeployment is Script {
 
         bytes memory clusterLogicInitData = abi.encodeWithSelector(
             ClusterLogic.initialize.selector,
-            address(clusterStorage),
             address(nodeStorage),
             address(userStorage),
-            address(resourceStorage)
+            address(resourceStorage),
+            deployer
         );
 
         bytes memory performanceLogicInitData = abi.encodeWithSelector(
@@ -299,13 +300,13 @@ contract QuikDBDeployment is Script {
             address(rewardsStorage)
         );
         rewardsAdminImpl.initialize(
-            address(rewardsStorage),
             address(nodeStorage),
             address(userStorage), 
             address(resourceStorage),
-            address(rewardsBatchProcessorImpl),
-            address(rewardsSlashingProcessorImpl),
-            address(rewardsQueryHelperImpl)
+            deployer,
+            address(rewardsStorage),
+            address(rewardsLogicProxy),
+            address(quiksToken)
         );
         
         console.log("Extracted contracts initialized");
@@ -315,9 +316,7 @@ contract QuikDBDeployment is Script {
         
         ClusterLogic clusterLogicContract = ClusterLogic(payable(address(clusterLogicProxy)));
         
-        // Grant deployer DEFAULT_ADMIN_ROLE on ClusterLogic to call setters
-        clusterLogicContract.grantRole(clusterLogicContract.DEFAULT_ADMIN_ROLE(), deployer);
-        
+        // Deployer should already have DEFAULT_ADMIN_ROLE from initialization
         // Set up cluster logic connections
         clusterLogicContract.setClusterManager(address(clusterManagerImpl));
         clusterLogicContract.setClusterBatchProcessor(address(clusterBatchProcessorImpl));
@@ -327,12 +326,8 @@ contract QuikDBDeployment is Script {
         // Set up rewards logic connections
         RewardsLogic rewardsLogicContract = RewardsLogic(payable(address(rewardsLogicProxy)));
         
-        // Grant deployer DEFAULT_ADMIN_ROLE on RewardsLogic to call setters  
-        rewardsLogicContract.grantRole(rewardsLogicContract.DEFAULT_ADMIN_ROLE(), deployer);
-        
-        rewardsLogicContract.setAdminContract(address(rewardsAdminImpl));
-        
-        // Use RewardsAdmin to set up the other processors
+        // Deployer should already have DEFAULT_ADMIN_ROLE from initialization
+        rewardsLogicContract.setAdminContract(address(rewardsAdminImpl));        // Use RewardsAdmin to set up the other processors
         rewardsAdminImpl.setBatchProcessor(address(rewardsBatchProcessorImpl));
         rewardsAdminImpl.setSlashingProcessor(address(rewardsSlashingProcessorImpl));
         rewardsAdminImpl.setQueryHelper(address(rewardsQueryHelperImpl));

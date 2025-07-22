@@ -115,9 +115,10 @@ contract RewardsLogic is BaseLogic {
         address _nodeStorage,
         address _userStorage,
         address _resourceStorage,
-        address _rewardToken
+        address _rewardToken,
+        address _admin
     ) external {
-        _initializeBase(_nodeStorage, _userStorage, _resourceStorage, msg.sender);
+        _initializeBase(_nodeStorage, _userStorage, _resourceStorage, _admin);
         
         require(_rewardsStorage != address(0), "Invalid rewards storage address");
         rewardsStorage = RewardsStorage(_rewardsStorage);
@@ -131,8 +132,8 @@ contract RewardsLogic is BaseLogic {
         }
 
         // Set up roles
-        _grantRole(REWARDS_CALCULATOR_ROLE, msg.sender);
-        _grantRole(REWARDS_DISTRIBUTOR_ROLE, msg.sender);
+        _grantRole(REWARDS_CALCULATOR_ROLE, _admin);
+        _grantRole(REWARDS_DISTRIBUTOR_ROLE, _admin);
     }
 
     /**

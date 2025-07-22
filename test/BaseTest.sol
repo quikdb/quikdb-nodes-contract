@@ -318,7 +318,8 @@ abstract contract BaseTest is Test {
                 address(nodeStorage),
                 address(userStorage),
                 address(resourceStorage),
-                address(quiksToken) // Use QUIKS token for rewards
+                address(quiksToken), // Use QUIKS token for rewards
+                admin // admin
             )
         );
 

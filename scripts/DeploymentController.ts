@@ -12,6 +12,8 @@ interface ContractAddresses {
   deployer: string;
   storage: Record<string, string>;
   implementations: Record<string, string>;
+  tokens: Record<string, string>;
+  extracted: Record<string, string>;
   proxies: Record<string, string>;
   status: 'success' | 'partial' | 'failed';
   errors: string[];
@@ -85,6 +87,8 @@ class DeploymentController {
       deployer: '',
       storage: {},
       implementations: {},
+      tokens: {},
+      extracted: {},
       proxies: {},
       status: 'success',
       errors: []
@@ -181,6 +185,35 @@ class DeploymentController {
       const facadeProxyMatch = output.match(/Facade Proxy deployed at: (0x[a-fA-F0-9]{40})/);
       if (facadeProxyMatch) addresses.proxies.facade = facadeProxyMatch[1];
 
+      // Parse token contracts
+      const quiksTokenMatch = output.match(/QUIKS Token deployed at: (0x[a-fA-F0-9]{40})/);
+      if (quiksTokenMatch) addresses.tokens.quiksToken = quiksTokenMatch[1];
+
+      // Parse extracted/modular contracts
+      const clusterManagerMatch = output.match(/ClusterManager deployed at: (0x[a-fA-F0-9]{40})/);
+      if (clusterManagerMatch) addresses.extracted.clusterManager = clusterManagerMatch[1];
+
+      const clusterBatchProcessorMatch = output.match(/ClusterBatchProcessor deployed at: (0x[a-fA-F0-9]{40})/);
+      if (clusterBatchProcessorMatch) addresses.extracted.clusterBatchProcessor = clusterBatchProcessorMatch[1];
+
+      const clusterNodeAssignmentMatch = output.match(/ClusterNodeAssignment deployed at: (0x[a-fA-F0-9]{40})/);
+      if (clusterNodeAssignmentMatch) addresses.extracted.clusterNodeAssignment = clusterNodeAssignmentMatch[1];
+
+      const clusterAnalyticsMatch = output.match(/ClusterAnalytics deployed at: (0x[a-fA-F0-9]{40})/);
+      if (clusterAnalyticsMatch) addresses.extracted.clusterAnalytics = clusterAnalyticsMatch[1];
+
+      const rewardsBatchProcessorMatch = output.match(/RewardsBatchProcessor deployed at: (0x[a-fA-F0-9]{40})/);
+      if (rewardsBatchProcessorMatch) addresses.extracted.rewardsBatchProcessor = rewardsBatchProcessorMatch[1];
+
+      const rewardsSlashingProcessorMatch = output.match(/RewardsSlashingProcessor deployed at: (0x[a-fA-F0-9]{40})/);
+      if (rewardsSlashingProcessorMatch) addresses.extracted.rewardsSlashingProcessor = rewardsSlashingProcessorMatch[1];
+
+      const rewardsQueryHelperMatch = output.match(/RewardsQueryHelper deployed at: (0x[a-fA-F0-9]{40})/);
+      if (rewardsQueryHelperMatch) addresses.extracted.rewardsQueryHelper = rewardsQueryHelperMatch[1];
+
+      const rewardsAdminMatch = output.match(/RewardsAdmin deployed at: (0x[a-fA-F0-9]{40})/);
+      if (rewardsAdminMatch) addresses.extracted.rewardsAdmin = rewardsAdminMatch[1];
+
     } catch (error) {
       console.warn('⚠️  Warning: Could not parse all addresses from output');
       addresses.errors.push(`Parse error: ${(error as Error).message}`);
@@ -231,6 +264,8 @@ class DeploymentController {
         contracts: {
           storage: addresses.storage,
           implementations: addresses.implementations,
+          tokens: addresses.tokens,
+          extracted: addresses.extracted,
           proxies: addresses.proxies
         },
         status: addresses.status,
