@@ -8,7 +8,15 @@ import "../src/proxy/UserLogic.sol";
 import "../src/proxy/ResourceLogic.sol";
 import "../src/proxy/PerformanceLogic.sol";
 import "../src/proxy/ClusterLogic.sol";
+import "../src/proxy/ClusterManager.sol";
+import "../src/proxy/ClusterBatchProcessor.sol";
+import "../src/proxy/ClusterNodeAssignment.sol";
+import "../src/proxy/ClusterAnalytics.sol";
 import "../src/proxy/RewardsLogic.sol";
+import "../src/proxy/RewardsBatchProcessor.sol";
+import "../src/proxy/RewardsSlashingProcessor.sol";
+import "../src/proxy/RewardsQueryHelper.sol";
+import "../src/proxy/RewardsAdmin.sol";
 import "../src/proxy/ApplicationLogic.sol";
 import "../src/proxy/StorageAllocatorLogic.sol";
 import "../src/proxy/Facade.sol";
@@ -38,7 +46,7 @@ abstract contract BaseTest is Test {
     address internal user = address(0x3);
     address internal authService = address(0x4);
     address internal performanceRecorder = address(0x5);
-    address internal clusterManager = address(0x6);
+    address internal clusterManagerOperator = address(0x6);
     address internal rewardsCalculator = address(0x7);
     address internal applicationDeployer = address(0x8);
     address internal storageAllocator = address(0x9);
@@ -61,7 +69,15 @@ abstract contract BaseTest is Test {
     ResourceLogic internal resourceLogicImpl;
     PerformanceLogic internal performanceLogicImpl;
     ClusterLogic internal clusterLogicImpl;
+    ClusterManager internal clusterManagerImpl;
+    ClusterBatchProcessor internal clusterBatchProcessorImpl;
+    ClusterNodeAssignment internal clusterNodeAssignmentImpl;
+    ClusterAnalytics internal clusterAnalyticsImpl;
     RewardsLogic internal rewardsLogicImpl;
+    RewardsBatchProcessor internal rewardsBatchProcessorImpl;
+    RewardsSlashingProcessor internal rewardsSlashingProcessorImpl;
+    RewardsQueryHelper internal rewardsQueryHelperImpl;
+    RewardsAdmin internal rewardsAdminImpl;
     ApplicationLogic internal applicationLogicImpl;
     StorageAllocatorLogic internal storageAllocatorLogicImpl;
     Facade internal facadeImpl;
@@ -72,7 +88,15 @@ abstract contract BaseTest is Test {
     TransparentUpgradeableProxy internal resourceLogicProxy;
     TransparentUpgradeableProxy internal performanceLogicProxy;
     TransparentUpgradeableProxy internal clusterLogicProxy;
+    TransparentUpgradeableProxy internal clusterManagerProxy;
+    TransparentUpgradeableProxy internal clusterBatchProcessorProxy;
+    TransparentUpgradeableProxy internal clusterNodeAssignmentProxy;
+    TransparentUpgradeableProxy internal clusterAnalyticsProxy;
     TransparentUpgradeableProxy internal rewardsLogicProxy;
+    TransparentUpgradeableProxy internal rewardsBatchProcessorProxy;
+    TransparentUpgradeableProxy internal rewardsSlashingProcessorProxy;
+    TransparentUpgradeableProxy internal rewardsQueryHelperProxy;
+    TransparentUpgradeableProxy internal rewardsAdminProxy;
     TransparentUpgradeableProxy internal applicationLogicProxy;
     TransparentUpgradeableProxy internal storageAllocatorLogicProxy;
     TransparentUpgradeableProxy internal facadeProxy;
@@ -89,7 +113,15 @@ abstract contract BaseTest is Test {
     // ResourceLogic internal resourceLogic; // Moved to ResourceLogic.t.sol
     PerformanceLogic internal performanceLogic;
     ClusterLogic internal clusterLogic;
+    ClusterManager internal clusterManager;
+    ClusterBatchProcessor internal clusterBatchProcessor;
+    ClusterNodeAssignment internal clusterNodeAssignment;
+    ClusterAnalytics internal clusterAnalytics;
     RewardsLogic internal rewardsLogic;
+    RewardsBatchProcessor internal rewardsBatchProcessor;
+    RewardsSlashingProcessor internal rewardsSlashingProcessor;
+    RewardsQueryHelper internal rewardsQueryHelper;
+    RewardsAdmin internal rewardsAdmin;
     ApplicationLogic internal applicationLogic;
     StorageAllocatorLogic internal storageAllocatorLogic;
     Facade internal facade;
@@ -144,7 +176,15 @@ abstract contract BaseTest is Test {
         resourceLogicImpl = new ResourceLogic();
         performanceLogicImpl = new PerformanceLogic();
         clusterLogicImpl = new ClusterLogic();
+        clusterManagerImpl = new ClusterManager();
+        clusterBatchProcessorImpl = new ClusterBatchProcessor();
+        clusterNodeAssignmentImpl = new ClusterNodeAssignment();
+        clusterAnalyticsImpl = new ClusterAnalytics();
         rewardsLogicImpl = new RewardsLogic();
+        rewardsBatchProcessorImpl = new RewardsBatchProcessor();
+        rewardsSlashingProcessorImpl = new RewardsSlashingProcessor();
+        rewardsQueryHelperImpl = new RewardsQueryHelper();
+        rewardsAdminImpl = new RewardsAdmin();
         applicationLogicImpl = new ApplicationLogic();
         storageAllocatorLogicImpl = new StorageAllocatorLogic();
         facadeImpl = new Facade();
@@ -220,6 +260,55 @@ abstract contract BaseTest is Test {
             )
         );
 
+        // Deploy cluster management specialized contracts
+        clusterManagerProxy = new TransparentUpgradeableProxy(
+            address(clusterManagerImpl),
+            address(proxyAdmin),
+            abi.encodeWithSelector(
+                ClusterManager.initialize.selector,
+                address(nodeStorage),
+                address(userStorage),
+                address(resourceStorage),
+                admin
+            )
+        );
+
+        clusterBatchProcessorProxy = new TransparentUpgradeableProxy(
+            address(clusterBatchProcessorImpl),
+            address(proxyAdmin),
+            abi.encodeWithSelector(
+                ClusterBatchProcessor.initialize.selector,
+                address(nodeStorage),
+                address(userStorage),
+                address(resourceStorage),
+                admin
+            )
+        );
+
+        clusterNodeAssignmentProxy = new TransparentUpgradeableProxy(
+            address(clusterNodeAssignmentImpl),
+            address(proxyAdmin),
+            abi.encodeWithSelector(
+                ClusterNodeAssignment.initialize.selector,
+                address(nodeStorage),
+                address(userStorage),
+                address(resourceStorage),
+                admin
+            )
+        );
+
+        clusterAnalyticsProxy = new TransparentUpgradeableProxy(
+            address(clusterAnalyticsImpl),
+            address(proxyAdmin),
+            abi.encodeWithSelector(
+                ClusterAnalytics.initialize.selector,
+                address(nodeStorage),
+                address(userStorage),
+                address(resourceStorage),
+                admin
+            )
+        );
+
         rewardsLogicProxy = new TransparentUpgradeableProxy(
             address(rewardsLogicImpl),
             address(proxyAdmin),
@@ -230,6 +319,54 @@ abstract contract BaseTest is Test {
                 address(userStorage),
                 address(resourceStorage),
                 address(quiksToken) // Use QUIKS token for rewards
+            )
+        );
+
+        rewardsBatchProcessorProxy = new TransparentUpgradeableProxy(
+            address(rewardsBatchProcessorImpl),
+            address(proxyAdmin),
+            abi.encodeWithSelector(
+                RewardsBatchProcessor.initialize.selector,
+                address(rewardsLogicProxy),
+                address(rewardsStorage),
+                address(nodeStorage),
+                address(userStorage),
+                address(resourceStorage)
+            )
+        );
+
+        rewardsSlashingProcessorProxy = new TransparentUpgradeableProxy(
+            address(rewardsSlashingProcessorImpl),
+            address(proxyAdmin),
+            abi.encodeWithSelector(
+                RewardsSlashingProcessor.initialize.selector,
+                address(0), // _logic parameter not used
+                address(0), // _facade parameter not used  
+                address(rewardsLogicProxy) // _rewardsLogic
+            )
+        );
+
+        rewardsQueryHelperProxy = new TransparentUpgradeableProxy(
+            address(rewardsQueryHelperImpl),
+            address(proxyAdmin),
+            abi.encodeWithSelector(
+                RewardsQueryHelper.initialize.selector,
+                address(rewardsStorage)
+            )
+        );
+
+        rewardsAdminProxy = new TransparentUpgradeableProxy(
+            address(rewardsAdminImpl),
+            address(proxyAdmin),
+            abi.encodeWithSelector(
+                RewardsAdmin.initialize.selector,
+                address(nodeStorage),
+                address(userStorage),
+                address(resourceStorage),
+                admin,
+                address(rewardsStorage),
+                address(rewardsLogicProxy),
+                address(quiksToken)
             )
         );
 
@@ -281,7 +418,16 @@ abstract contract BaseTest is Test {
         // resourceLogic = ResourceLogic(payable(address(resourceLogicProxy))); // Moved to ResourceLogic.t.sol
         performanceLogic = PerformanceLogic(payable(address(performanceLogicProxy)));
         clusterLogic = ClusterLogic(payable(address(clusterLogicProxy)));
+        clusterManager = ClusterManager(payable(address(clusterManagerProxy)));
+        clusterBatchProcessor = ClusterBatchProcessor(payable(address(clusterBatchProcessorProxy)));
+        clusterNodeAssignment = ClusterNodeAssignment(payable(address(clusterNodeAssignmentProxy)));
+        clusterAnalytics = ClusterAnalytics(payable(address(clusterAnalyticsProxy)));
         rewardsLogic = RewardsLogic(payable(address(rewardsLogicProxy)));
+        rewardsBatchProcessor = RewardsBatchProcessor(payable(address(rewardsBatchProcessorProxy)));
+        rewardsSlashingProcessor = RewardsSlashingProcessor(payable(address(rewardsSlashingProcessorProxy)));
+        rewardsQueryHelper = RewardsQueryHelper(payable(address(rewardsQueryHelperProxy)));
+        rewardsAdmin = RewardsAdmin(payable(address(rewardsAdminProxy)));
+        
         applicationLogic = ApplicationLogic(payable(address(applicationLogicProxy)));
         storageAllocatorLogic = StorageAllocatorLogic(payable(address(storageAllocatorLogicProxy)));
         facade = Facade(payable(address(facadeProxy)));
@@ -299,8 +445,27 @@ abstract contract BaseTest is Test {
         // Set performance storage in the logic contract
         performanceLogic.setPerformanceStorage(address(performanceStorage));
 
-        // Set cluster storage in the logic contract
+        // Set cluster storage in the logic contracts
         clusterLogic.setClusterStorage(address(clusterStorage));
+        clusterManager.setClusterStorage(address(clusterStorage));
+        clusterBatchProcessor.setClusterStorage(address(clusterStorage));
+        clusterAnalytics.setClusterStorage(address(clusterStorage));
+
+        // Configure cluster delegation architecture
+        clusterLogic.setClusterManager(address(clusterManagerProxy));
+        clusterLogic.setClusterBatchProcessor(address(clusterBatchProcessorProxy));
+        clusterLogic.setClusterNodeAssignment(address(clusterNodeAssignmentProxy));
+        
+        // Set rewards storage in the rewards contracts that support it
+        rewardsBatchProcessor.setRewardsStorage(address(rewardsStorage));
+
+        // Configure rewards delegation architecture
+        rewardsLogic.setAdminContract(address(rewardsAdminProxy));
+        
+        // Configure processor addresses via RewardsAdmin
+        rewardsAdmin.setBatchProcessor(address(rewardsBatchProcessorProxy));
+        rewardsAdmin.setSlashingProcessor(address(rewardsSlashingProcessorProxy));
+        rewardsAdmin.setQueryHelper(address(rewardsQueryHelperProxy));
         
         // Configure DeploymentStorage with UserStorage reference
         deploymentStorage.setUserStorage(address(userStorage));
@@ -313,9 +478,16 @@ abstract contract BaseTest is Test {
         nodeLogic.grantRole(nodeLogic.NODE_OPERATOR_ROLE(), nodeOperator);
         userLogic.grantRole(userLogic.AUTH_SERVICE_ROLE(), authService);
         performanceLogic.grantRole(performanceLogic.PERFORMANCE_RECORDER_ROLE(), performanceRecorder);
-        clusterLogic.grantRole(clusterLogic.CLUSTER_MANAGER_ROLE(), clusterManager);
+        clusterLogic.grantRole(clusterLogic.CLUSTER_MANAGER_ROLE(), clusterManagerOperator);
+        clusterManager.grantRole(clusterManager.CLUSTER_MANAGER_ROLE(), clusterManagerOperator);
+        clusterBatchProcessor.grantRole(clusterBatchProcessor.CLUSTER_MANAGER_ROLE(), clusterManagerOperator);
+        clusterNodeAssignment.grantRole(clusterNodeAssignment.NODE_ASSIGNMENT_ROLE(), clusterManagerOperator);
+        clusterAnalytics.grantRole(clusterAnalytics.ANALYTICS_ROLE(), clusterManagerOperator);
         rewardsLogic.grantRole(rewardsLogic.REWARDS_CALCULATOR_ROLE(), rewardsCalculator);
         rewardsLogic.grantRole(rewardsLogic.REWARDS_DISTRIBUTOR_ROLE(), rewardsCalculator);
+        rewardsBatchProcessor.grantRole(rewardsBatchProcessor.ADMIN_ROLE(), admin);
+        rewardsBatchProcessor.grantRole(rewardsBatchProcessor.REWARDS_CALCULATOR_ROLE(), rewardsCalculator);
+        rewardsAdmin.grantRole(rewardsAdmin.ADMIN_ROLE(), admin);
         applicationLogic.grantRole(applicationLogic.APPLICATION_DEPLOYER_ROLE(), applicationDeployer);
         applicationLogic.grantRole(applicationLogic.APPLICATION_MANAGER_ROLE(), applicationDeployer);
         storageAllocatorLogic.grantRole(storageAllocatorLogic.STORAGE_ALLOCATOR_ROLE(), storageAllocator);
@@ -347,6 +519,19 @@ abstract contract BaseTest is Test {
         } catch {
             console.log("Failed to query QUIKS token from RewardsLogic");
         }
+
+        // Grant LOGIC_ROLE to extracted contracts to access storage
+        // ClusterLogic extracted contracts
+        clusterStorage.grantRole(clusterStorage.LOGIC_ROLE(), address(clusterManager));
+        clusterStorage.grantRole(clusterStorage.LOGIC_ROLE(), address(clusterBatchProcessor));
+        clusterStorage.grantRole(clusterStorage.LOGIC_ROLE(), address(clusterNodeAssignment));
+        clusterStorage.grantRole(clusterStorage.LOGIC_ROLE(), address(clusterAnalytics));
+        
+        // RewardsLogic extracted contracts
+        rewardsStorage.grantRole(rewardsStorage.LOGIC_ROLE(), address(rewardsBatchProcessor));
+        rewardsStorage.grantRole(rewardsStorage.LOGIC_ROLE(), address(rewardsSlashingProcessor));
+        rewardsStorage.grantRole(rewardsStorage.LOGIC_ROLE(), address(rewardsQueryHelper));
+        rewardsStorage.grantRole(rewardsStorage.LOGIC_ROLE(), address(rewardsAdmin));
         
         vm.stopPrank();
     }

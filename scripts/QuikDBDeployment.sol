@@ -17,8 +17,17 @@ import "../src/proxy/RewardsLogic.sol";
 import "../src/proxy/ApplicationLogic.sol";
 import "../src/proxy/StorageAllocatorLogic.sol";
 import "../src/proxy/ClusterLogic.sol";
+import "../src/proxy/ClusterManager.sol";
+import "../src/proxy/ClusterBatchProcessor.sol";
+import "../src/proxy/ClusterNodeAssignment.sol";
+import "../src/proxy/ClusterAnalytics.sol";
+import "../src/proxy/RewardsBatchProcessor.sol";
+import "../src/proxy/RewardsSlashingProcessor.sol";
+import "../src/proxy/RewardsQueryHelper.sol";
+import "../src/proxy/RewardsAdmin.sol";
 import "../src/proxy/PerformanceLogic.sol";
 import "../src/proxy/Facade.sol";
+import "../src/tokens/QuiksToken.sol";
 import "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
@@ -28,8 +37,8 @@ import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.so
  * @dev Uses CREATE2 for predictable addresses across networks
  */
 contract QuikDBDeployment is Script {
-    // CREATE2 salt for deterministic addresses - Updated for fresh deployment with new contracts
-    bytes32 public constant SALT = keccak256("QuikDB.v7.2025.CREATE2.ClusterPerformance");
+    // CREATE2 salt for deterministic addresses - Updated for modular architecture
+    bytes32 public constant SALT = keccak256("QuikDB.v8.2025.CREATE2.MODULAR.Jan22");
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
@@ -46,9 +55,9 @@ contract QuikDBDeployment is Script {
         NodeStorage nodeStorage = new NodeStorage{salt: SALT}(deployer);
         UserStorage userStorage = new UserStorage{salt: SALT}(deployer);
         ResourceStorage resourceStorage = new ResourceStorage{salt: SALT}(deployer);
-        RewardsStorage rewardsStorage = new RewardsStorage{salt: SALT}();
+        RewardsStorage rewardsStorage = new RewardsStorage{salt: SALT}(deployer);
         ApplicationStorage applicationStorage = new ApplicationStorage{salt: SALT}();
-        StorageAllocatorStorage storageAllocatorStorage = new StorageAllocatorStorage{salt: SALT}();
+        StorageAllocatorStorage storageAllocatorStorage = new StorageAllocatorStorage{salt: SALT}(deployer);
         ClusterStorage clusterStorage = new ClusterStorage{salt: SALT}(deployer);
         PerformanceStorage performanceStorage = new PerformanceStorage{salt: SALT}(deployer);
 
@@ -61,7 +70,18 @@ contract QuikDBDeployment is Script {
         console.log("ClusterStorage deployed at:", address(clusterStorage));
         console.log("PerformanceStorage deployed at:", address(performanceStorage));
 
-        // 2. Deploy logic implementation contracts using CREATE2
+        // 2. Deploy QUIKS token using CREATE2
+        console.log("=== DEPLOYING QUIKS TOKEN (CREATE2) ===");
+        uint256 initialSupply = 1000000 * 1e18; // 1 million QUIKS tokens
+        QuiksToken quiksToken = new QuiksToken{salt: SALT}(
+            initialSupply,
+            deployer,     // admin role
+            deployer      // initial minter role (will be updated to rewardsLogic later)
+        );
+        console.log("QUIKS Token deployed at:", address(quiksToken));
+        console.log("Initial supply:", initialSupply / 1e18, "QUIKS tokens");
+
+        // 3. Deploy logic implementation contracts using CREATE2
         console.log("=== DEPLOYING LOGIC IMPLEMENTATIONS (CREATE2) ===");
         NodeLogic nodeLogicImpl = new NodeLogic{salt: SALT}();
         UserLogic userLogicImpl = new UserLogic{salt: SALT}();
@@ -83,12 +103,32 @@ contract QuikDBDeployment is Script {
         console.log("PerformanceLogic Implementation deployed at:", address(performanceLogicImpl));
         console.log("Facade Implementation deployed at:", address(facadeImpl));
 
-        // 3. Deploy ProxyAdmin using CREATE2
+        // 4. Deploy extracted/modular contracts using CREATE2
+        console.log("=== DEPLOYING EXTRACTED CONTRACTS (CREATE2) ===");
+        ClusterManager clusterManagerImpl = new ClusterManager{salt: SALT}();
+        ClusterBatchProcessor clusterBatchProcessorImpl = new ClusterBatchProcessor{salt: SALT}();
+        ClusterNodeAssignment clusterNodeAssignmentImpl = new ClusterNodeAssignment{salt: SALT}();
+        ClusterAnalytics clusterAnalyticsImpl = new ClusterAnalytics{salt: SALT}();
+        RewardsBatchProcessor rewardsBatchProcessorImpl = new RewardsBatchProcessor{salt: SALT}();
+        RewardsSlashingProcessor rewardsSlashingProcessorImpl = new RewardsSlashingProcessor{salt: SALT}();
+        RewardsQueryHelper rewardsQueryHelperImpl = new RewardsQueryHelper{salt: SALT}();
+        RewardsAdmin rewardsAdminImpl = new RewardsAdmin{salt: SALT}();
+
+        console.log("ClusterManager deployed at:", address(clusterManagerImpl));
+        console.log("ClusterBatchProcessor deployed at:", address(clusterBatchProcessorImpl));
+        console.log("ClusterNodeAssignment deployed at:", address(clusterNodeAssignmentImpl));
+        console.log("ClusterAnalytics deployed at:", address(clusterAnalyticsImpl));
+        console.log("RewardsBatchProcessor deployed at:", address(rewardsBatchProcessorImpl));
+        console.log("RewardsSlashingProcessor deployed at:", address(rewardsSlashingProcessorImpl));
+        console.log("RewardsQueryHelper deployed at:", address(rewardsQueryHelperImpl));
+        console.log("RewardsAdmin deployed at:", address(rewardsAdminImpl));
+
+        // 5. Deploy ProxyAdmin using CREATE2
         console.log("=== DEPLOYING PROXY ADMIN (CREATE2) ===");
         ProxyAdmin proxyAdmin = new ProxyAdmin{salt: SALT}(deployer);
         console.log("ProxyAdmin deployed at:", address(proxyAdmin));
 
-        // 4. Deploy proxy contracts using CREATE2
+        // 6. Deploy proxy contracts using CREATE2
         console.log("=== DEPLOYING PROXY CONTRACTS (CREATE2) ===");
 
         // Initialize data for logic contracts
@@ -121,7 +161,8 @@ contract QuikDBDeployment is Script {
             address(rewardsStorage),
             address(nodeStorage),
             address(userStorage),
-            deployer
+            address(resourceStorage),
+            address(quiksToken)
         );
 
         bytes memory applicationLogicInitData = abi.encodeWithSelector(
@@ -129,7 +170,7 @@ contract QuikDBDeployment is Script {
             address(applicationStorage),
             address(nodeStorage),
             address(userStorage),
-            deployer
+            address(resourceStorage)
         );
 
         bytes memory storageAllocatorLogicInitData = abi.encodeWithSelector(
@@ -137,15 +178,15 @@ contract QuikDBDeployment is Script {
             address(storageAllocatorStorage),
             address(nodeStorage),
             address(userStorage),
-            deployer
+            address(resourceStorage)
         );
 
         bytes memory clusterLogicInitData = abi.encodeWithSelector(
             ClusterLogic.initialize.selector,
+            address(clusterStorage),
             address(nodeStorage),
             address(userStorage),
-            address(resourceStorage),
-            deployer
+            address(resourceStorage)
         );
 
         bytes memory performanceLogicInitData = abi.encodeWithSelector(
@@ -212,22 +253,123 @@ contract QuikDBDeployment is Script {
         console.log("PerformanceLogic Proxy deployed at:", address(performanceLogicProxy));
         console.log("Facade Proxy deployed at:", address(facadeProxy));
 
-        // 5. Configure storage contracts to accept logic contracts
+        // 7. Initialize extracted contracts
+        console.log("=== INITIALIZING EXTRACTED CONTRACTS ===");
+        
+        // Initialize ClusterLogic extracted contracts - using correct parameter counts
+        clusterManagerImpl.initialize(
+            address(clusterStorage),
+            address(nodeStorage), 
+            address(userStorage),
+            address(resourceStorage)
+        );
+        clusterBatchProcessorImpl.initialize(
+            address(nodeStorage),
+            address(userStorage),
+            address(resourceStorage),
+            deployer
+        );
+        clusterNodeAssignmentImpl.initialize(
+            address(nodeStorage),
+            address(userStorage),
+            address(resourceStorage),
+            deployer
+        );
+        clusterAnalyticsImpl.initialize(
+            address(nodeStorage),
+            address(userStorage),
+            address(resourceStorage),
+            deployer
+        );
+        
+        // Initialize RewardsLogic extracted contracts - using correct parameter counts
+        rewardsBatchProcessorImpl.initialize(
+            address(rewardsStorage),
+            address(nodeStorage),
+            address(userStorage),
+            address(resourceStorage),
+            deployer
+        );
+        rewardsSlashingProcessorImpl.initialize(
+            address(rewardsStorage),
+            address(nodeStorage),
+            address(userStorage)
+        );
+        rewardsQueryHelperImpl.initialize(
+            address(rewardsStorage)
+        );
+        rewardsAdminImpl.initialize(
+            address(rewardsStorage),
+            address(nodeStorage),
+            address(userStorage), 
+            address(resourceStorage),
+            address(rewardsBatchProcessorImpl),
+            address(rewardsSlashingProcessorImpl),
+            address(rewardsQueryHelperImpl)
+        );
+        
+        console.log("Extracted contracts initialized");
+
+        // 8. Connect extracted contracts to main logic contracts
+        console.log("=== CONNECTING EXTRACTED CONTRACTS ===");
+        
+        ClusterLogic clusterLogicContract = ClusterLogic(payable(address(clusterLogicProxy)));
+        
+        // Grant deployer DEFAULT_ADMIN_ROLE on ClusterLogic to call setters
+        clusterLogicContract.grantRole(clusterLogicContract.DEFAULT_ADMIN_ROLE(), deployer);
+        
+        // Set up cluster logic connections
+        clusterLogicContract.setClusterManager(address(clusterManagerImpl));
+        clusterLogicContract.setClusterBatchProcessor(address(clusterBatchProcessorImpl));
+        clusterLogicContract.setClusterNodeAssignment(address(clusterNodeAssignmentImpl));
+        // Note: ClusterAnalytics doesn't have a setter in ClusterLogic yet, may need to add it
+        
+        // Set up rewards logic connections
+        RewardsLogic rewardsLogicContract = RewardsLogic(payable(address(rewardsLogicProxy)));
+        
+        // Grant deployer DEFAULT_ADMIN_ROLE on RewardsLogic to call setters  
+        rewardsLogicContract.grantRole(rewardsLogicContract.DEFAULT_ADMIN_ROLE(), deployer);
+        
+        rewardsLogicContract.setAdminContract(address(rewardsAdminImpl));
+        
+        // Use RewardsAdmin to set up the other processors
+        rewardsAdminImpl.setBatchProcessor(address(rewardsBatchProcessorImpl));
+        rewardsAdminImpl.setSlashingProcessor(address(rewardsSlashingProcessorImpl));
+        rewardsAdminImpl.setQueryHelper(address(rewardsQueryHelperImpl));
+        
+        console.log("Main logic contracts configured with extracted contracts");
+
+        // 9. Configure storage contracts to accept logic contracts
         console.log("=== CONFIGURING STORAGE CONTRACTS ===");
         nodeStorage.setLogicContract(address(nodeLogicProxy));
         userStorage.setLogicContract(address(userLogicProxy));
         resourceStorage.setLogicContract(address(resourceLogicProxy));
 
         // Configure new storage contracts
-        ClusterLogic clusterLogicContract = ClusterLogic(payable(address(clusterLogicProxy)));
         clusterLogicContract.setClusterStorage(address(clusterStorage));
 
         PerformanceLogic performanceLogicContract = PerformanceLogic(payable(address(performanceLogicProxy)));
         performanceLogicContract.setPerformanceStorage(address(performanceStorage));
 
+        // Grant LOGIC_ROLE to extracted contracts for storage access
+        bytes32 clusterLogicRole = clusterStorage.LOGIC_ROLE();
+        bytes32 rewardsLogicRole = rewardsStorage.LOGIC_ROLE();
+        
+        // ClusterLogic extracted contracts
+        clusterStorage.grantRole(clusterLogicRole, address(clusterManagerImpl));
+        clusterStorage.grantRole(clusterLogicRole, address(clusterBatchProcessorImpl));
+        clusterStorage.grantRole(clusterLogicRole, address(clusterNodeAssignmentImpl));
+        clusterStorage.grantRole(clusterLogicRole, address(clusterAnalyticsImpl));
+        
+        // RewardsLogic extracted contracts  
+        rewardsStorage.grantRole(rewardsLogicRole, address(rewardsBatchProcessorImpl));
+        rewardsStorage.grantRole(rewardsLogicRole, address(rewardsSlashingProcessorImpl));
+        rewardsStorage.grantRole(rewardsLogicRole, address(rewardsQueryHelperImpl));
+        rewardsStorage.grantRole(rewardsLogicRole, address(rewardsAdminImpl));
+
         console.log("Storage contracts configured");
 
-        // 6. Grant necessary roles for testing
+        // 10. Grant necessary roles for testing
         console.log("=== SETTING UP ROLES ===");
 
         // Grant NODE_OPERATOR_ROLE to deployer for testing
@@ -239,6 +381,11 @@ contract QuikDBDeployment is Script {
         bytes32 AUTH_SERVICE_ROLE = keccak256("AUTH_SERVICE_ROLE");
         UserLogic userLogicContract = UserLogic(payable(address(userLogicProxy)));
         userLogicContract.grantRole(AUTH_SERVICE_ROLE, deployer);
+
+        // Grant MINTER_ROLE to RewardsLogic for QUIKS token
+        bytes32 MINTER_ROLE = keccak256("MINTER_ROLE");
+        quiksToken.grantRole(MINTER_ROLE, address(rewardsLogicProxy));
+        console.log("Granted MINTER_ROLE to RewardsLogic for QUIKS token");
 
         console.log("Roles configured for testing");
 
@@ -265,6 +412,16 @@ contract QuikDBDeployment is Script {
         console.log("  ClusterLogic:", address(clusterLogicImpl));
         console.log("  PerformanceLogic:", address(performanceLogicImpl));
         console.log("  Facade:", address(facadeImpl));
+        console.log("");
+        console.log("Extracted/Modular Contracts:");
+        console.log("  ClusterManager:", address(clusterManagerImpl));
+        console.log("  ClusterBatchProcessor:", address(clusterBatchProcessorImpl));
+        console.log("  ClusterNodeAssignment:", address(clusterNodeAssignmentImpl));
+        console.log("  ClusterAnalytics:", address(clusterAnalyticsImpl));
+        console.log("  RewardsBatchProcessor:", address(rewardsBatchProcessorImpl));
+        console.log("  RewardsSlashingProcessor:", address(rewardsSlashingProcessorImpl));
+        console.log("  RewardsQueryHelper:", address(rewardsQueryHelperImpl));
+        console.log("  RewardsAdmin:", address(rewardsAdminImpl));
         console.log("");
         console.log("Proxy Contracts:");
         console.log("  ProxyAdmin:", address(proxyAdmin));

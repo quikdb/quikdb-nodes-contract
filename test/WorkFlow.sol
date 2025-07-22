@@ -905,7 +905,7 @@ contract WorkFlow is BaseTest {
         address[] memory nodeAddresses = new address[](1);
         nodeAddresses[0] = userB;
         
-        vm.prank(clusterManager);
+        vm.prank(clusterManagerOperator);
         clusterLogic.registerCluster(
             "userb-cluster",
             nodeAddresses,

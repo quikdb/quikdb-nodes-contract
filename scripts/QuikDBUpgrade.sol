@@ -2,6 +2,8 @@
 pragma solidity ^0.8.20;
 
 import {Script, console} from "forge-std/Script.sol";
+import "../src/storage/ClusterStorage.sol";
+import "../src/storage/RewardsStorage.sol";
 import "../src/proxy/NodeLogic.sol";
 import "../src/proxy/UserLogic.sol";
 import "../src/proxy/ResourceLogic.sol";
@@ -9,6 +11,14 @@ import "../src/proxy/RewardsLogic.sol";
 import "../src/proxy/ApplicationLogic.sol";
 import "../src/proxy/StorageAllocatorLogic.sol";
 import "../src/proxy/ClusterLogic.sol";
+import "../src/proxy/ClusterManager.sol";
+import "../src/proxy/ClusterBatchProcessor.sol";
+import "../src/proxy/ClusterNodeAssignment.sol";
+import "../src/proxy/ClusterAnalytics.sol";
+import "../src/proxy/RewardsBatchProcessor.sol";
+import "../src/proxy/RewardsSlashingProcessor.sol";
+import "../src/proxy/RewardsQueryHelper.sol";
+import "../src/proxy/RewardsAdmin.sol";
 import "../src/proxy/PerformanceLogic.sol";
 import "../src/proxy/Facade.sol";
 import "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
@@ -22,7 +32,7 @@ import "@openzeppelin/contracts/interfaces/IERC1967.sol";
  */
 contract QuikDBUpgrade is Script {
     // CREATE2 salt for new implementation contracts - increment version for upgrades
-    bytes32 public constant IMPL_SALT = keccak256("QuikDB.v7.2025.IMPL");
+    bytes32 public constant IMPL_SALT = keccak256("QuikDB.v8.2025.MODULAR.IMPL");
 
     // EIP-1967 admin slot: bytes32(uint256(keccak256("eip1967.proxy.admin")) - 1)
     bytes32 constant ADMIN_SLOT = bytes32(uint256(keccak256("eip1967.proxy.admin")) - 1);
@@ -47,6 +57,15 @@ contract QuikDBUpgrade is Script {
         address clusterLogicProxy;
         address performanceLogicProxy;
         address facadeProxy;
+        // Extracted contracts from previous deployment
+        address clusterManager;
+        address clusterBatchProcessor;
+        address clusterNodeAssignment;
+        address clusterAnalytics;
+        address rewardsBatchProcessor;
+        address rewardsSlashingProcessor;
+        address rewardsQueryHelper;
+        address rewardsAdmin;
     }
 
     function run() external {
@@ -83,6 +102,26 @@ contract QuikDBUpgrade is Script {
         console.log("New ClusterLogic Implementation deployed at:", address(newClusterLogicImpl));
         console.log("New PerformanceLogic Implementation deployed at:", address(newPerformanceLogicImpl));
         console.log("New Facade Implementation deployed at:", address(newFacadeImpl));
+
+        // Deploy new extracted contracts
+        console.log("=== DEPLOYING NEW EXTRACTED CONTRACTS (CREATE2) ===");
+        ClusterManager newClusterManagerImpl = new ClusterManager{salt: IMPL_SALT}();
+        ClusterBatchProcessor newClusterBatchProcessorImpl = new ClusterBatchProcessor{salt: IMPL_SALT}();
+        ClusterNodeAssignment newClusterNodeAssignmentImpl = new ClusterNodeAssignment{salt: IMPL_SALT}();
+        ClusterAnalytics newClusterAnalyticsImpl = new ClusterAnalytics{salt: IMPL_SALT}();
+        RewardsBatchProcessor newRewardsBatchProcessorImpl = new RewardsBatchProcessor{salt: IMPL_SALT}();
+        RewardsSlashingProcessor newRewardsSlashingProcessorImpl = new RewardsSlashingProcessor{salt: IMPL_SALT}();
+        RewardsQueryHelper newRewardsQueryHelperImpl = new RewardsQueryHelper{salt: IMPL_SALT}();
+        RewardsAdmin newRewardsAdminImpl = new RewardsAdmin{salt: IMPL_SALT}();
+
+        console.log("New ClusterManager deployed at:", address(newClusterManagerImpl));
+        console.log("New ClusterBatchProcessor deployed at:", address(newClusterBatchProcessorImpl));
+        console.log("New ClusterNodeAssignment deployed at:", address(newClusterNodeAssignmentImpl));
+        console.log("New ClusterAnalytics deployed at:", address(newClusterAnalyticsImpl));
+        console.log("New RewardsBatchProcessor deployed at:", address(newRewardsBatchProcessorImpl));
+        console.log("New RewardsSlashingProcessor deployed at:", address(newRewardsSlashingProcessorImpl));
+        console.log("New RewardsQueryHelper deployed at:", address(newRewardsQueryHelperImpl));
+        console.log("New RewardsAdmin deployed at:", address(newRewardsAdminImpl));
 
         // 2. Upgrade proxies to new implementations
         console.log("=== UPGRADING PROXY CONTRACTS ===");
@@ -178,7 +217,118 @@ contract QuikDBUpgrade is Script {
             }
         }
 
-        // 3. Verify upgrades
+        // 3. Initialize and configure new extracted contracts
+        console.log("=== CONFIGURING NEW EXTRACTED CONTRACTS ===");
+        
+        // Initialize new ClusterLogic extracted contracts
+        newClusterManagerImpl.initialize(
+            existing.clusterStorage,
+            existing.nodeStorage,
+            existing.userStorage,
+            existing.resourceStorage
+        );
+        newClusterBatchProcessorImpl.initialize(
+            existing.nodeStorage,
+            existing.userStorage,
+            existing.resourceStorage,
+            deployer
+        );
+        newClusterNodeAssignmentImpl.initialize(
+            existing.nodeStorage,
+            existing.userStorage,
+            existing.resourceStorage,
+            deployer
+        );
+        newClusterAnalyticsImpl.initialize(
+            existing.nodeStorage,
+            existing.userStorage,
+            existing.resourceStorage,
+            deployer
+        );
+        
+        // Initialize new RewardsLogic extracted contracts
+        newRewardsBatchProcessorImpl.initialize(
+            existing.rewardsStorage,
+            existing.nodeStorage,
+            existing.userStorage,
+            existing.resourceStorage,
+            deployer
+        );
+        newRewardsSlashingProcessorImpl.initialize(
+            existing.rewardsStorage,
+            existing.nodeStorage,
+            existing.userStorage
+        );
+        newRewardsQueryHelperImpl.initialize(
+            existing.rewardsStorage
+        );
+        newRewardsAdminImpl.initialize(
+            existing.rewardsStorage,
+            existing.nodeStorage,
+            existing.userStorage,
+            existing.resourceStorage,
+            address(newRewardsBatchProcessorImpl),
+            address(newRewardsSlashingProcessorImpl),
+            address(newRewardsQueryHelperImpl)
+        );
+        
+        console.log("New extracted contracts initialized");
+
+        // Configure main logic contracts with new extracted contracts
+        ClusterLogic clusterLogicContract = ClusterLogic(payable(existing.clusterLogicProxy));
+        clusterLogicContract.setClusterManager(address(newClusterManagerImpl));
+        clusterLogicContract.setClusterBatchProcessor(address(newClusterBatchProcessorImpl));
+        clusterLogicContract.setClusterNodeAssignment(address(newClusterNodeAssignmentImpl));
+        // Note: ClusterAnalytics doesn't have a setter in ClusterLogic yet
+        
+        RewardsLogic rewardsLogicContract = RewardsLogic(payable(existing.rewardsLogicProxy));
+        rewardsLogicContract.setAdminContract(address(newRewardsAdminImpl));
+        
+        // Use RewardsAdmin to set up the other processors
+        newRewardsAdminImpl.setBatchProcessor(address(newRewardsBatchProcessorImpl));
+        newRewardsAdminImpl.setSlashingProcessor(address(newRewardsSlashingProcessorImpl));
+        newRewardsAdminImpl.setQueryHelper(address(newRewardsQueryHelperImpl));
+        
+        console.log("Main logic contracts reconfigured with new extracted contracts");
+
+        // Grant LOGIC_ROLE to new extracted contracts for storage access
+        console.log("=== GRANTING ROLES TO NEW EXTRACTED CONTRACTS ===");
+        ClusterStorage clusterStorage = ClusterStorage(existing.clusterStorage);
+        RewardsStorage rewardsStorage = RewardsStorage(existing.rewardsStorage);
+        
+        bytes32 clusterLogicRole = clusterStorage.LOGIC_ROLE();
+        bytes32 rewardsLogicRole = rewardsStorage.LOGIC_ROLE();
+        
+        // Grant to new ClusterLogic extracted contracts
+        clusterStorage.grantRole(clusterLogicRole, address(newClusterManagerImpl));
+        clusterStorage.grantRole(clusterLogicRole, address(newClusterBatchProcessorImpl));
+        clusterStorage.grantRole(clusterLogicRole, address(newClusterNodeAssignmentImpl));
+        clusterStorage.grantRole(clusterLogicRole, address(newClusterAnalyticsImpl));
+        
+        // Grant to new RewardsLogic extracted contracts  
+        rewardsStorage.grantRole(rewardsLogicRole, address(newRewardsBatchProcessorImpl));
+        rewardsStorage.grantRole(rewardsLogicRole, address(newRewardsSlashingProcessorImpl));
+        rewardsStorage.grantRole(rewardsLogicRole, address(newRewardsQueryHelperImpl));
+        rewardsStorage.grantRole(rewardsLogicRole, address(newRewardsAdminImpl));
+        
+        // Revoke roles from old extracted contracts
+        if (existing.clusterManager != address(0)) {
+            clusterStorage.revokeRole(clusterLogicRole, existing.clusterManager);
+            clusterStorage.revokeRole(clusterLogicRole, existing.clusterBatchProcessor);
+            clusterStorage.revokeRole(clusterLogicRole, existing.clusterNodeAssignment);
+            clusterStorage.revokeRole(clusterLogicRole, existing.clusterAnalytics);
+        }
+        
+        if (existing.rewardsBatchProcessor != address(0)) {
+            rewardsStorage.revokeRole(rewardsLogicRole, existing.rewardsBatchProcessor);
+            rewardsStorage.revokeRole(rewardsLogicRole, existing.rewardsSlashingProcessor);
+            rewardsStorage.revokeRole(rewardsLogicRole, existing.rewardsQueryHelper);
+            rewardsStorage.revokeRole(rewardsLogicRole, existing.rewardsAdmin);
+        }
+        
+        console.log("Roles updated for new extracted contracts");
+
+        // 4. Verify upgrades
         console.log("=== VERIFYING UPGRADES ===");
         verifyUpgrade(existing.nodeLogicProxy, address(newNodeLogicImpl), "NodeLogic");
         verifyUpgrade(existing.userLogicProxy, address(newUserLogicImpl), "UserLogic");
@@ -214,6 +364,16 @@ contract QuikDBUpgrade is Script {
         console.log("  ClusterLogic Impl:", address(newClusterLogicImpl));
         console.log("  PerformanceLogic Impl:", address(newPerformanceLogicImpl));
         console.log("  Facade Impl:", address(newFacadeImpl));
+        console.log("");
+        console.log("New Extracted Contract Addresses:");
+        console.log("  ClusterManager:", address(newClusterManagerImpl));
+        console.log("  ClusterBatchProcessor:", address(newClusterBatchProcessorImpl));
+        console.log("  ClusterNodeAssignment:", address(newClusterNodeAssignmentImpl));
+        console.log("  ClusterAnalytics:", address(newClusterAnalyticsImpl));
+        console.log("  RewardsBatchProcessor:", address(newRewardsBatchProcessorImpl));
+        console.log("  RewardsSlashingProcessor:", address(newRewardsSlashingProcessorImpl));
+        console.log("  RewardsQueryHelper:", address(newRewardsQueryHelperImpl));
+        console.log("  RewardsAdmin:", address(newRewardsAdminImpl));
 
         console.log("=== QUIKDB UPGRADE COMPLETED ===");
     }
@@ -238,7 +398,16 @@ contract QuikDBUpgrade is Script {
             storageAllocatorLogicProxy: vm.envAddress("STORAGE_ALLOCATOR_LOGIC_PROXY"),
             clusterLogicProxy: vm.envAddress("CLUSTER_LOGIC_PROXY"),
             performanceLogicProxy: vm.envAddress("PERFORMANCE_LOGIC_PROXY"),
-            facadeProxy: vm.envAddress("FACADE_PROXY")
+            facadeProxy: vm.envAddress("FACADE_PROXY"),
+            // Extracted contracts - use try/catch to handle cases where they don't exist yet
+            clusterManager: vm.envOr("CLUSTER_MANAGER", address(0)),
+            clusterBatchProcessor: vm.envOr("CLUSTER_BATCH_PROCESSOR", address(0)),
+            clusterNodeAssignment: vm.envOr("CLUSTER_NODE_ASSIGNMENT", address(0)),
+            clusterAnalytics: vm.envOr("CLUSTER_ANALYTICS", address(0)),
+            rewardsBatchProcessor: vm.envOr("REWARDS_BATCH_PROCESSOR", address(0)),
+            rewardsSlashingProcessor: vm.envOr("REWARDS_SLASHING_PROCESSOR", address(0)),
+            rewardsQueryHelper: vm.envOr("REWARDS_QUERY_HELPER", address(0)),
+            rewardsAdmin: vm.envOr("REWARDS_ADMIN", address(0))
         });
     }
 

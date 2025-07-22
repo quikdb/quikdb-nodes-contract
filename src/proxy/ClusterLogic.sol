@@ -2,6 +2,9 @@
 pragma solidity ^0.8.20;
 
 import "./BaseLogic.sol";
+import "./ClusterManager.sol";
+import "./ClusterBatchProcessor.sol";
+import "./ClusterNodeAssignment.sol";
 import "../storage/ClusterStorage.sol";
 import "../libraries/ValidationLibrary.sol";
 import "../libraries/RateLimitingLibrary.sol";
@@ -9,9 +12,10 @@ import "../libraries/GasOptimizationLibrary.sol";
 
 /**
  * @title ClusterLogic
- * @notice Implementation contract for cluster management with production-grade validation
- * @dev This contract implements the business logic for cluster registration and management.
- *      It inherits from BaseLogic and follows the proxy pattern.
+ * @notice Streamlined cluster management contract with basic operations
+ * @dev This contract provides essential cluster operations while delegating complex
+ *      cluster formation and management to specialized contracts.
+ *      Size optimized to stay under EIP-170 24KB limit.
  */
 contract ClusterLogic is BaseLogic {
     using ValidationLibrary for *;
@@ -20,33 +24,16 @@ contract ClusterLogic is BaseLogic {
 
     // Storage contract reference
     ClusterStorage public clusterStorage;
-
-    // Node ID to address mapping (keep for nodeId resolution)
-    mapping(string => address) private nodeIdToAddress;
-    mapping(address => string) private addressToNodeId;
     
-    // Geographic distribution tracking
-    mapping(string => string[]) private regionNodes; // region => nodeIds
-    mapping(string => string) private nodeToRegion; // nodeId => region
+    // Specialized contract references for delegation
+    ClusterManager public clusterManager;
+    ClusterBatchProcessor public clusterBatchProcessor;
+    ClusterNodeAssignment public clusterNodeAssignment;
 
     // Cluster-specific roles
     bytes32 public constant CLUSTER_MANAGER_ROLE = keccak256("CLUSTER_MANAGER_ROLE");
 
-    // Production validation constants
-    uint256 public constant MAX_NODES_PER_CLUSTER = 100;
-    uint256 public constant MIN_NODES_PER_CLUSTER = 1;
-    uint256 public constant MAX_REGIONS_PER_CLUSTER = 10;
-    uint256 public constant MAX_NODES_PER_REGION = 50;
-
     // Cluster operation events
-    event ClusterRegistered(
-        string indexed clusterId,
-        address[] nodeAddresses,
-        uint8 strategy,
-        uint8 minActiveNodes,
-        bool autoManaged
-    );
-
     event ClusterStatusChanged(
         string indexed clusterId,
         uint8 indexed oldStatus,
@@ -54,16 +41,13 @@ contract ClusterLogic is BaseLogic {
     );
 
     event ClusterStorageUpdated(address indexed newClusterStorage);
+    event ClusterManagerUpdated(address indexed newClusterManager);
+    event ClusterBatchProcessorUpdated(address indexed newClusterBatchProcessor);
+    event ClusterNodeAssignmentUpdated(address indexed newClusterNodeAssignment);
 
     modifier clusterExists(string calldata clusterId) {
         require(address(clusterStorage) != address(0), "Cluster storage not set");
         require(clusterStorage.clusterExists(clusterId), "Cluster does not exist");
-        _;
-    }
-
-    modifier clusterNotExists(string calldata clusterId) {
-        require(address(clusterStorage) != address(0), "Cluster storage not set");
-        require(!clusterStorage.clusterExists(clusterId), "Cluster already exists");
         _;
     }
 
@@ -95,151 +79,39 @@ contract ClusterLogic is BaseLogic {
         emit ClusterStorageUpdated(_clusterStorage);
     }
 
-    // =============================================================================
-    // CLUSTER MANAGEMENT FUNCTIONS
-    // =============================================================================
-
     /**
-     * @dev Register a new cluster
-     * @param clusterId Unique identifier for the cluster
-     * @param nodeAddresses Array of node operator addresses in the cluster
-     * @param strategy Load balancing/routing strategy
-     * @param minActiveNodes Minimum number of active nodes required
-     * @param autoManaged Whether the cluster is automatically managed
+     * @dev Set the cluster manager contract for complex operations
+     * @param _clusterManager Address of the cluster manager contract
      */
-    /**
-     * @dev Register a new cluster with comprehensive production validation
-     */
-    function registerCluster(
-        string calldata clusterId,
-        address[] calldata nodeAddresses,
-        ClusterStorage.ClusterStrategy strategy,
-        uint8 minActiveNodes,
-        bool autoManaged
-    ) 
-        external 
-        whenNotPaused 
-        onlyRole(CLUSTER_MANAGER_ROLE) 
-        validClusterId(clusterId)
-        clusterNotExists(clusterId)
-        nonReentrant 
-        rateLimit("registerCluster", RateLimitingLibrary.MAX_CLUSTER_REGISTRATIONS_PER_HOUR, RateLimitingLibrary.HOUR_WINDOW)
-        circuitBreakerCheck("clusterRegistration")
-        emergencyPauseCheck("ClusterLogic") 
-    {
-        // === PRODUCTION VALIDATION ===
-        
-        // Validate cluster ID format
-        ValidationLibrary.validateId(clusterId);
-        
-        // Validate cluster size
-        ValidationLibrary.validateClusterSize(nodeAddresses.length);
-        
-        // Validate min active nodes
-        ValidationLibrary.validateRange(minActiveNodes, 1, nodeAddresses.length);
-        
-        // Validate all node addresses
-        ValidationLibrary.validateAddresses(nodeAddresses);
-        
-        // Check for duplicate addresses
-        for (uint256 i = 0; i < nodeAddresses.length; i++) {
-            for (uint256 j = i + 1; j < nodeAddresses.length; j++) {
-                ValidationLibrary.validateDifferentAddresses(nodeAddresses[i], nodeAddresses[j]);
-            }
-        }
-
-        // === BUSINESS LOGIC VALIDATION ===
-        require(address(nodeStorage) != address(0), "Node storage not set");
-        
-        string[] memory regions = new string[](nodeAddresses.length);
-        uint256 regionCount = 0;
-        
-        for (uint256 i = 0; i < nodeAddresses.length; i++) {
-            // Check if this address is registered as a node operator
-            string memory nodeId = addressToNodeId[nodeAddresses[i]];
-            if (bytes(nodeId).length > 0) {
-                // If we have a mapping, validate the node exists and is active
-                require(nodeStorage.doesNodeExist(nodeId), "Node does not exist");
-                
-                NodeStorage.NodeInfo memory nodeInfo = nodeStorage.getNodeInfo(nodeId);
-                require(
-                    nodeInfo.status == NodeStorage.NodeStatus.ACTIVE || 
-                    nodeInfo.status == NodeStorage.NodeStatus.LISTED,
-                    "Node is not active or listed"
-                );
-                
-                // Track regions for geographic distribution validation
-                string memory region = nodeToRegion[nodeId];
-                if (bytes(region).length > 0) {
-                    bool regionExists = false;
-                    for (uint256 j = 0; j < regionCount; j++) {
-                        if (keccak256(bytes(regions[j])) == keccak256(bytes(region))) {
-                            regionExists = true;
-                            break;
-                        }
-                    }
-                    if (!regionExists && regionCount < MAX_REGIONS_PER_CLUSTER) {
-                        regions[regionCount] = region;
-                        regionCount++;
-                    }
-                }
-            }
-            // Note: If no mapping exists, we still allow registration but recommend 
-            // using registerClusterFromNodeIds for better validation
-        }
-        
-        // Validate geographic distribution if we have region data
-        if (regionCount >= 2) {
-            string[] memory validRegions = new string[](regionCount);
-            for (uint256 i = 0; i < regionCount; i++) {
-                validRegions[i] = regions[i];
-            }
-            ValidationLibrary.validateGeographicDistribution(validRegions);
-        }
-
-        // Create cluster struct
-        ClusterStorage.NodeCluster memory cluster = ClusterStorage.NodeCluster({
-            clusterId: clusterId,
-            nodeAddresses: nodeAddresses,
-            strategy: uint8(strategy),
-            minActiveNodes: minActiveNodes,
-            status: uint8(ClusterStorage.ClusterStatus.INACTIVE), // Default to inactive
-            autoManaged: autoManaged,
-            createdAt: block.timestamp
-        });
-
-        // Store cluster via storage contract
-        clusterStorage.registerCluster(clusterId, cluster);
-
-        // Emit event with provided data
-        emit ClusterRegistered(clusterId, nodeAddresses, uint8(strategy), minActiveNodes, autoManaged);
+    function setClusterManager(address _clusterManager) external onlyRole(ADMIN_ROLE) {
+        require(_clusterManager != address(0), "Invalid cluster manager address");
+        clusterManager = ClusterManager(payable(_clusterManager));
+        emit ClusterManagerUpdated(_clusterManager);
     }
 
     /**
-     * @dev Update cluster status
-     * @param clusterId Cluster identifier
-     * @param newStatus New status for the cluster
+     * @dev Set the cluster batch processor contract for batch operations
+     * @param _clusterBatchProcessor Address of the cluster batch processor contract
      */
-    function updateStatus(
-        string calldata clusterId,
-        ClusterStorage.ClusterStatus newStatus
-    ) 
-        external 
-        whenNotPaused 
-        onlyRole(CLUSTER_MANAGER_ROLE) 
-        validClusterId(clusterId)
-        clusterExists(clusterId)
-        nonReentrant 
-    {
-        // Get current cluster info
-        ClusterStorage.NodeCluster memory currentCluster = clusterStorage.getCluster(clusterId);
-        uint8 oldStatus = currentCluster.status;
-
-        // Update status via storage contract
-        clusterStorage.updateClusterStatus(clusterId, uint8(newStatus));
-
-        emit ClusterStatusChanged(clusterId, oldStatus, uint8(newStatus));
+    function setClusterBatchProcessor(address _clusterBatchProcessor) external onlyRole(ADMIN_ROLE) {
+        require(_clusterBatchProcessor != address(0), "Invalid cluster batch processor address");
+        clusterBatchProcessor = ClusterBatchProcessor(payable(_clusterBatchProcessor));
+        emit ClusterBatchProcessorUpdated(_clusterBatchProcessor);
     }
+
+    /**
+     * @dev Set the cluster node assignment contract for node validation and assignment
+     * @param _clusterNodeAssignment Address of the cluster node assignment contract
+     */
+    function setClusterNodeAssignment(address _clusterNodeAssignment) external onlyRole(ADMIN_ROLE) {
+        require(_clusterNodeAssignment != address(0), "Invalid cluster node assignment address");
+        clusterNodeAssignment = ClusterNodeAssignment(payable(_clusterNodeAssignment));
+        emit ClusterNodeAssignmentUpdated(_clusterNodeAssignment);
+    }
+
+    // =============================================================================
+    // BASIC CLUSTER OPERATIONS
+    // =============================================================================
 
     /**
      * @dev Get cluster information
@@ -265,186 +137,11 @@ contract ClusterLogic is BaseLogic {
         return clusterStorage.clusterCount();
     }
 
-    // =============================================================================
-    // ADMIN FUNCTIONS
-    // =============================================================================
-
-    /**
-     * @dev Update cluster storage contract address
-     * @param newClusterStorage Address of the new cluster storage contract
-     */
-    function updateClusterStorage(address newClusterStorage) external onlyRole(ADMIN_ROLE) {
-        require(newClusterStorage != address(0), "Invalid storage contract address");
-        clusterStorage = ClusterStorage(newClusterStorage);
-        emit ClusterStorageUpdated(newClusterStorage);
-    }
-
-    // =============================================================================
-    // INTERNAL HELPER FUNCTIONS
-    // =============================================================================
-
-    /**
-     * @dev Validate nodes for cluster operations
-     * @param nodeIds Array of node identifiers to validate
-     * @return nodeAddresses Array of validated node addresses
-     */
-    function _validateNodes(string[] memory nodeIds) internal view returns (address[] memory nodeAddresses) {
-        require(address(nodeStorage) != address(0), "Node storage not set");
-        
-        nodeAddresses = new address[](nodeIds.length);
-        
-        for (uint256 i = 0; i < nodeIds.length; i++) {
-            string memory nodeId = nodeIds[i];
-            require(bytes(nodeId).length > 0, "Invalid nodeId");
-            
-            // Check if node exists in NodeStorage
-            require(nodeStorage.doesNodeExist(nodeId), "Node does not exist");
-            
-            // Get node information for validation
-            NodeStorage.NodeInfo memory nodeInfo = nodeStorage.getNodeInfo(nodeId);
-            
-            // Validate node status
-            require(
-                nodeInfo.status == NodeStorage.NodeStatus.ACTIVE || 
-                nodeInfo.status == NodeStorage.NodeStatus.LISTED,
-                "Node is not active or listed"
-            );
-            
-            // Validate node address
-            require(nodeInfo.nodeAddress != address(0), "Invalid node address");
-            require(nodeInfo.exists, "Node not properly registered");
-            
-            nodeAddresses[i] = nodeInfo.nodeAddress;
-        }
-    }
-
-    /**
-     * @dev Update node mappings for nodeId to address resolution
-     * @param nodeIds Array of node identifiers
-     */
-    function _updateNodeMappings(string[] memory nodeIds) internal {
-        for (uint256 i = 0; i < nodeIds.length; i++) {
-            string memory nodeId = nodeIds[i];
-            
-            // Get node information
-            NodeStorage.NodeInfo memory nodeInfo = nodeStorage.getNodeInfo(nodeId);
-            
-            // Update mapping for future reference
-            if (nodeIdToAddress[nodeId] == address(0)) {
-                nodeIdToAddress[nodeId] = nodeInfo.nodeAddress;
-                addressToNodeId[nodeInfo.nodeAddress] = nodeId;
-            }
-        }
-    }
-
-    /**
-     * @dev Override role check to provide custom error messages
-     */
-    function _checkRole(bytes32 role) internal view override {
-        if (role == CLUSTER_MANAGER_ROLE) {
-            require(hasRole(role, msg.sender), "Not authorized to update cluster status");
-        } else {
-            super._checkRole(role);
-        }
-    }
-
-    // =============================================================================
-    // MISSING BLOCKCHAIN SERVICE METHODS
-    // =============================================================================
-
-    /**
-     * @dev Register cluster with blockchain service interface (alternative signature)
-     */
-    /**
-     * @dev Register cluster from node IDs with comprehensive production validation
-     */
-    function registerClusterFromNodeIds(
-        string[] calldata nodeIds,
-        bytes32 /* clusterConfigHash */,
-        bytes32 /* metadataHash */
-    ) external whenNotPaused onlyRole(CLUSTER_MANAGER_ROLE) returns (string memory) {
-        // === PRODUCTION VALIDATION ===
-        
-        // Validate cluster size
-        ValidationLibrary.validateClusterSize(nodeIds.length);
-        
-        // Validate unique node IDs and format
-        ValidationLibrary.validateUniqueNodeIds(nodeIds);
-        
-        // Generate unique cluster ID with validation
-        string memory clusterId = string(abi.encodePacked("cluster_", block.timestamp, "_", block.number));
-        ValidationLibrary.validateId(clusterId);
-        require(!clusterStorage.clusterExists(clusterId), "Cluster ID collision");
-        
-        // === GEOGRAPHIC DISTRIBUTION VALIDATION ===
-        string[] memory regions = new string[](nodeIds.length);
-        uint256 regionCount = 0;
-        
-        // Collect regions from nodes for geographic validation
-        for (uint256 i = 0; i < nodeIds.length; i++) {
-            string memory region = nodeToRegion[nodeIds[i]];
-            if (bytes(region).length > 0) {
-                bool regionExists = false;
-                for (uint256 j = 0; j < regionCount; j++) {
-                    if (keccak256(bytes(regions[j])) == keccak256(bytes(region))) {
-                        regionExists = true;
-                        break;
-                    }
-                }
-                if (!regionExists && regionCount < MAX_REGIONS_PER_CLUSTER) {
-                    regions[regionCount] = region;
-                    regionCount++;
-                }
-            }
-        }
-        
-        // Validate geographic distribution if we have region data
-        if (regionCount >= 2) {
-            string[] memory validRegions = new string[](regionCount);
-            for (uint256 i = 0; i < regionCount; i++) {
-                validRegions[i] = regions[i];
-            }
-            ValidationLibrary.validateGeographicDistribution(validRegions);
-        }
-        
-        // Validate all nodes using comprehensive validation
-        address[] memory nodeAddresses = _validateNodes(nodeIds);
-
-        // Update node mappings for future reference
-        _updateNodeMappings(nodeIds);
-
-        // Calculate optimal minimum active nodes (at least 1, but recommend redundancy)
-        uint8 minActiveNodes = uint8(nodeIds.length > 1 ? 1 : 1);
-        if (nodeIds.length >= 3) {
-            minActiveNodes = uint8((nodeIds.length * 60) / 100); // 60% for redundancy
-        }
-
-        // Create and store cluster
-        ClusterStorage.NodeCluster memory cluster = ClusterStorage.NodeCluster({
-            clusterId: clusterId,
-            nodeAddresses: nodeAddresses,
-            strategy: uint8(ClusterStorage.ClusterStrategy.ROUND_ROBIN),
-            minActiveNodes: uint8(nodeIds.length > 1 ? 1 : 1),
-            status: uint8(ClusterStorage.ClusterStatus.ACTIVE),
-            autoManaged: true,
-            createdAt: block.timestamp
-        });
-        
-        clusterStorage.registerCluster(clusterId, cluster);
-
-        emit ClusterRegistered(
-            clusterId, 
-            nodeAddresses, 
-            uint8(ClusterStorage.ClusterStrategy.ROUND_ROBIN), 
-            uint8(nodeIds.length > 1 ? 1 : 1), 
-            true
-        );
-
-        return clusterId;
-    }
-
     /**
      * @dev Update cluster status with blockchain service interface
+     * @param clusterId Cluster identifier
+     * @param status New cluster status ("active", "inactive", "maintenance")
+     * @param healthScore Health score (0-100)
      */
     function updateClusterStatus(
         string calldata clusterId,
@@ -474,89 +171,60 @@ contract ClusterLogic is BaseLogic {
         
         emit ClusterStatusChanged(clusterId, oldStatus, uint8(newStatus));
     }
-    
+
     /**
      * @dev Get cluster health score
+     * @param clusterId Cluster identifier
+     * @return Health score (0-100)
      */
     function getClusterHealthScore(string calldata clusterId) external view returns (uint8) {
         return clusterStorage.getClusterHealthScore(clusterId);
     }
-    
+
     /**
      * @dev Get all cluster IDs
+     * @return Array of all cluster identifiers
      */
     function getAllClusterIds() external view returns (string[] memory) {
         return clusterStorage.getAllClusterIds();
     }
-    
-    /**
-     * @dev Validate nodes for cluster operations (public helper)
-     * @param nodeIds Array of node identifiers to validate
-     * @return validNodes Array of validated node IDs
-     * @return nodeAddresses Array of corresponding node addresses
-     */
-    function validateNodesForCluster(string[] calldata nodeIds) 
-        external 
-        view 
-        returns (string[] memory validNodes, address[] memory nodeAddresses) 
-    {
-        require(nodeIds.length > 0, "No nodes provided");
-        require(address(nodeStorage) != address(0), "Node storage not set");
-        
-        validNodes = new string[](nodeIds.length);
-        nodeAddresses = new address[](nodeIds.length);
-        uint256 validCount = 0;
-        
-        for (uint256 i = 0; i < nodeIds.length; i++) {
-            string calldata nodeId = nodeIds[i];
-            
-            // Basic validation
-            if (bytes(nodeId).length == 0) continue;
-            if (!nodeStorage.doesNodeExist(nodeId)) continue;
-            
-            NodeStorage.NodeInfo memory nodeInfo = nodeStorage.getNodeInfo(nodeId);
-            
-            // Check if node is available for clusters
-            if (nodeInfo.status != NodeStorage.NodeStatus.ACTIVE &&
-                nodeInfo.status != NodeStorage.NodeStatus.LISTED) continue;
-                
-            // Check valid registration
-            if (nodeInfo.nodeAddress == address(0) || !nodeInfo.exists) continue;
-            
-            validNodes[validCount] = nodeId;
-            nodeAddresses[validCount] = nodeInfo.nodeAddress;
-            validCount++;
-        }
-        
-        // Resize arrays to actual valid count
-        string[] memory finalValidNodes = new string[](validCount);
-        address[] memory finalNodeAddresses = new address[](validCount);
-        
-        for (uint256 i = 0; i < validCount; i++) {
-            finalValidNodes[i] = validNodes[i];
-            finalNodeAddresses[i] = nodeAddresses[i];
-        }
-        
-        return (finalValidNodes, finalNodeAddresses);
-    }
-    
-    /**
-     * @dev Set node mapping (for nodeId resolution)
-     */
-    function setNodeMapping(string calldata nodeId, address nodeAddress) external onlyRole(ADMIN_ROLE) {
-        require(bytes(nodeId).length > 0, "Invalid nodeId");
-        require(nodeAddress != address(0), "Invalid node address");
-        
-        nodeIdToAddress[nodeId] = nodeAddress;
-        addressToNodeId[nodeAddress] = nodeId;
-    }
 
     // =============================================================================
-    // BATCH OPERATIONS FOR GAS OPTIMIZATION
+    // CLUSTER MANAGER INTEGRATION (DELEGATION)
     // =============================================================================
 
     /**
-     * @dev Batch register multiple clusters for gas efficiency
+     * @dev Register a new cluster (delegates to ClusterManager)
+     */
+    function registerCluster(
+        string calldata clusterId,
+        address[] calldata nodeAddresses,
+        ClusterStorage.ClusterStrategy strategy,
+        uint8 minActiveNodes,
+        bool autoManaged
+    ) external whenNotPaused onlyRole(CLUSTER_MANAGER_ROLE) {
+        require(address(clusterManager) != address(0), "Cluster manager not set");
+        clusterManager.registerCluster(clusterId, nodeAddresses, strategy, minActiveNodes, autoManaged);
+    }
+
+    /**
+     * @dev Register cluster from node IDs (delegates to ClusterManager)
+     */
+    function registerClusterFromNodeIds(
+        string[] calldata nodeIds,
+        bytes32 clusterConfigHash,
+        bytes32 metadataHash
+    ) external whenNotPaused onlyRole(CLUSTER_MANAGER_ROLE) returns (string memory) {
+        require(address(clusterManager) != address(0), "Cluster manager not set");
+        return clusterManager.registerClusterFromNodeIds(nodeIds, clusterConfigHash, metadataHash);
+    }
+
+    // =============================================================================
+    // BATCH OPERATIONS (DELEGATION)
+    // =============================================================================
+
+    /**
+     * @dev Batch register multiple clusters (delegates to ClusterBatchProcessor)
      */
     function batchRegisterClusters(
         string[] calldata clusterIds,
@@ -564,292 +232,135 @@ contract ClusterLogic is BaseLogic {
         ClusterStorage.ClusterStrategy[] calldata strategies,
         uint8[] calldata minActiveNodes,
         bool[] calldata autoManaged
-    ) 
-        external 
-        whenNotPaused 
-        onlyRole(CLUSTER_MANAGER_ROLE) 
-        nonReentrant 
-        rateLimit("batchRegisterClusters", RateLimitingLibrary.MAX_CLUSTER_REGISTRATIONS_PER_HOUR, RateLimitingLibrary.HOUR_WINDOW)
-        circuitBreakerCheck("batchClusterRegistration")
-        emergencyPauseCheck("ClusterLogic")
-    {
-        uint256 batchSize = clusterIds.length;
-        
-        // Validate batch operation
-        GasOptimizationLibrary.validateBatchOperation(batchSize);
-        
-        // Validate all arrays have same length
-        require(
-            nodeAddresses.length == batchSize &&
-            strategies.length == batchSize &&
-            minActiveNodes.length == batchSize &&
-            autoManaged.length == batchSize,
-            "Array length mismatch"
-        );
-        
-        // Generate batch ID for tracking
-        uint256 batchId = GasOptimizationLibrary.generateBatchId(msg.sender, block.timestamp, batchSize);
-        
-        uint256 totalNodes = 0;
-        uint256 successfulRegistrations = 0;
-        
-        // Process each cluster in the batch
-        for (uint256 i = 0; i < batchSize; i++) {
-            try this._registerSingleCluster(
-                clusterIds[i],
-                nodeAddresses[i],
-                strategies[i],
-                minActiveNodes[i],
-                autoManaged[i]
-            ) {
-                successfulRegistrations++;
-                totalNodes += nodeAddresses[i].length;
-            } catch {
-                // Continue with next cluster on failure
-                // Individual failures are logged but don't stop batch
-                continue;
-            }
-        }
-        
-        // Emit batch completion event
-        emit GasOptimizationLibrary.BatchClusterRegistered(batchId, successfulRegistrations, totalNodes);
-        
-        // Revert if no clusters were successfully registered
-        require(successfulRegistrations > 0, "Batch registration failed completely");
+    ) external whenNotPaused onlyRole(CLUSTER_MANAGER_ROLE) {
+        require(address(clusterBatchProcessor) != address(0), "Cluster batch processor not set");
+        clusterBatchProcessor.batchRegisterClusters(clusterIds, nodeAddresses, strategies, minActiveNodes, autoManaged);
     }
 
     /**
-     * @dev Internal function for single cluster registration (used by batch operation)
-     */
-    function _registerSingleCluster(
-        string calldata clusterId,
-        address[] calldata nodeAddresses,
-        ClusterStorage.ClusterStrategy strategy,
-        uint8 minActiveNodes,
-        bool autoManaged
-    ) external {
-        // Only callable by this contract for batch operations
-        require(msg.sender == address(this), "Internal function only");
-        
-        // Reuse existing validation logic
-        _validateClusterRegistration(clusterId, nodeAddresses, strategy, minActiveNodes);
-        
-        // Register the cluster
-        _performClusterRegistration(clusterId, nodeAddresses, strategy, minActiveNodes, autoManaged);
-    }
-
-    /**
-     * @dev Batch get cluster information for gas efficiency
+     * @dev Batch get cluster information (delegates to ClusterBatchProcessor)
      */
     function batchGetClusters(string[] calldata clusterIds) 
         external 
         view 
-        returns (ClusterStorage.ClusterInfo[] memory clusters) 
+        returns (ClusterBatchProcessor.BatchQueryResult memory) 
     {
-        uint256 length = clusterIds.length;
-        GasOptimizationLibrary.checkArrayLength(length, 100); // Max 100 clusters per batch
-        
-        clusters = new ClusterStorage.ClusterInfo[](length);
-        
-        for (uint256 i = 0; i < length; i++) {
-            try clusterStorage.getCluster(clusterIds[i]) returns (ClusterStorage.NodeCluster memory cluster) {
-                // Convert NodeCluster to ClusterInfo
-                clusters[i] = ClusterStorage.ClusterInfo({
-                    clusterId: cluster.clusterId,
-                    nodeAddresses: cluster.nodeAddresses,
-                    status: ClusterStorage.ClusterStatus(cluster.status),
-                    strategy: ClusterStorage.ClusterStrategy(cluster.strategy),
-                    minActiveNodes: cluster.minActiveNodes,
-                    autoManaged: cluster.autoManaged,
-                    createdAt: uint64(cluster.createdAt),
-                    updatedAt: uint64(block.timestamp)
-                });
-            } catch {
-                // Return empty cluster info for non-existent clusters
-                clusters[i] = ClusterStorage.ClusterInfo({
-                    clusterId: "",
-                    nodeAddresses: new address[](0),
-                    status: ClusterStorage.ClusterStatus.INACTIVE,
-                    strategy: ClusterStorage.ClusterStrategy.LOAD_BALANCED,
-                    minActiveNodes: 0,
-                    autoManaged: false,
-                    createdAt: 0,
-                    updatedAt: 0
-                });
-            }
-        }
-    }
-
-    /**
-     * @dev Paginated query for all cluster IDs
-     */
-    function getAllClusterIdsPaginated(uint256 offset, uint256 limit)
-        external
-        rateLimit("getAllClusterIds", 50, 300) // Max 50 calls per 5 minutes
-        returns (
-            string[] memory clusterIds,
-            uint256 totalCount,
-            bool hasMore
-        )
-    {
-        string[] memory allClusterIds = clusterStorage.getAllClusterIds();
-        totalCount = allClusterIds.length;
-        
-        // Validate and adjust pagination parameters
-        uint256 adjustedLimit = GasOptimizationLibrary.validatePagination(offset, limit, totalCount);
-        
-        if (offset >= totalCount) {
-            return (new string[](0), totalCount, false);
-        }
-        
-        // Use gas-optimized array copying
-        clusterIds = GasOptimizationLibrary.copyArray(allClusterIds, offset, adjustedLimit);
-        hasMore = (offset + adjustedLimit) < totalCount;
-        
-        // Emit pagination event for off-chain indexing
-        emit GasOptimizationLibrary.PaginatedQuery(msg.sender, "getAllClusterIds", offset, adjustedLimit, totalCount);
-    }
-
-    /**
-     * @dev Get clusters by node address with pagination
-     */
-    function getClustersByNodePaginated(address nodeAddress, uint256 offset, uint256 limit)
-        external
-        rateLimit("getClustersByNode", 30, 300) // Max 30 calls per 5 minutes
-        returns (
-            string[] memory clusterIds,
-            uint256 totalCount,
-            bool hasMore
-        )
-    {
-        GasOptimizationLibrary.validateAddress(nodeAddress);
-        
-        // Get all cluster IDs first
-        string[] memory allClusterIds = clusterStorage.getAllClusterIds();
-        string[] memory nodeClusters = new string[](allClusterIds.length);
-        uint256 nodeClusterCount = 0;
-        
-        // Find clusters that contain this node
-        for (uint256 i = 0; i < allClusterIds.length; i++) {
-            try clusterStorage.getCluster(allClusterIds[i]) returns (ClusterStorage.NodeCluster memory cluster) {
-                // Check if node is in this cluster
-                for (uint256 j = 0; j < cluster.nodeAddresses.length; j++) {
-                    if (cluster.nodeAddresses[j] == nodeAddress) {
-                        nodeClusters[nodeClusterCount] = allClusterIds[i];
-                        nodeClusterCount++;
-                        break;
-                    }
-                }
-            } catch {
-                continue;
-            }
-        }
-        
-        // Resize array to actual count
-        string[] memory finalNodeClusters = new string[](nodeClusterCount);
-        for (uint256 i = 0; i < nodeClusterCount; i++) {
-            finalNodeClusters[i] = nodeClusters[i];
-        }
-        
-        totalCount = nodeClusterCount;
-        uint256 adjustedLimit = GasOptimizationLibrary.validatePagination(offset, limit, totalCount);
-        
-        if (offset >= totalCount) {
-            return (new string[](0), totalCount, false);
-        }
-        
-        clusterIds = GasOptimizationLibrary.copyArray(finalNodeClusters, offset, adjustedLimit);
-        hasMore = (offset + adjustedLimit) < totalCount;
-        
-        emit GasOptimizationLibrary.PaginatedQuery(msg.sender, "getClustersByNode", offset, adjustedLimit, totalCount);
+        require(address(clusterBatchProcessor) != address(0), "Cluster batch processor not set");
+        return clusterBatchProcessor.batchGetClusters(clusterIds);
     }
 
     // =============================================================================
-    // INTERNAL HELPER FUNCTIONS (EXTRACTED FOR REUSE)
+    // NODE ASSIGNMENT AND VALIDATION (DELEGATION)
     // =============================================================================
 
     /**
-     * @dev Validate cluster registration parameters (extracted for reuse)
+     * @dev Validate nodes for cluster operations (delegates to ClusterNodeAssignment)
      */
-    function _validateClusterRegistration(
-        string calldata clusterId,
-        address[] calldata nodeAddresses,
-        ClusterStorage.ClusterStrategy strategy,
-        uint8 minActiveNodes
-    ) internal view {
-        // Validate cluster ID format
-        ValidationLibrary.validateId(clusterId);
-        
-        // Validate cluster size
-        ValidationLibrary.validateClusterSize(nodeAddresses.length);
-        
-        // Validate node addresses
-        ValidationLibrary.validateAddresses(nodeAddresses);
-        
-        // Validate strategy
-        require(uint8(strategy) <= 3, "Invalid cluster strategy");
-        
-        // Validate minimum active nodes
-        require(minActiveNodes > 0 && minActiveNodes <= nodeAddresses.length, "Invalid min active nodes");
-        
-        // Check if cluster already exists
-        require(!clusterStorage.clusterExists(clusterId), "Cluster already exists");
+    function validateNodesForCluster(string[] calldata nodeIds) 
+        external 
+        view 
+        returns (string[] memory validNodes, address[] memory nodeAddresses) 
+    {
+        require(address(clusterNodeAssignment) != address(0), "Cluster node assignment not set");
+        return clusterNodeAssignment.validateNodesForCluster(nodeIds);
     }
 
     /**
-     * @dev Perform cluster registration (extracted for reuse)
+     * @dev Batch validate nodes with detailed results (delegates to ClusterNodeAssignment)
      */
-    function _performClusterRegistration(
-        string calldata clusterId,
-        address[] calldata nodeAddresses,
-        ClusterStorage.ClusterStrategy strategy,
-        uint8 minActiveNodes,
-        bool autoManaged
-    ) internal {
-        // Validate geographic distribution (simplified for batch efficiency)
-        // require(_validateGeographicDistribution(nodeAddresses), "Geographic distribution failed");
-        
-        // Create cluster info (needs to be NodeCluster for registerCluster function)
-        ClusterStorage.NodeCluster memory clusterInfo = ClusterStorage.NodeCluster({
-            clusterId: clusterId,
-            nodeAddresses: nodeAddresses,
-            strategy: uint8(strategy),
-            minActiveNodes: minActiveNodes,
-            status: uint8(ClusterStorage.ClusterStatus.ACTIVE),
-            autoManaged: autoManaged,
-            createdAt: block.timestamp
-        });
-        
-        // Store cluster
-        clusterStorage.registerCluster(clusterId, clusterInfo);
-        
-        // Update node mappings for efficiency
-        for (uint256 i = 0; i < nodeAddresses.length; i++) {
-            if (bytes(addressToNodeId[nodeAddresses[i]]).length == 0) {
-                string memory nodeId = string(abi.encodePacked("node_", _addressToString(nodeAddresses[i])));
-                nodeIdToAddress[nodeId] = nodeAddresses[i];
-                addressToNodeId[nodeAddresses[i]] = nodeId;
-            }
-        }
-        
-        // Emit individual cluster registered event
-        emit ClusterRegistered(clusterId, nodeAddresses, uint8(strategy), minActiveNodes, autoManaged);
+    function batchValidateNodes(string[] calldata nodeIds) 
+        external 
+        view 
+        returns (ClusterNodeAssignment.BatchValidationResult memory) 
+    {
+        require(address(clusterNodeAssignment) != address(0), "Cluster node assignment not set");
+        return clusterNodeAssignment.batchValidateNodes(nodeIds);
     }
 
     /**
-     * @dev Convert address to string for node ID generation
+     * @dev Set node mapping (delegates to ClusterNodeAssignment)
      */
-    function _addressToString(address addr) internal pure returns (string memory) {
-        bytes32 value = bytes32(uint256(uint160(addr)));
-        bytes memory alphabet = "0123456789abcdef";
-        bytes memory str = new bytes(42);
-        str[0] = '0';
-        str[1] = 'x';
-        for (uint256 i = 0; i < 20; i++) {
-            str[2 + i * 2] = alphabet[uint8(value[i + 12] >> 4)];
-            str[3 + i * 2] = alphabet[uint8(value[i + 12] & 0x0f)];
+    function setNodeMapping(string calldata nodeId, address nodeAddress) external onlyRole(ADMIN_ROLE) {
+        require(address(clusterNodeAssignment) != address(0), "Cluster node assignment not set");
+        clusterNodeAssignment.setNodeMapping(nodeId, nodeAddress);
+    }
+
+    /**
+     * @dev Get node address from node ID (delegates to ClusterNodeAssignment)
+     */
+    function getNodeAddress(string calldata nodeId) external view returns (address nodeAddress) {
+        if (address(clusterNodeAssignment) != address(0)) {
+            return clusterNodeAssignment.getNodeAddress(nodeId);
         }
-        return string(str);
+        if (address(clusterManager) != address(0)) {
+            return clusterManager.getNodeAddress(nodeId);
+        }
+        return address(0);
+    }
+
+    /**
+     * @dev Get node ID from address (delegates to ClusterNodeAssignment)
+     */
+    function getNodeId(address nodeAddress) external view returns (string memory nodeId) {
+        if (address(clusterNodeAssignment) != address(0)) {
+            return clusterNodeAssignment.getNodeId(nodeAddress);
+        }
+        if (address(clusterManager) != address(0)) {
+            return clusterManager.getNodeId(nodeAddress);
+        }
+        return "";
+    }
+
+    // =============================================================================
+    // GEOGRAPHIC MANAGEMENT (DELEGATION)
+    // =============================================================================
+
+    /**
+     * @dev Set node region mapping (delegates to ClusterManager)
+     */
+    function setNodeRegion(string calldata nodeId, string calldata region) 
+        external 
+        onlyRole(CLUSTER_MANAGER_ROLE) 
+    {
+        require(address(clusterManager) != address(0), "Cluster manager not set");
+        clusterManager.setNodeRegion(nodeId, region);
+    }
+
+    /**
+     * @dev Get node region mapping (delegates to ClusterManager)
+     */
+    function getNodeRegion(string calldata nodeId) external view returns (string memory region) {
+        require(address(clusterManager) != address(0), "Cluster manager not set");
+        return clusterManager.getNodeRegion(nodeId);
+    }
+
+    // =============================================================================
+    // ADMINISTRATIVE FUNCTIONS
+    // =============================================================================
+
+    /**
+     * @dev Update cluster storage contract address
+     * @param newClusterStorage Address of the new cluster storage contract
+     */
+    function updateClusterStorage(address newClusterStorage) external onlyRole(ADMIN_ROLE) {
+        require(newClusterStorage != address(0), "Invalid storage contract address");
+        clusterStorage = ClusterStorage(newClusterStorage);
+        emit ClusterStorageUpdated(newClusterStorage);
+    }
+
+    // =============================================================================
+    // ACCESS CONTROL
+    // =============================================================================
+
+    /**
+     * @dev Override role check to provide custom error messages
+     */
+    function _checkRole(bytes32 role) internal view override {
+        if (role == CLUSTER_MANAGER_ROLE) {
+            require(hasRole(role, msg.sender), "Not authorized to manage clusters");
+        } else {
+            super._checkRole(role);
+        }
     }
 
     /**
