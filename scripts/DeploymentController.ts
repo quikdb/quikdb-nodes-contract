@@ -3,11 +3,7 @@
 /**
  * @title DeploymentController
  * @notice TypeScript controller for QuikDB simplified contract deployment
- * @dev Manage    writeFileSync(addressesFile, JSON.stringify(simpleAddresses, null, 2));
-    console.log(`   ✅ addresses.json`);
-
-    console.log(`📁 All deployment files saved to deployments/ directory`);
-  }ent across different networks with simplified architecture
+ * @dev Manages running the forge script and saving resulting addresses
  */
 
 import { exec } from 'child_process';
@@ -150,10 +146,6 @@ class DeploymentController {
     console.log(`   ✅ addresses.json`);
 
     console.log(`📁 All deployment files saved to deployments/ directory`);
-    writeFileSync(addressesFile, JSON.stringify(simpleAddresses, null, 2));
-    console.log(`   ✅ addresses.json`);
-
-    console.log(`� All deployment files saved to deployments/ directory`);
   }
 }
 
