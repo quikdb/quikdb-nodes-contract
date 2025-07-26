@@ -50,10 +50,6 @@ class DeploymentController {
       if (this.config.rpcUrl) {
         command += ` --rpc-url ${this.config.rpcUrl}`;
       }
-      
-      if (this.config.verify) {
-        command += ` --verify`;
-      }
 
       console.log('📦 Executing deployment...');
       const { stdout, stderr } = await execAsync(command);
