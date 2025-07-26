@@ -1,21 +1,29 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Pausable.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/utils/PausableUpgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/utils/ReentrancyGuardUpgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
 
 /**
  * @title UserNodeRegistry
- * @notice Unified contract for managing users, nodes, and applications in QuikDB
- * @dev Simplified architecture that consolidates all core functionality into a single contract
+ * @notice Unified upgradeable contract for managing users, nodes, and applications in QuikDB
+ * @dev Simplified architecture that consolidates all core functionality into a single upgradeable contract
  *      - User registration and profile management
  *      - Node registration and metadata
  *      - Application deployment tracking
  *      - Performance metrics
  *      - Batch operations for gas efficiency
+ *      - UUPS upgradeable pattern for future improvements
  */
-contract UserNodeRegistry is Ownable, Pausable, ReentrancyGuard {
+contract UserNodeRegistry is 
+    Initializable,
+    OwnableUpgradeable, 
+    PausableUpgradeable, 
+    ReentrancyGuardUpgradeable,
+    UUPSUpgradeable {
 
     // ═══════════════════════════════════════════════════════════════
     // STRUCTS & ENUMS
@@ -112,10 +120,27 @@ contract UserNodeRegistry is Ownable, Pausable, ReentrancyGuard {
     event ApplicationStatusUpdated(bytes32 indexed appHash, AppStatus oldStatus, AppStatus newStatus);
 
     // ═══════════════════════════════════════════════════════════════
-    // CONSTRUCTOR
+    // CONSTRUCTOR & INITIALIZER
     // ═══════════════════════════════════════════════════════════════
 
-    constructor(address initialOwner) Ownable(initialOwner) {
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    /**
+     * @notice Initialize the UserNodeRegistry (replaces constructor for upgradeable)
+     * @param initialOwner Address that will have owner privileges
+     */
+    function initialize(address initialOwner) public initializer {
+        require(initialOwner != address(0), "Owner cannot be zero address");
+        
+        // Initialize parent contracts
+        __Ownable_init(initialOwner);
+        __Pausable_init();
+        __ReentrancyGuard_init();
+        __UUPSUpgradeable_init();
+        
         // Initialize counters
         totalUsers = 0;
         totalNodes = 0;
@@ -576,5 +601,23 @@ contract UserNodeRegistry is Ownable, Pausable, ReentrancyGuard {
             // ERC20 token withdrawal would go here
             // IERC20(token).transfer(owner(), amount);
         }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // UPGRADE FUNCTIONALITY
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * @notice Authorization for UUPS upgrades (owner only)
+     * @param newImplementation Address of the new implementation
+     */
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
+
+    /**
+     * @notice Returns the current implementation version
+     * @return Version string
+     */
+    function version() external pure returns (string memory) {
+        return "1.0.0";
     }
 }

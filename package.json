@@ -13,8 +13,8 @@
     "deploy:local": "tsx scripts/DeploymentController.ts local",
     "deploy:lsk:testnet": "RPC_URL=https://rpc.sepolia-api.lisk.com tsx scripts/DeploymentController.ts lisk-sepolia",
     "deploy:lsk:mainnet": "RPC_URL=https://rpc.api.lisk.com tsx scripts/DeploymentController.ts lisk-mainnet",
-    "copy-deployments": "tsx scripts/copy-deployments.ts",
-    "validate-contracts": "tsx scripts/validate-contracts.ts"
+    "validate-contracts": "tsx scripts/validate-contracts.ts",
+    "validate-deployment": "tsx scripts/validateDeployment.ts"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

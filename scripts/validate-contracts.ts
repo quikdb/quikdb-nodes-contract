@@ -1,31 +1,29 @@
 #!/usr/bin/env tsx
 import { ethers } from 'ethers';
-
-// Import the contracts utility
-const contractsPath = '../../quikdb-apis/libs/core/src/contracts';
+import { readFileSync, existsSync } from 'fs';
+import { join } from 'path';
 
 async function validateContracts() {
-  console.log('🔍 Validating contract deployments...');
+  console.log('🔍 Validating simplified QuikDB contract deployments...');
   
   try {
-    // Import the contracts module
-    const { getContractAddresses, getNetworkContracts, NETWORKS } = await import(contractsPath);
+    // Load deployment addresses from local files
+    const deploymentsDir = join(process.cwd(), 'deployments');
+    const addressesFile = join(deploymentsDir, 'addresses.json');
     
-    // Get contract addresses
-    const addresses = getContractAddresses('LISK_SEPOLIA');
+    if (!existsSync(addressesFile)) {
+      throw new Error('Deployment addresses file not found. Please run deployment first.');
+    }
+    
+    const addresses = JSON.parse(readFileSync(addressesFile, 'utf8'));
     console.log('✅ Contract addresses loaded successfully');
     
-    // Verify all expected contracts are present
+    // Verify all expected contracts are present (simplified architecture)
     const expectedContracts = [
-      'nodeLogic',
-      'userLogic', 
-      'resourceLogic',
-      'rewardsLogic',
-      'applicationLogic',
-      'storageAllocatorLogic',
-      'clusterLogic',
-      'performanceLogic',
-      'facade'
+      'UserNodeRegistry',
+      'UserNodeRegistryImpl',
+      'QuiksToken',
+      'QuiksTokenImpl'
     ];
     
     console.log('\n📋 Contract Addresses:');
@@ -37,25 +35,35 @@ async function validateContracts() {
       }
     }
     
-    // Test contract instantiation with a provider
-    const provider = new ethers.JsonRpcProvider(NETWORKS.LISK_SEPOLIA.rpc);
-    const contracts = getNetworkContracts('LISK_SEPOLIA', provider);
+    // Test contract validation with basic checks
+    console.log('\n🔗 Contract Validation:');
     
-    console.log('\n🔗 Contract Instances:');
+    // Check if addresses are valid Ethereum addresses
     for (const contract of expectedContracts) {
-      if (contracts[contract]) {
-        console.log(`  ✅ ${contract}: Instance created successfully`);
-      } else {
-        console.log(`  ❌ ${contract}: Failed to create instance`);
+      if (addresses[contract]) {
+        const address = addresses[contract];
+        if (ethers.isAddress(address)) {
+          console.log(`  ✅ ${contract}: Valid address format`);
+        } else {
+          console.log(`  ❌ ${contract}: Invalid address format`);
+        }
       }
     }
     
-    console.log('\n✅ All contracts validated successfully!');
+    console.log('\n✅ Simplified QuikDB contracts validated successfully!');
     console.log('\n📊 Summary:');
     console.log(`  Total contracts: ${expectedContracts.length}`);
     console.log(`  Successfully loaded: ${expectedContracts.filter(c => addresses[c]).length}`);
-    console.log(`  Network: ${NETWORKS.LISK_SEPOLIA.name}`);
-    console.log(`  Chain ID: ${NETWORKS.LISK_SEPOLIA.chainId}`);
+    console.log(`  Architecture: Simplified (Owner-only access control)`);
+    console.log(`  Contracts: UserNodeRegistry + QuiksToken (Both UUPS Proxies)`);
+    
+    // Show additional deployment info if available
+    const latestFile = join(deploymentsDir, 'latest.json');
+    if (existsSync(latestFile)) {
+      const deploymentInfo = JSON.parse(readFileSync(latestFile, 'utf8'));
+      console.log(`  Network: ${deploymentInfo.network || 'Unknown'}`);
+      console.log(`  Deployed: ${deploymentInfo.deployedAt || 'Unknown'}`);
+    }
     
   } catch (error) {
     console.error('❌ Validation failed:', (error as Error).message);

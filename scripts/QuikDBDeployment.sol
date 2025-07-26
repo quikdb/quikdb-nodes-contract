@@ -18,14 +18,25 @@ contract QuikDBDeployment is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
         
-        // Deploy UserNodeRegistry
-        UserNodeRegistry nodeRegistry = new UserNodeRegistry{salt: SALT}(msg.sender);
+        // Deploy UserNodeRegistry implementation
+        UserNodeRegistry registryImpl = new UserNodeRegistry{salt: SALT}();
+        
+        // Deploy proxy for UserNodeRegistry
+        bytes memory registryInitData = abi.encodeWithSelector(
+            UserNodeRegistry.initialize.selector,
+            msg.sender // deployer becomes owner
+        );
+        
+        ERC1967Proxy registryProxy = new ERC1967Proxy{salt: SALT}(
+            address(registryImpl),
+            registryInitData
+        );
         
         // Deploy QuiksToken implementation
         QuiksToken tokenImpl = new QuiksToken{salt: SALT}();
         
         // Deploy proxy for QuiksToken
-        bytes memory initData = abi.encodeWithSelector(
+        bytes memory tokenInitData = abi.encodeWithSelector(
             QuiksToken.initialize.selector,
             "QuikDB Token",
             "QUIKS",
@@ -35,13 +46,14 @@ contract QuikDBDeployment is Script {
         
         ERC1967Proxy tokenProxy = new ERC1967Proxy{salt: SALT}(
             address(tokenImpl),
-            initData
+            tokenInitData
         );
         
         vm.stopBroadcast();
         
         // Output addresses for CLI consumption
-        console.log("UserNodeRegistry:", address(nodeRegistry));
+        console.log("UserNodeRegistry:", address(registryProxy));
+        console.log("UserNodeRegistryImpl:", address(registryImpl));
         console.log("QuiksToken:", address(tokenProxy));
         console.log("QuiksTokenImpl:", address(tokenImpl));
     }

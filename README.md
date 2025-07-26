@@ -1,269 +1,174 @@
-## Foundry
+# QuikDB Simplified Smart Contract Architecture
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+## Overview
 
-Foundry consists of:
+This repository contains the simplified QuikDB smart contract architecture with only two core contracts:
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+- **UserNodeRegistry.sol** - Unified contract for managing users, nodes, and applications
+- **QuiksToken.sol** - Official QuikDB network utility token (QUIKS) with owner-only access control
 
-## Documentation
+## Key Simplifications
 
-https://book.getfoundry.sh/
+### 🔒 Auth Model
+- **Removed**: Complex role-based access control (RBAC) with multiple roles
+- **Added**: Simple owner-only access control using OpenZeppelin's `Ownable`
+- **Result**: Only the deployer can perform admin functions (minting, upgrades)
+
+### 🏗️ Architecture
+- **Removed**: Complex multi-contract system with storage/logic separation
+- **Added**: Unified contracts with all functionality in single files
+- **Result**: Reduced gas costs and simplified interactions
+
+### 🪙 Token Features
+- **Removed**: Role-based minting, pausing functionality, complex permissions
+- **Added**: Owner-only minting, simple upgradeable token
+- **Result**: Secure but simple token management
+
+## Contracts
+
+### UserNodeRegistry.sol
+```solidity
+contract UserNodeRegistry is Ownable, Pausable, ReentrancyGuard
+```
+- User registration and profile management
+- Node registration and metadata
+- Application deployment tracking
+- Performance metrics
+- Owner-only administrative functions
+
+### QuiksToken.sol
+```solidity
+contract QuiksToken is 
+    ERC20Upgradeable, 
+    ERC20BurnableUpgradeable, 
+    ERC20PermitUpgradeable, 
+    OwnableUpgradeable,
+    UUPSUpgradeable
+```
+- ERC-20 token with 18 decimals
+- Owner-only minting capability
+- Burnable tokens for deflationary mechanisms
+- EIP-2612 permit functionality for gasless approvals
+- UUPS upgradeable pattern for future improvements
+
+## Deployment
+
+### Quick Start
+```bash
+# Install dependencies
+yarn install
+
+# Compile contracts
+yarn build
+
+# Deploy locally (dry run)
+yarn deploy
+
+# Deploy to Lisk Sepolia
+yarn deploy:lsk:testnet
+
+# Deploy to Lisk Mainnet
+yarn deploy:lsk:mainnet
+```
+
+### Environment Variables
+```bash
+PRIVATE_KEY=your_private_key_here
+RPC_URL=https://rpc.sepolia-api.lisk.com  # for testnet
+```
+
+### Deployment Files
+After deployment, contract addresses are saved to:
+- `deployments/{network}.json` - Full deployment info
+- `deployments/latest.json` - Latest deployment (CLI compatibility)
+- `deployments/addresses.json` - Simple address mapping
 
 ## Usage
 
-### Build
+### Token Operations (Owner Only)
+```solidity
+// Mint tokens to an address
+function mint(address to, uint256 amount) external onlyOwner
 
-```shell
-yarn build
+// Upgrade the token implementation
+function upgradeToAndCall(address newImplementation, bytes calldata data) external onlyOwner
 ```
 
-### Test
+### Registry Operations (Owner Only)
+```solidity
+// Pause/unpause the registry
+function pause() external onlyOwner
+function unpause() external onlyOwner
 
-```shell
+// Emergency functions available to owner
+```
+
+## Security Model
+
+### Access Control
+- **Owner**: Deployer address with full administrative privileges
+- **Users**: Can interact with public functions (transfers, registrations)
+- **No Roles**: Simplified permission model without complex role management
+
+### Upgrade Safety
+- QuiksToken uses UUPS proxy pattern
+- Only owner can authorize upgrades
+- UserNodeRegistry is not upgradeable (deploy new version if needed)
+
+## Gas Efficiency
+
+### Optimizations
+- Single contract architecture reduces cross-contract calls
+- Removed complex role checks and modifiers
+- Simplified storage patterns
+- Batch operations where possible
+
+### Estimated Gas Costs
+- Token mint: ~50,000 gas
+- User registration: ~80,000 gas
+- Node registration: ~120,000 gas
+
+## CLI Integration
+
+The deployment creates files compatible with the QuikDB CLI:
+
+```json
+{
+  "UserNodeRegistry": "0x...",
+  "QuiksToken": "0x...",
+  "QuiksTokenImpl": "0x..."
+}
+```
+
+## Development
+
+### Testing
+```bash
+# Run contract tests
 yarn test
-```
 
-### Format
-
-```shell
-yarn format
-```
-
-### Clean
-
-```shell
-yarn clean
-```
-
-### Gas Snapshots
-
-```shell
+# Generate gas snapshot
 yarn snapshot
 ```
 
-## QuikDB Deployment & Validation
-
-### Prerequisites
-
-```shell
-yarn install
+### Verification
+```bash
+# Verify contracts on Etherscan/Blockscout
+yarn deploy:lsk:testnet  # includes --verify flag
 ```
 
-Create a `.env` file with your deployment configuration:
-```shell
-PRIVATE_KEY=your_private_key_here
-RPC_URL=https://rpc.sepolia-api.lisk.com  # For Lisk Sepolia testnet
-```
+## Migration from Complex Architecture
 
-### Deployment Scripts
+If migrating from the previous complex architecture:
 
-Deploy QuikDB smart contracts using the modern TypeScript deployment controller with **CREATE2 deterministic addresses**:
+1. **No Data Migration**: Since this is a simplified deployment, no existing data needs to be migrated
+2. **Address Updates**: Update CLI and frontend to use new contract addresses
+3. **Permission Updates**: Remove role-based access code, use owner-only patterns
+4. **Integration Updates**: Simplify contract interactions to use unified contracts
 
-#### Lisk Testnet Deployment
-```shell
-yarn deploy:lsk:testnet       # Deploy to Lisk Sepolia testnet
-```
+## Support
 
-#### Lisk Mainnet Deployment  
-```shell
-yarn deploy:lsk:mainnet       # Deploy to Lisk mainnet
-```
-
-#### Local/Simulation Deployment
-```shell
-yarn deploy:complete          # Local simulation (no broadcast)
-```
-
-### 🔒 Deterministic Addresses (CREATE2)
-
-All contracts are deployed using **CREATE2** with a fixed salt (`keccak256("QuikDB.v1.2025")`), ensuring:
-- ✅ **Same addresses across all networks** (testnet, mainnet, etc.)
-- ✅ **Predictable addresses** before deployment
-- ✅ **Easy integration** for frontend/SDK (hardcode addresses)
-- ✅ **Multi-chain compatibility** for future expansion
-
-### CREATE2 Deterministic Deployment
-
-QuikDB uses CREATE2 for deterministic contract addresses, providing:
-
-**🎯 Predictable Addresses:**
-- Same contract addresses across all networks (testnet/mainnet)
-- Addresses can be calculated before deployment
-- Simplified multi-chain integration
-
-**🔧 Developer Benefits:**
-- Frontend/SDK can use hardcoded addresses
-- No need to update addresses between networks
-- Easier testing and validation workflows
-
-**🌐 Multi-Chain Ready:**
-- Deploy to any EVM-compatible network with identical addresses
-- Consistent addresses enable seamless cross-chain operations
-- Professional deployment standard
-
-**Salt Used:** `keccak256("QuikDB.v1.2025")`
-
-### Validation Scripts
-
-After deployment, validate the contracts are working correctly:
-
-#### Lisk Testnet Validation
-```shell
-yarn validate:lsk:testnet     # Validate deployment on Lisk Sepolia
-```
-
-#### Lisk Mainnet Validation
-```shell
-yarn validate:lsk:mainnet     # Validate deployment on Lisk mainnet
-```
-
-#### Generic Validation
-```shell
-yarn validate                 # Shows available validation options
-```
-
-### Deployment Output
-
-All deployments automatically:
-- ✅ Save contract addresses to `deployments/addresses.json` (historical record)
-- ✅ Save latest deployment to `deployments/latest.json` (current deployment)
-- ✅ Create deployment logs with full transaction details
-- ✅ Show deployment summary with all contract addresses
-- ✅ Configure access control and proxy setup
-- ✅ Provide blockchain explorer links for verification
-
-### Validation Features
-
-The validation script performs comprehensive testing:
-- ✅ **Contract Connectivity** - Verifies all contracts are responsive
-- ✅ **Node Operations** - Tests node registration, status updates, and listing
-- ✅ **User Operations** - Tests user registration and profile management
-- ✅ **Facade Operations** - Tests main contract interface and delegation
-- ✅ **Access Control** - Verifies role-based permissions
-- ✅ **Data Integrity** - Checks cross-contract consistency
-- ✅ **Cleanup & Safety** - Handles existing test data gracefully
-- ✅ **Blockchain Explorer Links** - Provides verification links for all contracts
-
-### Upgrade Features
-
-The upgrade system provides seamless contract updates:
-- ✅ **Proxy Addresses Preserved** - Users continue using the same addresses
-- ✅ **Data Integrity** - All storage contracts and data remain unchanged
-- ✅ **Zero Downtime** - Upgrades happen atomically
-- ✅ **Version Tracking** - All upgrades are logged in `deployments/upgrades.json`
-- ✅ **Rollback Support** - Previous implementations can be restored if needed
-- ✅ **CREATE2 New Implementations** - Deterministic addresses for new logic contracts
-
-**Upgrade Process:**
-1. Deploy new implementation contracts with incremented salt
-2. Upgrade all proxies to point to new implementations
-3. Verify upgrades completed successfully
-4. Update deployment records with new implementation addresses
-
-**What gets upgraded:** Logic contracts (NodeLogic, UserLogic, ResourceLogic, Facade)
-**What stays the same:** Proxy addresses, storage contracts, all user data
-
-### Blockchain Explorer Integration
-
-After deployment and validation, you'll receive direct links to verify contracts on:
-- **Lisk Sepolia**: https://sepolia-blockscout.lisk.com
-- **Lisk Mainnet**: https://blockscout.lisk.com
-
-Links include:
-- All deployed contract addresses
-- Deployer address with transaction history
-- Test data for validation verification
-
-### Main Contract Addresses
-
-After deployment, use the **proxy addresses** for your applications:
-- **QuikFacade Proxy** - Main entry point for the QuikDB system
-- **QuikNodeLogic Proxy** - Node management interface
-- **QuikUserLogic Proxy** - User management interface  
-- **QuikResourceLogic Proxy** - Resource management interface
-
-See `deployments/latest.json` for the complete list of deployed contract addresses.
-
-### Help
-
-```shell
-yarn --help           # Yarn commands
-forge --help          # Forge-specific options (advanced usage)
-anvil --help          # Local node options
-cast --help           # Ethereum interaction tool
-```
-
-### Available Yarn Scripts
-
-View all available scripts:
-```shell
-yarn run
-```
-
-Key scripts include:
-- `yarn build` - Compile contracts
-- `yarn test` - Run tests
-- `yarn deploy:lsk:testnet` - Deploy to Lisk Sepolia testnet
-- `yarn deploy:lsk:mainnet` - Deploy to Lisk mainnet
-- `yarn deploy:complete` - Local deployment simulation
-- `yarn upgrade:lsk:testnet` - Upgrade Lisk Sepolia deployment
-- `yarn upgrade:lsk:mainnet` - Upgrade Lisk mainnet deployment
-- `yarn validate:lsk:testnet` - Validate Lisk Sepolia deployment
-- `yarn validate:lsk:mainnet` - Validate Lisk mainnet deployment
-
-### Architecture
-
-The QuikDB system uses a modern proxy-based architecture:
-
-**Storage Layer:**
-- `NodeStorage` - Node data and metadata
-- `UserStorage` - User profiles and authentication
-- `ResourceStorage` - Resource allocation tracking
-
-**Logic Layer (Upgradeable Proxies):**
-- `NodeLogic` - Node management operations
-- `UserLogic` - User management operations  
-- `ResourceLogic` - Resource management operations
-- `Facade` - Main entry point and unified interface
-
-**Infrastructure:**
-- `ProxyAdmin` - Proxy upgrade management
-- **CREATE2 deterministic deployment** - Same addresses across networks
-- Direct, reliable deployment with TypeScript controller
-- Comprehensive validation with real contract operations
-
-### CREATE2 Salt Configuration
-
-The deployment uses a fixed salt: `keccak256("QuikDB.v1.2025")` for:
-- Storage contracts (NodeStorage, UserStorage, ResourceStorage)
-- Logic implementations (NodeLogic, UserLogic, ResourceLogic, Facade)
-- ProxyAdmin
-
-Proxy contracts use derived salts to avoid collisions:
-- `keccak256(abi.encodePacked(SALT, "NodeLogicProxy"))`
-- `keccak256(abi.encodePacked(SALT, "UserLogicProxy"))`
-- `keccak256(abi.encodePacked(SALT, "ResourceLogicProxy"))`
-- `keccak256(abi.encodePacked(SALT, "FacadeProxy"))`
-
-### Upgrade Scripts
-
-Upgrade QuikDB logic contracts while preserving proxy addresses:
-
-#### Lisk Testnet Upgrade
-```shell
-yarn upgrade:lsk:testnet      # Upgrade logic contracts on Lisk Sepolia
-```
-
-#### Lisk Mainnet Upgrade
-```shell
-yarn upgrade:lsk:mainnet      # Upgrade logic contracts on Lisk mainnet
-```
-
-#### Local/Simulation Upgrade
-```shell
-yarn upgrade                  # Local upgrade simulation (no broadcast)
-```
+For questions about the simplified architecture:
+- Check the contract documentation in `src/`
+- Review deployment scripts in `scripts/`
+- Examine test files for usage examples

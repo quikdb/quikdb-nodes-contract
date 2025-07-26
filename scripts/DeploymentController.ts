@@ -1,67 +1,83 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env tsx
 
-import { execSync } from 'child_process';
-import { writeFileSync } from 'fs';
-import { resolve } from 'path';
+/**
+ * @title DeploymentController
+ * @notice TypeScript controller for QuikDB simplified contract deployment
+ * @dev Manages deployment across different networks with simplified architecture
+ */
 
-interface DeploymentAddresses {
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import { writeFileSync, existsSync, mkdirSync } from 'fs';
+import { join } from 'path';
+
+const execAsync = promisify(exec);
+
+interface DeploymentConfig {
+  network: string;
+  rpcUrl?: string;
+  privateKey: string;
+  verify?: boolean;
+}
+
+interface DeployedAddresses {
   UserNodeRegistry: string;
+  UserNodeRegistryImpl: string;
   QuiksToken: string;
   QuiksTokenImpl: string;
+  deployedAt: string;
+  deployer: string;
+  network: string;
 }
 
 class DeploymentController {
-  private networkName: string;
-  private deploymentDirectory: string;
+  private config: DeploymentConfig;
 
-  constructor(networkName: string = 'local') {
-    this.networkName = networkName;
-    this.deploymentDirectory = resolve(__dirname, '../deployments');
+  constructor(config: DeploymentConfig) {
+    this.config = config;
   }
 
   /**
-   * Deploy QuikDB contracts using Forge
+   * Execute the deployment
    */
-  public async deploy(rpcUrl?: string, privateKey?: string): Promise<DeploymentAddresses> {
-    console.log(`🚀 Deploying QuikDB contracts to ${this.networkName}...`);
-
-    // Build the forge command
-    let forgeCommand = 'forge script scripts/QuikDBDeployment.sol';
+  async deploy(): Promise<DeployedAddresses> {
+    console.log(`🚀 Starting QuikDB deployment on ${this.config.network}`);
     
-    if (rpcUrl) {
-      forgeCommand += ` --fork-url ${rpcUrl}`;
-      if (privateKey) {
-        forgeCommand += ` --broadcast --private-key ${privateKey}`;
-      }
-    }
-
-    // Set default private key for local testing if not provided
-    const envVars = privateKey 
-      ? `PRIVATE_KEY=${privateKey}` 
-      : 'PRIVATE_KEY=0x0000000000000000000000000000000000000000000000000000000000000001';
-
     try {
-      // Execute deployment
-      const output = execSync(`${envVars} ${forgeCommand}`, {
-        encoding: 'utf8',
-        stdio: 'pipe',
-        cwd: resolve(__dirname, '..')
-      });
+      // Build the forge script command
+      let command = `forge script scripts/QuikDBDeployment.sol --private-key ${this.config.privateKey} --broadcast`;
+      
+      if (this.config.rpcUrl) {
+        command += ` --rpc-url ${this.config.rpcUrl}`;
+      }
+      
+      if (this.config.verify) {
+        command += ` --verify`;
+      }
 
-      // Parse addresses from console output
-      const addresses = this.parseDeploymentAddresses(output);
+      console.log('📦 Executing deployment...');
+      const { stdout, stderr } = await execAsync(command);
+      
+      if (stderr && !stderr.includes('Compiler run successful')) {
+        console.error('Deployment error:', stderr);
+        throw new Error(stderr);
+      }
+
+      // Parse the deployment output
+      const addresses = this.parseDeploymentOutput(stdout);
       
       // Save deployment info
       await this.saveDeploymentInfo(addresses);
       
       console.log('✅ Deployment completed successfully!');
-      console.log('📋 Contract addresses:');
+      console.log('📋 Deployed contracts:');
       console.log(`   UserNodeRegistry: ${addresses.UserNodeRegistry}`);
+      console.log(`   UserNodeRegistryImpl: ${addresses.UserNodeRegistryImpl}`);
       console.log(`   QuiksToken: ${addresses.QuiksToken}`);
       console.log(`   QuiksTokenImpl: ${addresses.QuiksTokenImpl}`);
-
+      
       return addresses;
-
+      
     } catch (error) {
       console.error('❌ Deployment failed:', error);
       throw error;
@@ -69,109 +85,118 @@ class DeploymentController {
   }
 
   /**
-   * Parse contract addresses from forge script output
+   * Parse deployment output to extract contract addresses
    */
-  private parseDeploymentAddresses(output: string): DeploymentAddresses {
-    const addressRegex = /(\w+):\s+(0x[a-fA-F0-9]{40})/g;
-    const addresses: Partial<DeploymentAddresses> = {};
-    
-    let match;
-    while ((match = addressRegex.exec(output)) !== null) {
-      const [, contractName, address] = match;
-      if (contractName in { UserNodeRegistry: true, QuiksToken: true, QuiksTokenImpl: true }) {
-        (addresses as any)[contractName] = address;
+  private parseDeploymentOutput(output: string): DeployedAddresses {
+    const lines = output.split('\n');
+    const addresses: Partial<DeployedAddresses> = {};
+
+    for (const line of lines) {
+      if (line.includes('UserNodeRegistry:') && !line.includes('UserNodeRegistryImpl:')) {
+        addresses.UserNodeRegistry = line.split(':')[1].trim();
+      } else if (line.includes('UserNodeRegistryImpl:')) {
+        addresses.UserNodeRegistryImpl = line.split(':')[1].trim();
+      } else if (line.includes('QuiksToken:') && !line.includes('QuiksTokenImpl:')) {
+        addresses.QuiksToken = line.split(':')[1].trim();
+      } else if (line.includes('QuiksTokenImpl:')) {
+        addresses.QuiksTokenImpl = line.split(':')[1].trim();
       }
     }
 
-    // Validate all required addresses are present
-    if (!addresses.UserNodeRegistry || !addresses.QuiksToken || !addresses.QuiksTokenImpl) {
-      throw new Error('Failed to parse all required contract addresses from deployment output');
+    if (!addresses.UserNodeRegistry || !addresses.UserNodeRegistryImpl || !addresses.QuiksToken || !addresses.QuiksTokenImpl) {
+      throw new Error('Failed to parse deployment addresses from output');
     }
 
-    return addresses as DeploymentAddresses;
+    return {
+      ...addresses as Required<Pick<DeployedAddresses, 'UserNodeRegistry' | 'UserNodeRegistryImpl' | 'QuiksToken' | 'QuiksTokenImpl'>>,
+      deployedAt: new Date().toISOString(),
+      deployer: 'auto-deployed',
+      network: this.config.network
+    };
   }
 
   /**
-   * Save deployment information to JSON files for CLI consumption
+   * Save deployment information to files
    */
-  private async saveDeploymentInfo(addresses: DeploymentAddresses): Promise<void> {
-    // Create deployments directory if it doesn't exist
-    execSync(`mkdir -p ${this.deploymentDirectory}`, { stdio: 'inherit' });
-
-    // Network-specific deployment file
-    const networkFile = resolve(this.deploymentDirectory, `${this.networkName}.json`);
-    const deploymentData = {
-      network: this.networkName,
-      timestamp: new Date().toISOString(),
-      contracts: addresses,
-      // CLI compatibility format
-      userNodeRegistry: addresses.UserNodeRegistry,
-      quiksToken: addresses.QuiksToken
-    };
-
-    writeFileSync(networkFile, JSON.stringify(deploymentData, null, 2));
-
-    // Update latest.json for CLI default
-    const latestFile = resolve(this.deploymentDirectory, 'latest.json');
-    writeFileSync(latestFile, JSON.stringify(deploymentData, null, 2));
-
-    // Create addresses.json for legacy CLI compatibility
-    const addressesFile = resolve(this.deploymentDirectory, 'addresses.json');
-    const addressesData = {
-      contracts: {
-        UserNodeRegistry: {
-          address: addresses.UserNodeRegistry
-        },
-        QuiksToken: {
-          address: addresses.QuiksToken,
-          implementation: addresses.QuiksTokenImpl
-        }
-      },
-      network: this.networkName,
-      lastUpdated: new Date().toISOString()
-    };
-
-    writeFileSync(addressesFile, JSON.stringify(addressesData, null, 2));
-
-    console.log(`💾 Deployment info saved to: ${networkFile}`);
-  }
-
-  /**
-   * Verify deployed contracts
-   */
-  public async verify(addresses: DeploymentAddresses, rpcUrl?: string): Promise<void> {
-    console.log('🔍 Verifying contract deployments...');
+  private async saveDeploymentInfo(addresses: DeployedAddresses): Promise<void> {
+    const deploymentsDir = join(process.cwd(), 'deployments');
     
-    if (rpcUrl) {
-      // Could add contract verification logic here
-      console.log('✅ Contract verification completed');
-    } else {
-      console.log('⚠️  Skipping verification for local deployment');
+    // Ensure deployments directory exists
+    if (!existsSync(deploymentsDir)) {
+      mkdirSync(deploymentsDir, { recursive: true });
     }
+
+    // Save network-specific deployment
+    const networkFile = join(deploymentsDir, `${this.config.network}.json`);
+    writeFileSync(networkFile, JSON.stringify(addresses, null, 2));
+
+    // Save latest deployment (for CLI compatibility)
+    const latestFile = join(deploymentsDir, 'latest.json');
+    writeFileSync(latestFile, JSON.stringify(addresses, null, 2));
+
+    // Save addresses only (for simple access)
+    const addressesFile = join(deploymentsDir, 'addresses.json');
+    const simpleAddresses = {
+      UserNodeRegistry: addresses.UserNodeRegistry,
+      UserNodeRegistryImpl: addresses.UserNodeRegistryImpl,
+      QuiksToken: addresses.QuiksToken,
+      QuiksTokenImpl: addresses.QuiksTokenImpl
+    };
+    writeFileSync(addressesFile, JSON.stringify(simpleAddresses, null, 2));
+
+    console.log(`💾 Deployment info saved to deployments/${this.config.network}.json`);
   }
 }
 
-// CLI execution
-if (require.main === module) {
-  const args = process.argv.slice(2);
-  const networkName = args[0] || 'local';
-  const rpcUrl = process.env.RPC_URL;
-  const privateKey = process.env.PRIVATE_KEY;
+/**
+ * Main execution
+ */
+async function main() {
+  const network = process.argv[2] || 'local';
+  const privateKey = process.env.PRIVATE_KEY || '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
 
-  const controller = new DeploymentController(networkName);
+  // Network configurations
+  const networkConfigs: Record<string, Partial<DeploymentConfig>> = {
+    local: {
+      network: 'local',
+      rpcUrl: 'http://127.0.0.1:8545'
+    },
+    'lisk-sepolia': {
+      network: 'lisk-sepolia',
+      rpcUrl: process.env.RPC_URL || 'https://rpc.sepolia-api.lisk.com',
+      verify: true
+    },
+    'lisk-mainnet': {
+      network: 'lisk-mainnet',
+      rpcUrl: process.env.RPC_URL || 'https://rpc.api.lisk.com',
+      verify: true
+    }
+  };
+
+  const networkConfig = networkConfigs[network];
+  if (!networkConfig) {
+    console.error(`❌ Unknown network: ${network}`);
+    console.log('Available networks:', Object.keys(networkConfigs).join(', '));
+    process.exit(1);
+  }
+
+  const config: DeploymentConfig = {
+    ...networkConfig,
+    privateKey
+  } as DeploymentConfig;
+
+  const controller = new DeploymentController(config);
   
-  controller.deploy(rpcUrl, privateKey)
-    .then(addresses => {
-      return controller.verify(addresses, rpcUrl);
-    })
-    .then(() => {
-      console.log('🎉 All operations completed successfully!');
-      process.exit(0);
-    })
-    .catch(error => {
-      console.error('💥 Operation failed:', error.message);
-      process.exit(1);
-    });
+  try {
+    await controller.deploy();
+    console.log('🎉 All done!');
+  } catch (error) {
+    console.error('💥 Fatal error:', error);
+    process.exit(1);
+  }
 }
 
-export default DeploymentController;
+// Run if called directly
+if (require.main === module) {
+  main().catch(console.error);
+}
