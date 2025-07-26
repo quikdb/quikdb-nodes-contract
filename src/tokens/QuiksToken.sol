@@ -1,82 +1,77 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/utils/Pausable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/ERC20PermitUpgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol";
+import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
 
 /**
  * @title QuiksToken
  * @notice The official QuikDB network utility token (QUIKS)
- * @dev ERC-20 token with additional features for the QuikDB ecosystem:
- *      - Role-based access control for minting and administration
- *      - Pausable functionality for emergency situations
+ * @dev Upgradeable ERC-20 token with simple owner-only access control:
+ *      - Owner-only minting functionality
  *      - Burnable tokens for deflationary mechanisms
  *      - EIP-2612 permit functionality for gasless approvals
+ *      - UUPS upgradeable pattern for future improvements
  * 
  * Token Economics:
  * - Symbol: QUIKS
  * - Decimals: 18
- * - Total Supply: Managed through controlled minting
+ * - Total Supply: Managed through owner-controlled minting
  * - Use Cases: Rewards, payments, staking, governance
  */
-contract QuiksToken is ERC20, ERC20Burnable, ERC20Permit, AccessControl, Pausable {
-    
-    // ═══════════════════════════════════════════════════════════════
-    // ROLES
-    // ═══════════════════════════════════════════════════════════════
-    
-    /// @notice Role that can mint new tokens (rewards system)
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    
-    /// @notice Role that can pause/unpause the contract
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-    
-    /// @notice Role that can manage other roles
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+contract QuiksToken is 
+    Initializable,
+    ERC20Upgradeable, 
+    ERC20BurnableUpgradeable, 
+    ERC20PermitUpgradeable, 
+    OwnableUpgradeable,
+    UUPSUpgradeable {
 
     // ═══════════════════════════════════════════════════════════════
     // EVENTS
     // ═══════════════════════════════════════════════════════════════
     
-    /// @notice Emitted when tokens are minted for rewards
-    event RewardsMinted(address indexed recipient, uint256 amount, string reason);
-    
-    /// @notice Emitted when token economics parameters are updated
-    event TokenEconomicsUpdated(string parameter, uint256 oldValue, uint256 newValue);
+    /// @notice Emitted when tokens are minted
+    event TokensMinted(address indexed recipient, uint256 amount);
 
     // ═══════════════════════════════════════════════════════════════
-    // CONSTRUCTOR
+    // CONSTRUCTOR & INITIALIZER
     // ═══════════════════════════════════════════════════════════════
     
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+    
     /**
-     * @notice Initialize the QUIKS token
+     * @notice Initialize the QUIKS token (replaces constructor for upgradeable)
+     * @param name Token name
+     * @param symbol Token symbol
      * @param initialSupply Initial token supply (in wei, 18 decimals)
-     * @param admin Address that will have admin privileges
-     * @param minter Address that will have minting privileges (rewards system)
+     * @param initialOwner Address that will have owner privileges
      */
-    constructor(
+    function initialize(
+        string memory name,
+        string memory symbol,
         uint256 initialSupply,
-        address admin,
-        address minter
-    ) 
-        ERC20("QuikDB Token", "QUIKS") 
-        ERC20Permit("QuikDB Token")
-    {
-        require(admin != address(0), "Admin cannot be zero address");
-        require(minter != address(0), "Minter cannot be zero address");
+        address initialOwner
+    ) public initializer {
+        require(initialOwner != address(0), "Owner cannot be zero address");
         
-        // Grant roles
-        _grantRole(DEFAULT_ADMIN_ROLE, admin);
-        _grantRole(ADMIN_ROLE, admin);
-        _grantRole(PAUSER_ROLE, admin);
-        _grantRole(MINTER_ROLE, minter);
+        // Initialize parent contracts
+        __ERC20_init(name, symbol);
+        __ERC20Burnable_init();
+        __ERC20Permit_init(name);
+        __Ownable_init(initialOwner);
+        __UUPSUpgradeable_init();
         
-        // Mint initial supply to admin
+        // Mint initial supply to owner
         if (initialSupply > 0) {
-            _mint(admin, initialSupply);
+            _mint(initialOwner, initialSupply);
         }
     }
 
@@ -85,52 +80,16 @@ contract QuiksToken is ERC20, ERC20Burnable, ERC20Permit, AccessControl, Pausabl
     // ═══════════════════════════════════════════════════════════════
     
     /**
-     * @notice Mint tokens for rewards distribution
-     * @param to Recipient address (node operator)
-     * @param amount Amount to mint (in wei)
-     * @param reason Reason for minting (for transparency)
-     */
-    function mintRewards(
-        address to, 
-        uint256 amount, 
-        string calldata reason
-    ) external whenNotPaused {
-        require(to != address(0), "Cannot mint to zero address");
-        require(amount > 0, "Amount must be greater than 0");
-        require(bytes(reason).length > 0, "Reason cannot be empty");
-        
-        _mint(to, amount);
-        emit RewardsMinted(to, amount, reason);
-    }
-    
-    /**
-     * @notice Mint tokens to a specific address (admin function)
+     * @notice Mint tokens to a specific address (owner only)
      * @param to Recipient address
      * @param amount Amount to mint (in wei)
      */
-    function mint(address to, uint256 amount) external whenNotPaused {
+    function mint(address to, uint256 amount) external onlyOwner {
         require(to != address(0), "Cannot mint to zero address");
         require(amount > 0, "Amount must be greater than 0");
         
         _mint(to, amount);
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // PAUSE FUNCTIONS
-    // ═══════════════════════════════════════════════════════════════
-    
-    /**
-     * @notice Pause all token transfers (emergency function)
-     */
-    function pause() external {
-        _pause();
-    }
-    
-    /**
-     * @notice Unpause token transfers
-     */
-    function unpause() external {
-        _unpause();
+        emit TokensMinted(to, amount);
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -138,14 +97,17 @@ contract QuiksToken is ERC20, ERC20Burnable, ERC20Permit, AccessControl, Pausabl
     // ═══════════════════════════════════════════════════════════════
     
     /**
-     * @notice Override _update to include pause functionality
+     * @notice Authorization for UUPS upgrades (owner only)
+     * @param newImplementation Address of the new implementation
      */
-    function _update(
-        address from,
-        address to,
-        uint256 value
-    ) internal override whenNotPaused {
-        super._update(from, to, value);
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
+    
+    /**
+     * @notice Returns the current implementation version
+     * @return Version string
+     */
+    function version() external pure returns (string memory) {
+        return "1.0.0";
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -166,23 +128,6 @@ contract QuiksToken is ERC20, ERC20Burnable, ERC20Permit, AccessControl, Pausabl
         uint256 totalSupply
     ) {
         return (super.name(), super.symbol(), super.decimals(), super.totalSupply());
-    }
-    
-    /**
-     * @notice Check if an address has minting privileges
-     * @param account Address to check
-     * @return bool True if address can mint tokens
-     */
-    function canMint(address account) external view returns (bool) {
-        return hasRole(MINTER_ROLE, account);
-    }
-    
-    /**
-     * @notice Check if the contract is currently paused
-     * @return bool True if paused
-     */
-    function isPaused() external view returns (bool) {
-        return paused();
     }
 
     // ═══════════════════════════════════════════════════════════════
