@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
+import "openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import "../src/tokens/QuiksToken.sol";
 import "../src/UserNodeRegistry.sol";
 
@@ -14,22 +15,41 @@ contract QuikDBTest is Test {
     address operator = address(0x2000);
 
     function setUp() public {
-        token = new QuiksToken();
-        token.initialize("QuikDB Token", "QUIKS", 0, owner);
+        // Deploy QuiksToken implementation
+        QuiksToken tokenImpl = new QuiksToken();
+        
+        // Deploy proxy for QuiksToken
+        bytes memory tokenInitData = abi.encodeWithSelector(
+            QuiksToken.initialize.selector,
+            "QuikDB Token",
+            "QUIKS",
+            1000000 ether,
+            owner
+        );
+        ERC1967Proxy tokenProxy = new ERC1967Proxy(address(tokenImpl), tokenInitData);
+        token = QuiksToken(address(tokenProxy));
 
-        registry = new UserNodeRegistry();
-        registry.initialize(owner);
+        // Deploy UserNodeRegistry implementation
+        UserNodeRegistry registryImpl = new UserNodeRegistry();
+        
+        // Deploy proxy for UserNodeRegistry
+        bytes memory registryInitData = abi.encodeWithSelector(
+            UserNodeRegistry.initialize.selector,
+            owner
+        );
+        ERC1967Proxy registryProxy = new ERC1967Proxy(address(registryImpl), registryInitData);
+        registry = UserNodeRegistry(address(registryProxy));
     }
 
-    function testOwnerSet() public {
+    function testOwnerSet() public view {
         assertEq(token.owner(), owner);
         assertEq(registry.owner(), owner);
     }
 
     function testMintByOwner() public {
         vm.prank(owner);
-        token.mint(user, 123);
-        assertEq(token.balanceOf(user), 123);
+        token.mint(user, 123 ether);
+        assertEq(token.balanceOf(user), 123 ether);
     }
 
     function testRegisterUser() public {
