@@ -3,7 +3,11 @@
 /**
  * @title DeploymentController
  * @notice TypeScript controller for QuikDB simplified contract deployment
- * @dev Manages deployment across different networks with simplified architecture
+ * @dev Manage    writeFileSync(addressesFile, JSON.stringify(simpleAddresses, null, 2));
+    console.log(`   ✅ addresses.json`);
+
+    console.log(`📁 All deployment files saved to deployments/ directory`);
+  }ent across different networks with simplified architecture
  */
 
 import { exec } from 'child_process';
@@ -122,13 +126,17 @@ class DeploymentController {
       mkdirSync(deploymentsDir, { recursive: true });
     }
 
+    console.log('💾 Saving deployment addresses to files...');
+
     // Save network-specific deployment
     const networkFile = join(deploymentsDir, `${this.config.network}.json`);
     writeFileSync(networkFile, JSON.stringify(addresses, null, 2));
+    console.log(`   ✅ ${this.config.network}.json`);
 
     // Save latest deployment (for CLI compatibility)
     const latestFile = join(deploymentsDir, 'latest.json');
     writeFileSync(latestFile, JSON.stringify(addresses, null, 2));
+    console.log(`   ✅ latest.json`);
 
     // Save addresses only (for simple access)
     const addressesFile = join(deploymentsDir, 'addresses.json');
@@ -139,8 +147,13 @@ class DeploymentController {
       QuiksTokenImpl: addresses.QuiksTokenImpl
     };
     writeFileSync(addressesFile, JSON.stringify(simpleAddresses, null, 2));
+    console.log(`   ✅ addresses.json`);
 
-    console.log(`💾 Deployment info saved to deployments/${this.config.network}.json`);
+    console.log(`📁 All deployment files saved to deployments/ directory`);
+    writeFileSync(addressesFile, JSON.stringify(simpleAddresses, null, 2));
+    console.log(`   ✅ addresses.json`);
+
+    console.log(`� All deployment files saved to deployments/ directory`);
   }
 }
 
