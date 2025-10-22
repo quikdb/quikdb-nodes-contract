@@ -13,6 +13,13 @@
     "deploy:local": "tsx scripts/DeploymentController.ts local",
     "deploy:lsk:testnet": "RPC_URL=https://rpc.sepolia-api.lisk.com tsx scripts/DeploymentController.ts lisk-sepolia",
     "deploy:lsk:mainnet": "RPC_URL=https://rpc.api.lisk.com tsx scripts/DeploymentController.ts lisk-mainnet",
+    "deploy:referral": "forge script scripts/DeployReferralSystem.s.sol:DeployReferralSystem --rpc-url $RPC_URL --broadcast --legacy -vvv",
+    "deploy:referral:testnet": "forge script scripts/DeployReferralSystem.s.sol:DeployReferralSystem --rpc-url https://rpc.sepolia-api.lisk.com --broadcast --legacy -vvv",
+    "upgrade:referral": "forge script scripts/DeployReferralSystem.s.sol:UpgradeReferralSystem --rpc-url $RPC_URL --broadcast --legacy -vvv",
+    "fund:referral": "forge script scripts/DeployReferralSystem.s.sol:FundReferralSystem --rpc-url $RPC_URL --broadcast --legacy -vvv",
+    "fund:referral:testnet": "forge script scripts/DeployReferralSystem.s.sol:FundReferralSystem --rpc-url https://rpc.sepolia-api.lisk.com --broadcast --legacy -vvv",
+    "migrate:registry": "forge script scripts/MigrateUserNodeRegistry.s.sol:MigrateUserNodeRegistry --rpc-url $RPC_URL --broadcast --legacy -vvv",
+    "migrate:registry:testnet": "forge script scripts/MigrateUserNodeRegistry.s.sol:MigrateUserNodeRegistry --rpc-url https://rpc.sepolia-api.lisk.com --broadcast --legacy -vvv",
     "validate-contracts": "tsx scripts/validate-contracts.ts",
     "validate-deployment": "tsx scripts/validateDeployment.ts"
   },

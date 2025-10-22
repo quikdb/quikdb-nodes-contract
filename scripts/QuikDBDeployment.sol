@@ -14,10 +14,12 @@ import "../src/tokens/QuiksToken.sol";
 contract QuikDBDeployment is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        address deployer = vm.addr(deployerPrivateKey);
+        
         vm.startBroadcast(deployerPrivateKey);
 
         // Generate unique salt based on timestamp to avoid collisions
-        bytes32 salt = keccak256(abi.encodePacked("QuikDB_v1.1", block.timestamp));
+        bytes32 salt = keccak256(abi.encodePacked("QuikDB_v1.2", block.timestamp));
 
         // Deploy UserNodeRegistry implementation
         UserNodeRegistry registryImpl = new UserNodeRegistry{salt: salt}();
@@ -25,7 +27,7 @@ contract QuikDBDeployment is Script {
         // Deploy proxy for UserNodeRegistry
         bytes memory registryInitData = abi.encodeWithSelector(
             UserNodeRegistry.initialize.selector,
-            msg.sender
+            deployer
         );
 
         ERC1967Proxy registryProxy = new ERC1967Proxy{salt: salt}(
@@ -42,7 +44,7 @@ contract QuikDBDeployment is Script {
             "QuikDB Token",
             "QUIKS",
             1000000000 * 10**18,
-            msg.sender
+            deployer
         );
 
         ERC1967Proxy tokenProxy = new ERC1967Proxy{salt: salt}(

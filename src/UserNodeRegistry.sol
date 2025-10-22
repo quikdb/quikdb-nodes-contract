@@ -108,6 +108,7 @@ contract UserNodeRegistry is
     // ═══════════════════════════════════════════════════════════════
 
     event UserRegistered(address indexed user, UserType userType, bytes32 profileHash);
+    event UserRegisteredWithReferral(address indexed user, UserType userType, bytes32 profileHash, bytes32 referralCode);
     event UsersRegisteredBatch(address[] users, UserType[] userTypes);
     
     event NodeRegistered(address indexed operator, NodeTier tier, ProviderType providerType);
