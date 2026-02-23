@@ -6,6 +6,7 @@ import "openzeppelin-contracts-upgradeable/contracts/utils/PausableUpgradeable.s
 import "openzeppelin-contracts-upgradeable/contracts/utils/ReentrancyGuardUpgradeable.sol";
 import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol";
 import "openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
+import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 /**
  * @title UserNodeRegistry
@@ -30,7 +31,7 @@ contract UserNodeRegistry is
     // ═══════════════════════════════════════════════════════════════
 
     enum UserType { CONSUMER, PROVIDER, MARKETPLACE_ADMIN, PLATFORM_ADMIN }
-    enum NodeTier { BASIC, PREMIUM, ENTERPRISE }
+    enum NodeTier { HOBBY, BUILDER, STARTUP, TEAM }
     enum ProviderType { STORAGE, COMPUTE, HYBRID }
     enum NodeStatus { INACTIVE, ACTIVE, MAINTENANCE, SUSPENDED }
     enum AppStatus { PENDING, RUNNING, STOPPED, FAILED, SCALING }
@@ -588,6 +589,18 @@ contract UserNodeRegistry is
     }
 
     /**
+     * @notice Check if a user is registered and active (detailed)
+     * @dev Avoids fragile tuple destructuring of the public mapping getter
+     * @param user Address to check
+     * @return userAddress The user's registered address (address(0) if not registered)
+     * @return isActive True if user is active
+     */
+    function getUserStatus(address user) external view returns (address userAddress, bool isActive) {
+        UserProfile storage profile = users[user];
+        return (profile.userAddress, profile.isActive);
+    }
+
+    /**
      * @notice Emergency withdrawal function (admin only)
      * @param token Token address (0x0 for ETH)
      * @param amount Amount to withdraw
@@ -597,10 +610,10 @@ contract UserNodeRegistry is
         uint256 amount
     ) external onlyOwner {
         if (token == address(0)) {
-            payable(owner()).transfer(amount);
+            (bool success, ) = payable(owner()).call{value: amount}("");
+            require(success, "ETH transfer failed");
         } else {
-            // ERC20 token withdrawal would go here
-            // IERC20(token).transfer(owner(), amount);
+            IERC20(token).transfer(owner(), amount);
         }
     }
 
@@ -619,6 +632,6 @@ contract UserNodeRegistry is
      * @return Version string
      */
     function version() external pure returns (string memory) {
-        return "1.0.0";
+        return "2.0.0";
     }
 }

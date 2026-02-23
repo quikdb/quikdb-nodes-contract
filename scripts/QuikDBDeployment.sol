@@ -19,7 +19,7 @@ contract QuikDBDeployment is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         // Generate unique salt based on timestamp to avoid collisions
-        bytes32 salt = keccak256(abi.encodePacked("QuikDB_v1.2", block.timestamp));
+        bytes32 salt = keccak256(abi.encodePacked("QuikDB_v2.0", block.timestamp));
 
         // Deploy UserNodeRegistry implementation
         UserNodeRegistry registryImpl = new UserNodeRegistry{salt: salt}();

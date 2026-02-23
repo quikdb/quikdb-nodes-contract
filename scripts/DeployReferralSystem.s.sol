@@ -13,66 +13,75 @@ import "openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Proxy.sol";
  * @dev Run with: forge script scripts/DeployReferralSystem.s.sol:DeployReferralSystem --rpc-url <RPC_URL> --broadcast
  */
 contract DeployReferralSystem is Script {
-    
+
     function run() external {
         // Load environment variables
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address deployer = vm.addr(deployerPrivateKey);
-        
+
         // Load existing contract addresses from environment
         address userRegistryAddress = vm.envAddress("USER_REGISTRY_ADDRESS");
         address quiksTokenAddress = vm.envAddress("QUIKS_TOKEN_ADDRESS");
-        
+        address usdtTokenAddress = vm.envAddress("USDT_TOKEN_ADDRESS");
+
         console.log("=================================================");
-        console.log("Deploying ReferralSystem");
+        console.log("Deploying ReferralSystem V2");
         console.log("=================================================");
         console.log("Deployer:", deployer);
         console.log("UserNodeRegistry:", userRegistryAddress);
         console.log("QuiksToken:", quiksTokenAddress);
+        console.log("USDT Token:", usdtTokenAddress);
         console.log("=================================================");
-        
+
         vm.startBroadcast(deployerPrivateKey);
-        
+
         // Deploy implementation contract
         ReferralSystem referralSystemImpl = new ReferralSystem();
         console.log("ReferralSystem Implementation deployed at:", address(referralSystemImpl));
-        
-        // Encode initialization data
+
+        // Encode V1 initialization data
         bytes memory initData = abi.encodeWithSelector(
             ReferralSystem.initialize.selector,
             userRegistryAddress,  // UserNodeRegistry address
             quiksTokenAddress,    // QuiksToken address
             deployer              // Owner address
         );
-        
-        // Deploy proxy contract
+
+        // Deploy proxy contract (calls initialize V1)
         ERC1967Proxy proxy = new ERC1967Proxy(
             address(referralSystemImpl),
             initData
         );
         console.log("ReferralSystem Proxy deployed at:", address(proxy));
-        
+
         // Wrap proxy in ReferralSystem interface
         ReferralSystem referralSystem = ReferralSystem(address(proxy));
-        
+
+        // Call initializeV2 to set USDT as reward token and update tiers
+        referralSystem.initializeV2(usdtTokenAddress);
+        console.log("V2 initialized with USDT reward token");
+
         // Verify initialization
         console.log("=================================================");
         console.log("Verifying deployment...");
         console.log("Owner:", referralSystem.owner());
         console.log("UserRegistry:", address(referralSystem.userRegistry()));
         console.log("QuiksToken:", address(referralSystem.quiksToken()));
+        console.log("Reward Token (USDT):", referralSystem.getRewardToken());
+        console.log("Version:", referralSystem.version());
         console.log("Total Referral Codes:", referralSystem.totalReferralCodes());
         console.log("Auto Reward Enabled:", referralSystem.autoRewardEnabled());
         console.log("=================================================");
-        
+
         vm.stopBroadcast();
-        
+
         // Save deployment addresses to file
         string memory deploymentInfo = string.concat(
             "REFERRAL_SYSTEM_PROXY=", vm.toString(address(proxy)), "\n",
-            "REFERRAL_SYSTEM_IMPL=", vm.toString(address(referralSystemImpl)), "\n"
+            "REFERRAL_SYSTEM_IMPL=", vm.toString(address(referralSystemImpl)), "\n",
+            "USDT_TOKEN_ADDRESS=", vm.toString(usdtTokenAddress), "\n"
         );
-        
+
         vm.writeFile("./deployments/referral-system-latest.txt", deploymentInfo);
         console.log("Deployment info saved to ./deployments/referral-system-latest.txt");
     }
