@@ -59,6 +59,21 @@ contract QuikDBDeployment is Script {
         console.log("UserNodeRegistryImpl:", address(registryImpl));
         console.log("QuiksToken:", address(tokenProxy));
         console.log("QuiksTokenImpl:", address(tokenImpl));
+
+        // Write deployment JSON for GitHub Actions to pick up and push to device-api
+        string memory networkName = vm.envOr("NETWORK_NAME", string("unknown"));
+        string memory obj = "deployment";
+        vm.serializeAddress(obj, "UserNodeRegistry", address(registryProxy));
+        vm.serializeAddress(obj, "UserNodeRegistryImpl", address(registryImpl));
+        vm.serializeAddress(obj, "QuiksToken", address(tokenProxy));
+        vm.serializeAddress(obj, "QuiksTokenImpl", address(tokenImpl));
+        vm.serializeAddress(obj, "deployer", deployer);
+        vm.serializeString(obj, "network", networkName);
+        string memory finalJson = vm.serializeString(obj, "version", "3.0.0");
+
+        string memory outPath = string(abi.encodePacked("./deployments/", networkName, ".json"));
+        vm.writeJson(finalJson, outPath);
+        console.log("Deployment JSON written to:", outPath);
     }
 }
 

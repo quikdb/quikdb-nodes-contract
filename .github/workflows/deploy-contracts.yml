@@ -1,0 +1,184 @@
+name: Deploy Contracts
+
+# Manual trigger only — no accidental deploys on push.
+# Set "network" to target chain. "action" controls fresh deploy vs upgrade.
+on:
+  workflow_dispatch:
+    inputs:
+      network:
+        description: 'Target network'
+        required: true
+        type: choice
+        options:
+          - lisk-sepolia
+          - lisk-mainnet
+      action:
+        description: 'Deployment action'
+        required: true
+        type: choice
+        default: deploy
+        options:
+          - deploy        # Full fresh deploy (all contracts)
+          - upgrade       # Upgrade existing proxy implementations
+          - transfer-ownership  # Transfer QuiksToken + Registry ownership to new address
+      new_owner:
+        description: 'New owner address (required for transfer-ownership only)'
+        required: false
+        type: string
+
+env:
+  FOUNDRY_PROFILE: default
+
+jobs:
+  deploy:
+    name: ${{ inputs.action }} → ${{ inputs.network }}
+    runs-on: arc-runner-set
+
+    # Extra safety: require manual approval for mainnet
+    environment: ${{ inputs.network == 'lisk-mainnet' && 'mainnet-deploy' || 'testnet-deploy' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Build contracts
+        run: forge build --sizes
+
+      - name: Run tests
+        run: forge test -vvv
+
+      # ── Resolve network config ─────────────────────────────────────────────
+      - name: Set network environment
+        id: net
+        run: |
+          if [ "${{ inputs.network }}" = "lisk-mainnet" ]; then
+            echo "rpc_url=${{ secrets.LISK_MAINNET_RPC_URL }}" >> $GITHUB_OUTPUT
+            echo "chain_id=1135" >> $GITHUB_OUTPUT
+          else
+            echo "rpc_url=${{ secrets.LISK_SEPOLIA_RPC_URL }}" >> $GITHUB_OUTPUT
+            echo "chain_id=4202" >> $GITHUB_OUTPUT
+          fi
+
+      # ── Deploy (fresh) ─────────────────────────────────────────────────────
+      - name: Deploy all contracts
+        if: inputs.action == 'deploy'
+        env:
+          PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+          NETWORK_NAME: ${{ inputs.network }}
+        run: |
+          forge script scripts/QuikDBDeployment.sol:QuikDBDeployment \
+            --rpc-url ${{ steps.net.outputs.rpc_url }} \
+            --broadcast \
+            --verify \
+            -vvv
+
+      # ── Upgrade ────────────────────────────────────────────────────────────
+      - name: Upgrade proxy implementations
+        if: inputs.action == 'upgrade'
+        env:
+          PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+          NETWORK_NAME: ${{ inputs.network }}
+        run: |
+          forge script scripts/UpgradeV2.s.sol:UpgradeV2 \
+            --rpc-url ${{ steps.net.outputs.rpc_url }} \
+            --broadcast \
+            --verify \
+            -vvv
+
+      # ── Transfer ownership ─────────────────────────────────────────────────
+      - name: Transfer ownership
+        if: inputs.action == 'transfer-ownership'
+        env:
+          PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+          NEW_OWNER: ${{ inputs.new_owner }}
+          NETWORK_NAME: ${{ inputs.network }}
+        run: |
+          if [ -z "$NEW_OWNER" ]; then
+            echo "ERROR: new_owner is required for transfer-ownership"
+            exit 1
+          fi
+
+          # Load current proxy addresses from deployments file
+          QUIKS_TOKEN=$(jq -r '.QuiksToken' deployments/${{ inputs.network }}.json)
+          REGISTRY=$(jq -r '.UserNodeRegistry' deployments/${{ inputs.network }}.json)
+
+          echo "Transferring QuiksToken ($QUIKS_TOKEN) ownership to $NEW_OWNER"
+          cast send $QUIKS_TOKEN \
+            "transferOwnership(address)" $NEW_OWNER \
+            --rpc-url ${{ steps.net.outputs.rpc_url }} \
+            --private-key $PRIVATE_KEY
+
+          echo "Transferring UserNodeRegistry ($REGISTRY) ownership to $NEW_OWNER"
+          cast send $REGISTRY \
+            "transferOwnership(address)" $NEW_OWNER \
+            --rpc-url ${{ steps.net.outputs.rpc_url }} \
+            --private-key $PRIVATE_KEY
+
+          echo "Ownership transferred. Update DEPLOYER_PRIVATE_KEY secret to the new wallet's key."
+
+      # ── Persist addresses to MongoDB via device-api webhook ───────────────
+      - name: Push deployment addresses to database
+        if: inputs.action != 'transfer-ownership'
+        run: |
+          DEPLOYMENT_FILE="deployments/${{ inputs.network }}.json"
+
+          if [ ! -f "$DEPLOYMENT_FILE" ]; then
+            echo "ERROR: deployment file not found: $DEPLOYMENT_FILE"
+            exit 1
+          fi
+
+          ADDRESSES=$(cat "$DEPLOYMENT_FILE")
+          DEPLOYER=$(echo "$ADDRESSES" | jq -r '.deployer // empty')
+
+          PAYLOAD=$(jq -n \
+            --arg network "${{ inputs.network }}" \
+            --argjson chainId ${{ steps.net.outputs.chain_id }} \
+            --argjson addresses "$ADDRESSES" \
+            --arg version "3.0.0" \
+            --arg deployer "$DEPLOYER" \
+            --arg triggeredBy "${{ github.actor }}" \
+            --arg runId "${{ github.run_id }}" \
+            --arg deployedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{
+              network: $network,
+              chainId: $chainId,
+              addresses: $addresses,
+              version: $version,
+              deployer: $deployer,
+              triggeredBy: $triggeredBy,
+              runId: $runId,
+              deployedAt: $deployedAt
+            }')
+
+          HTTP_STATUS=$(curl -s -o /tmp/webhook_response.json -w "%{http_code}" \
+            -X POST "${{ secrets.DEVICE_API_URL }}/api/v1/internal/contract-deployments" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.DEPLOY_WEBHOOK_TOKEN }}" \
+            -d "$PAYLOAD")
+
+          echo "Webhook response (HTTP $HTTP_STATUS):"
+          cat /tmp/webhook_response.json
+
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "ERROR: webhook returned HTTP $HTTP_STATUS"
+            exit 1
+          fi
+
+          echo "Contract addresses stored in MongoDB successfully."
+
+      # ── Commit updated deployment JSON back to repo ────────────────────────
+      - name: Commit deployment artifacts
+        if: inputs.action != 'transfer-ownership'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add deployments/
+          git diff --staged --quiet || git commit -m "chore: update ${{ inputs.network }} deployment artifacts [skip ci]"
+          git push
