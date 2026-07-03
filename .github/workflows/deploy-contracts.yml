@@ -206,6 +206,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add deployments/
+          git add -f deployments/
           git diff --staged --quiet || git commit -m "chore: update ${{ inputs.network }} deployment artifacts [skip ci]"
           git push
