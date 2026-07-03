@@ -103,6 +103,7 @@ jobs:
             --rpc-url ${{ steps.net.outputs.rpc_url }} \
             --broadcast \
             --verify \
+            --gas-price 2000000000 \
             -vvv
 
       # ── Upgrade ────────────────────────────────────────────────────────────
