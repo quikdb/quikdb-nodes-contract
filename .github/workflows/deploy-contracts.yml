@@ -76,6 +76,11 @@ jobs:
           [[ "$PK" != 0x* ]] && PK="0x$PK"
           echo "key=$PK" >> $GITHUB_OUTPUT
 
+      # ── Print deployer address so you know what wallet to fund ───────────
+      - name: Print deployer address
+        run: |
+          echo "Deployer address: $(cast wallet address --private-key '${{ steps.pk.outputs.key }}')"
+
       # ── Ensure deployments dir exists (vm.writeJson requires it) ──────────
       - name: Prepare deployments directory
         run: |
