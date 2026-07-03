@@ -68,7 +68,7 @@ jobs:
             echo "rpc_url=${{ secrets.LISK_SEPOLIA_RPC_URL }}" >> $GITHUB_OUTPUT
             echo "chain_id=4202" >> $GITHUB_OUTPUT
           else
-            echo "rpc_url=https://rpc.ankr.com/eth_sepolia" >> $GITHUB_OUTPUT
+            echo "rpc_url=https://ethereum-sepolia-rpc.publicnode.com" >> $GITHUB_OUTPUT
             echo "chain_id=11155111" >> $GITHUB_OUTPUT
           fi
 
