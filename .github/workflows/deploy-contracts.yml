@@ -76,6 +76,13 @@ jobs:
           [[ "$PK" != 0x* ]] && PK="0x$PK"
           echo "key=$PK" >> $GITHUB_OUTPUT
 
+      # ── Ensure deployments dir exists (vm.writeJson requires it) ──────────
+      - name: Prepare deployments directory
+        run: |
+          mkdir -p deployments
+          # Pre-create the target file so vm.writeJson can overwrite it
+          [ -f "deployments/${{ inputs.network }}.json" ] || echo '{}' > "deployments/${{ inputs.network }}.json"
+
       # ── Deploy (fresh) ─────────────────────────────────────────────────────
       - name: Deploy all contracts
         if: inputs.action == 'deploy'
