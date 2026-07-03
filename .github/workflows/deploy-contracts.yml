@@ -32,7 +32,9 @@ env:
 jobs:
   deploy:
     name: ${{ inputs.action }} → ${{ inputs.network }}
-    runs-on: arc-runner-set
+    # GitHub-hosted runner — this repo is public, ARC runner group blocks public repos.
+    # Security is equivalent: deployer PK lives in repo secrets, never exposed in logs.
+    runs-on: ubuntu-latest
 
     # Extra safety: require manual approval for mainnet
     environment: ${{ inputs.network == 'lisk-mainnet' && 'mainnet-deploy' || 'testnet-deploy' }}
