@@ -68,11 +68,19 @@ jobs:
             echo "chain_id=4202" >> $GITHUB_OUTPUT
           fi
 
+      # ── Normalize private key (ensure 0x prefix for vm.envUint) ──────────
+      - name: Normalize private key
+        id: pk
+        run: |
+          PK="${{ secrets.DEPLOYER_PRIVATE_KEY }}"
+          [[ "$PK" != 0x* ]] && PK="0x$PK"
+          echo "key=$PK" >> $GITHUB_OUTPUT
+
       # ── Deploy (fresh) ─────────────────────────────────────────────────────
       - name: Deploy all contracts
         if: inputs.action == 'deploy'
         env:
-          PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+          PRIVATE_KEY: ${{ steps.pk.outputs.key }}
           NETWORK_NAME: ${{ inputs.network }}
         run: |
           forge script scripts/QuikDBDeployment.sol:QuikDBDeployment \
@@ -85,7 +93,7 @@ jobs:
       - name: Upgrade proxy implementations
         if: inputs.action == 'upgrade'
         env:
-          PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+          PRIVATE_KEY: ${{ steps.pk.outputs.key }}
           NETWORK_NAME: ${{ inputs.network }}
         run: |
           forge script scripts/UpgradeV2.s.sol:UpgradeV2 \
@@ -98,7 +106,7 @@ jobs:
       - name: Transfer ownership
         if: inputs.action == 'transfer-ownership'
         env:
-          PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+          PRIVATE_KEY: ${{ steps.pk.outputs.key }}
           NEW_OWNER: ${{ inputs.new_owner }}
           NETWORK_NAME: ${{ inputs.network }}
         run: |
@@ -115,13 +123,13 @@ jobs:
           cast send $QUIKS_TOKEN \
             "transferOwnership(address)" $NEW_OWNER \
             --rpc-url ${{ steps.net.outputs.rpc_url }} \
-            --private-key $PRIVATE_KEY
+            --private-key "$PRIVATE_KEY"
 
           echo "Transferring UserNodeRegistry ($REGISTRY) ownership to $NEW_OWNER"
           cast send $REGISTRY \
             "transferOwnership(address)" $NEW_OWNER \
             --rpc-url ${{ steps.net.outputs.rpc_url }} \
-            --private-key $PRIVATE_KEY
+            --private-key "$PRIVATE_KEY"
 
           echo "Ownership transferred. Update DEPLOYER_PRIVATE_KEY secret to the new wallet's key."
 
