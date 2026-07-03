@@ -5,6 +5,7 @@ import "forge-std/Script.sol";
 import "openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import "../src/UserNodeRegistry.sol";
 import "../src/tokens/QuiksToken.sol";
+import "../src/tokens/MockUSDT.sol";
 
 /**
  * @title QuikDBDeployment
@@ -52,6 +53,11 @@ contract QuikDBDeployment is Script {
             tokenInitData
         );
 
+        // Deploy MockUSDT on testnet only (not mainnet)
+        MockUSDT mockUsdt = new MockUSDT{salt: salt}(deployer);
+        // Mint 1,000,000 USDT (6 decimals) to deployer for testnet payouts
+        mockUsdt.mint(deployer, 1_000_000 * 10**6);
+
         vm.stopBroadcast();
 
         // Output addresses for CLI consumption
@@ -59,6 +65,7 @@ contract QuikDBDeployment is Script {
         console.log("UserNodeRegistryImpl:", address(registryImpl));
         console.log("QuiksToken:", address(tokenProxy));
         console.log("QuiksTokenImpl:", address(tokenImpl));
+        console.log("MockUSDT:", address(mockUsdt));
 
         // Write deployment JSON for GitHub Actions to pick up and push to device-api
         string memory networkName = vm.envOr("NETWORK_NAME", string("unknown"));
@@ -67,6 +74,7 @@ contract QuikDBDeployment is Script {
         vm.serializeAddress(obj, "UserNodeRegistryImpl", address(registryImpl));
         vm.serializeAddress(obj, "QuiksToken", address(tokenProxy));
         vm.serializeAddress(obj, "QuiksTokenImpl", address(tokenImpl));
+        vm.serializeAddress(obj, "USDTToken", address(mockUsdt));
         vm.serializeAddress(obj, "deployer", deployer);
         vm.serializeString(obj, "network", networkName);
         string memory finalJson = vm.serializeString(obj, "version", "3.0.0");
