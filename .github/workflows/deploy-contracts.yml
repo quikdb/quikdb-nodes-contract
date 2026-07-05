@@ -1,8 +1,29 @@
 name: Deploy Contracts
 
-# Manual trigger only — no accidental deploys on push.
-# Set "network" to target chain. "action" controls fresh deploy vs upgrade.
+# Push to a network branch triggers deploy or upgrade for that network.
+# NEVER push contracts directly to main — main is CI only (build + test).
+#
+# Deploy branches  (fresh deploy — all contracts):
+#   eth-sepolia | eth-mainnet | lisk-sepolia | lisk-mainnet
+#
+# Upgrade branches (upgrade proxy implementations only):
+#   eth-sepolia-upgrade | eth-mainnet-upgrade | lisk-sepolia-upgrade | lisk-mainnet-upgrade
+#
+# Transfer ownership: workflow_dispatch only (requires new_owner address input).
+
 on:
+  push:
+    branches:
+      - eth-sepolia
+      - eth-mainnet
+      - lisk-sepolia
+      - lisk-mainnet
+      - eth-sepolia-upgrade
+      - eth-mainnet-upgrade
+      - lisk-sepolia-upgrade
+      - lisk-mainnet-upgrade
+
+  # transfer-ownership only — requires new_owner address
   workflow_dispatch:
     inputs:
       network:
@@ -11,20 +32,12 @@ on:
         type: choice
         options:
           - eth-sepolia
+          - eth-mainnet
           - lisk-sepolia
           - lisk-mainnet
-      action:
-        description: 'Deployment action'
-        required: true
-        type: choice
-        default: deploy
-        options:
-          - deploy        # Full fresh deploy (all contracts)
-          - upgrade       # Upgrade existing proxy implementations
-          - transfer-ownership  # Transfer QuiksToken + Registry ownership to new address
       new_owner:
-        description: 'New owner address (required for transfer-ownership only)'
-        required: false
+        description: 'New owner address'
+        required: true
         type: string
 
 env:
@@ -32,13 +45,10 @@ env:
 
 jobs:
   deploy:
-    name: ${{ inputs.action }} → ${{ inputs.network }}
-    # GitHub-hosted runner — this repo is public, ARC runner group blocks public repos.
-    # Security is equivalent: deployer PK lives in repo secrets, never exposed in logs.
     runs-on: ubuntu-latest
 
-    # Extra safety: require manual approval for mainnet
-    environment: ${{ inputs.network == 'lisk-mainnet' && 'mainnet-deploy' || 'testnet-deploy' }}
+    # Require manual approval for any mainnet branch
+    environment: ${{ (contains(github.ref_name, 'mainnet') || (github.event_name == 'workflow_dispatch' && contains(inputs.network, 'mainnet'))) && 'mainnet-deploy' || 'testnet-deploy' }}
 
     steps:
       - name: Checkout
@@ -51,31 +61,46 @@ jobs:
         with:
           version: nightly
 
-      - name: Build contracts
-        run: forge build --sizes
+      # ── Resolve ACTION and NETWORK from branch name or dispatch ───────────
+      - name: Resolve action and network
+        id: ctx
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "action=transfer-ownership" >> $GITHUB_OUTPUT
+            echo "network=${{ inputs.network }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref_name }}" == *-upgrade ]]; then
+            echo "action=upgrade" >> $GITHUB_OUTPUT
+            NETWORK="${{ github.ref_name }}"
+            echo "network=${NETWORK%-upgrade}" >> $GITHUB_OUTPUT
+          else
+            echo "action=deploy" >> $GITHUB_OUTPUT
+            echo "network=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Run tests
-        run: forge test -vvv
-
-      # ── Resolve network config ─────────────────────────────────────────────
-      - name: Set network environment
+      # ── Resolve RPC, chain ID, and verifier per network ───────────────────
+      - name: Set network config
         id: net
         run: |
-          if [ "${{ inputs.network }}" = "lisk-mainnet" ]; then
+          NETWORK="${{ steps.ctx.outputs.network }}"
+          if [ "$NETWORK" = "lisk-mainnet" ]; then
             echo "rpc_url=${{ secrets.LISK_MAINNET_RPC_URL }}" >> $GITHUB_OUTPUT
             echo "chain_id=1135" >> $GITHUB_OUTPUT
             echo "verifier=--verifier blockscout --verifier-url https://blockscout.lisk.com/api" >> $GITHUB_OUTPUT
-          elif [ "${{ inputs.network }}" = "lisk-sepolia" ]; then
+          elif [ "$NETWORK" = "lisk-sepolia" ]; then
             echo "rpc_url=${{ secrets.LISK_SEPOLIA_RPC_URL }}" >> $GITHUB_OUTPUT
             echo "chain_id=4202" >> $GITHUB_OUTPUT
             echo "verifier=--verifier blockscout --verifier-url https://sepolia-blockscout.lisk.com/api" >> $GITHUB_OUTPUT
+          elif [ "$NETWORK" = "eth-mainnet" ]; then
+            echo "rpc_url=${{ secrets.ETH_MAINNET_RPC_URL }}" >> $GITHUB_OUTPUT
+            echo "chain_id=1" >> $GITHUB_OUTPUT
+            echo "verifier=--verify" >> $GITHUB_OUTPUT
           else
             echo "rpc_url=https://ethereum-sepolia-rpc.publicnode.com" >> $GITHUB_OUTPUT
             echo "chain_id=11155111" >> $GITHUB_OUTPUT
             echo "verifier=--verify" >> $GITHUB_OUTPUT
           fi
 
-      # ── Normalize private key (ensure 0x prefix for vm.envUint) ──────────
+      # ── Normalize private key (ensure 0x prefix) ──────────────────────────
       - name: Normalize private key
         id: pk
         run: |
@@ -83,24 +108,32 @@ jobs:
           [[ "$PK" != 0x* ]] && PK="0x$PK"
           echo "key=$PK" >> $GITHUB_OUTPUT
 
-      # ── Print deployer address so you know what wallet to fund ───────────
-      - name: Print deployer address
+      - name: Print deployer info
         run: |
-          echo "Deployer address: $(cast wallet address --private-key '${{ steps.pk.outputs.key }}')"
+          echo "Action:   ${{ steps.ctx.outputs.action }}"
+          echo "Network:  ${{ steps.ctx.outputs.network }}"
+          echo "Chain ID: ${{ steps.net.outputs.chain_id }}"
+          echo "Deployer: $(cast wallet address --private-key '${{ steps.pk.outputs.key }}')"
 
-      # ── Ensure deployments dir exists (vm.writeJson requires it) ──────────
+      - name: Build contracts
+        run: forge build --sizes
+
+      - name: Run tests
+        run: forge test -vvv
+
+      # ── Prepare deployments dir (vm.writeJson requires it) ────────────────
       - name: Prepare deployments directory
+        if: steps.ctx.outputs.action != 'transfer-ownership'
         run: |
           mkdir -p deployments
-          # Pre-create the target file so vm.writeJson can overwrite it
-          [ -f "deployments/${{ inputs.network }}.json" ] || echo '{}' > "deployments/${{ inputs.network }}.json"
+          [ -f "deployments/${{ steps.ctx.outputs.network }}.json" ] || echo '{}' > "deployments/${{ steps.ctx.outputs.network }}.json"
 
-      # ── Deploy (fresh) ─────────────────────────────────────────────────────
+      # ── Deploy all contracts (fresh) ───────────────────────────────────────
       - name: Deploy all contracts
-        if: inputs.action == 'deploy'
+        if: steps.ctx.outputs.action == 'deploy'
         env:
           PRIVATE_KEY: ${{ steps.pk.outputs.key }}
-          NETWORK_NAME: ${{ inputs.network }}
+          NETWORK_NAME: ${{ steps.ctx.outputs.network }}
         run: |
           forge script scripts/QuikDBDeployment.sol:QuikDBDeployment \
             --rpc-url ${{ steps.net.outputs.rpc_url }} \
@@ -108,12 +141,12 @@ jobs:
             ${{ steps.net.outputs.verifier }} \
             -vvv
 
-      # ── Upgrade ────────────────────────────────────────────────────────────
+      # ── Upgrade proxy implementations ──────────────────────────────────────
       - name: Upgrade proxy implementations
-        if: inputs.action == 'upgrade'
+        if: steps.ctx.outputs.action == 'upgrade'
         env:
           PRIVATE_KEY: ${{ steps.pk.outputs.key }}
-          NETWORK_NAME: ${{ inputs.network }}
+          NETWORK_NAME: ${{ steps.ctx.outputs.network }}
         run: |
           forge script scripts/UpgradeV2.s.sol:UpgradeV2 \
             --rpc-url ${{ steps.net.outputs.rpc_url }} \
@@ -121,22 +154,21 @@ jobs:
             ${{ steps.net.outputs.verifier }} \
             -vvv
 
-      # ── Transfer ownership ─────────────────────────────────────────────────
+      # ── Transfer ownership (workflow_dispatch only) ────────────────────────
       - name: Transfer ownership
-        if: inputs.action == 'transfer-ownership'
+        if: steps.ctx.outputs.action == 'transfer-ownership'
         env:
           PRIVATE_KEY: ${{ steps.pk.outputs.key }}
           NEW_OWNER: ${{ inputs.new_owner }}
-          NETWORK_NAME: ${{ inputs.network }}
         run: |
           if [ -z "$NEW_OWNER" ]; then
-            echo "ERROR: new_owner is required for transfer-ownership"
+            echo "ERROR: new_owner is required"
             exit 1
           fi
 
-          # Load current proxy addresses from deployments file
-          QUIKS_TOKEN=$(jq -r '.QuiksToken' deployments/${{ inputs.network }}.json)
-          REGISTRY=$(jq -r '.UserNodeRegistry' deployments/${{ inputs.network }}.json)
+          QUIKS_TOKEN=$(jq -r '.QuiksToken' deployments/${{ steps.ctx.outputs.network }}.json)
+          REGISTRY=$(jq -r '.UserNodeRegistry' deployments/${{ steps.ctx.outputs.network }}.json)
+          STAKING=$(jq -r '.QuiksStaking' deployments/${{ steps.ctx.outputs.network }}.json)
 
           echo "Transferring QuiksToken ($QUIKS_TOKEN) ownership to $NEW_OWNER"
           cast send $QUIKS_TOKEN \
@@ -150,13 +182,19 @@ jobs:
             --rpc-url ${{ steps.net.outputs.rpc_url }} \
             --private-key "$PRIVATE_KEY"
 
-          echo "Ownership transferred. Update DEPLOYER_PRIVATE_KEY secret to the new wallet's key."
+          echo "Transferring QuiksStaking ($STAKING) ownership to $NEW_OWNER"
+          cast send $STAKING \
+            "transferOwnership(address)" $NEW_OWNER \
+            --rpc-url ${{ steps.net.outputs.rpc_url }} \
+            --private-key "$PRIVATE_KEY"
 
-      # ── Persist addresses to MongoDB via device-api webhook ───────────────
+          echo "Ownership transferred for all 3 contracts. Update DEPLOYER_PRIVATE_KEY secret to the new wallet key."
+
+      # ── Push addresses to MongoDB via device-api webhook ──────────────────
       - name: Push deployment addresses to database
-        if: inputs.action != 'transfer-ownership'
+        if: steps.ctx.outputs.action != 'transfer-ownership'
         run: |
-          DEPLOYMENT_FILE="deployments/${{ inputs.network }}.json"
+          DEPLOYMENT_FILE="deployments/${{ steps.ctx.outputs.network }}.json"
 
           if [ ! -f "$DEPLOYMENT_FILE" ]; then
             echo "ERROR: deployment file not found: $DEPLOYMENT_FILE"
@@ -167,7 +205,7 @@ jobs:
           DEPLOYER=$(echo "$ADDRESSES" | jq -r '.deployer // empty')
 
           PAYLOAD=$(jq -n \
-            --arg network "${{ inputs.network }}" \
+            --arg network "${{ steps.ctx.outputs.network }}" \
             --argjson chainId ${{ steps.net.outputs.chain_id }} \
             --argjson addresses "$ADDRESSES" \
             --arg version "3.0.0" \
@@ -201,13 +239,3 @@ jobs:
           fi
 
           echo "Contract addresses stored in MongoDB successfully."
-
-      # ── Commit updated deployment JSON back to repo ────────────────────────
-      - name: Commit deployment artifacts
-        if: inputs.action != 'transfer-ownership'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f deployments/
-          git diff --staged --quiet || git commit -m "chore: update ${{ inputs.network }} deployment artifacts [skip ci]"
-          git push
