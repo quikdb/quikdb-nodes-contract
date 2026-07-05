@@ -64,18 +64,14 @@ jobs:
           if [ "${{ inputs.network }}" = "lisk-mainnet" ]; then
             echo "rpc_url=${{ secrets.LISK_MAINNET_RPC_URL }}" >> $GITHUB_OUTPUT
             echo "chain_id=1135" >> $GITHUB_OUTPUT
-            # Lisk is OP Stack — requires legacy tx type (no EIP-1559)
-            echo "legacy=--legacy" >> $GITHUB_OUTPUT
             echo "verifier=--verifier blockscout --verifier-url https://blockscout.lisk.com/api" >> $GITHUB_OUTPUT
           elif [ "${{ inputs.network }}" = "lisk-sepolia" ]; then
             echo "rpc_url=${{ secrets.LISK_SEPOLIA_RPC_URL }}" >> $GITHUB_OUTPUT
             echo "chain_id=4202" >> $GITHUB_OUTPUT
-            echo "legacy=--legacy" >> $GITHUB_OUTPUT
             echo "verifier=--verifier blockscout --verifier-url https://sepolia-blockscout.lisk.com/api" >> $GITHUB_OUTPUT
           else
             echo "rpc_url=https://ethereum-sepolia-rpc.publicnode.com" >> $GITHUB_OUTPUT
             echo "chain_id=11155111" >> $GITHUB_OUTPUT
-            echo "legacy=" >> $GITHUB_OUTPUT
             echo "verifier=--verify" >> $GITHUB_OUTPUT
           fi
 
@@ -110,7 +106,6 @@ jobs:
             --rpc-url ${{ steps.net.outputs.rpc_url }} \
             --broadcast \
             ${{ steps.net.outputs.verifier }} \
-            ${{ steps.net.outputs.legacy }} \
             -vvv
 
       # ── Upgrade ────────────────────────────────────────────────────────────
@@ -124,7 +119,6 @@ jobs:
             --rpc-url ${{ steps.net.outputs.rpc_url }} \
             --broadcast \
             ${{ steps.net.outputs.verifier }} \
-            ${{ steps.net.outputs.legacy }} \
             -vvv
 
       # ── Transfer ownership ─────────────────────────────────────────────────
