@@ -1,174 +1,99 @@
-# QuikDB Simplified Smart Contract Architecture
+# quikdb-nodes-contract
 
-## Overview
+Solidity smart contracts for QuikDB on-chain operations: user/node registration, referral rewards, QUIKS utility token, and node affiliate staking.
 
-This repository contains the simplified QuikDB smart contract architecture with only two core contracts:
+## Stack
 
-- **UserNodeRegistry.sol** - Unified contract for managing users, nodes, and applications
-- **QuiksToken.sol** - Official QuikDB network utility token (QUIKS) with owner-only access control
-
-## Key Simplifications
-
-### 🔒 Auth Model
-- **Removed**: Complex role-based access control (RBAC) with multiple roles
-- **Added**: Simple owner-only access control using OpenZeppelin's `Ownable`
-- **Result**: Only the deployer can perform admin functions (minting, upgrades)
-
-### 🏗️ Architecture
-- **Removed**: Complex multi-contract system with storage/logic separation
-- **Added**: Unified contracts with all functionality in single files
-- **Result**: Reduced gas costs and simplified interactions
-
-### 🪙 Token Features
-- **Removed**: Role-based minting, pausing functionality, complex permissions
-- **Added**: Owner-only minting, simple upgradeable token
-- **Result**: Secure but simple token management
+| Component | Value |
+| --------- | ----- |
+| Language | Solidity ^0.8.20 |
+| Framework | Foundry (Forge) |
+| Dependencies | OpenZeppelin Contracts (upgradeable) |
+| Config | `foundry.toml` |
+| Build output | `out/` |
 
 ## Contracts
 
-### UserNodeRegistry.sol
-```solidity
-contract UserNodeRegistry is Ownable, Pausable, ReentrancyGuard
-```
-- User registration and profile management
-- Node registration and metadata
-- Application deployment tracking
-- Performance metrics
-- Owner-only administrative functions
+| File | Contract | Purpose |
+| ---- | -------- | ------- |
+| `src/UserNodeRegistry.sol` | UserNodeRegistry | Upgradeable registry for users, nodes, and applications. Handles registration, metadata, deployment tracking, performance metrics, and batch operations. |
+| `src/ReferralSystem.sol` | ReferralSystem | Referral code generation, tracking, and USDT reward distribution. Tier-based bonuses. |
+| `src/tokens/QuiksToken.sol` | QuiksToken | ERC-20 utility token (QUIKS). Owner-only minting with 500M hard cap, burnable, EIP-2612 permit. v2.0.0. |
+| `src/QuiksStaking.sol` | QuiksStaking | Node Affiliate staking. 5,000 QUIKS required, 90-day lock, owner-triggered slash → burn. v1.0.0. |
 
-### QuiksToken.sol
-```solidity
-contract QuiksToken is 
-    ERC20Upgradeable, 
-    ERC20BurnableUpgradeable, 
-    ERC20PermitUpgradeable, 
-    OwnableUpgradeable,
-    UUPSUpgradeable
+All contracts use the UUPS upgradeable proxy pattern with `OwnableUpgradeable`, `PausableUpgradeable`, and `ReentrancyGuardUpgradeable`.
+
+## Build and Test
+
+```bash
+forge build      # Compile
+forge test -vvv  # Run tests
 ```
-- ERC-20 token with 18 decimals
-- Owner-only minting capability
-- Burnable tokens for deflationary mechanisms
-- EIP-2612 permit functionality for gasless approvals
-- UUPS upgradeable pattern for future improvements
 
 ## Deployment
 
-### Quick Start
-```bash
-# Install dependencies
-yarn install
+**ALL deployments go through GitHub Actions only — never deploy locally.**
 
-# Compile contracts
-yarn build
+Push to the target network branch to trigger a deploy. Each branch maps to exactly one network.
 
-# Deploy locally (dry run)
-yarn deploy
+### Deploy branches (fresh deploy — all contracts)
 
-# Deploy to Lisk Sepolia
-yarn deploy:lsk:testnet
+| Branch | Network |
+| ------ | ------- |
+| `eth-sepolia` | Ethereum Sepolia (chainId 11155111) |
+| `eth-mainnet` | Ethereum Mainnet (chainId 1) |
+| `lisk-sepolia` | Lisk Sepolia (chainId 4202) |
+| `lisk-mainnet` | Lisk Mainnet (chainId 1135) |
 
-# Deploy to Lisk Mainnet
-yarn deploy:lsk:mainnet
-```
+### Upgrade branches (upgrade proxy implementations only)
 
-### Environment Variables
-```bash
-PRIVATE_KEY=your_private_key_here
-RPC_URL=https://rpc.sepolia-api.lisk.com  # for testnet
-```
+| Branch | Network |
+| ------ | ------- |
+| `eth-sepolia-upgrade` | Ethereum Sepolia |
+| `eth-mainnet-upgrade` | Ethereum Mainnet |
+| `lisk-sepolia-upgrade` | Lisk Sepolia |
+| `lisk-mainnet-upgrade` | Lisk Mainnet |
 
-### Deployment Files
-After deployment, contract addresses are saved to:
-- `deployments/{network}.json` - Full deployment info
-- `deployments/latest.json` - Latest deployment (CLI compatibility)
-- `deployments/addresses.json` - Simple address mapping
+### Transfer ownership
 
-## Usage
+Use `workflow_dispatch` on the **Deploy Contracts** workflow. Requires `network` and `new_owner` address as inputs.
 
-### Token Operations (Owner Only)
-```solidity
-// Mint tokens to an address
-function mint(address to, uint256 amount) external onlyOwner
+**WARNING: Always transfer ownership BEFORE rotating `DEPLOYER_PRIVATE_KEY`. If you rotate the key first, the new wallet cannot call `transferOwnership`.**
 
-// Upgrade the token implementation
-function upgradeToAndCall(address newImplementation, bytes calldata data) external onlyOwner
-```
+### Mainnet approval gate
 
-### Registry Operations (Owner Only)
-```solidity
-// Pause/unpause the registry
-function pause() external onlyOwner
-function unpause() external onlyOwner
+Pushes to any `mainnet` branch require manual approval from Samson before the job runs (via the `mainnet-deploy` GH Environment).
 
-// Emergency functions available to owner
-```
+### What happens on deploy
 
-## Security Model
+1. `forge test` runs — deploy aborts on any failure
+2. `forge script scripts/QuikDBDeployment.sol` broadcasts transactions
+3. Contract addresses are POSTed to `device-api` webhook
+4. `device-api` stores addresses in MongoDB (`contractDeployments` collection)
+5. `payoutTransferService` reads addresses from MongoDB at runtime
 
-### Access Control
-- **Owner**: Deployer address with full administrative privileges
-- **Users**: Can interact with public functions (transfers, registrations)
-- **No Roles**: Simplified permission model without complex role management
+Deployment JSON files in `deployments/` are written during the run for the webhook step only — they are NOT committed back to the repo.
 
-### Upgrade Safety
-- QuiksToken uses UUPS proxy pattern
-- Only owner can authorize upgrades
-- UserNodeRegistry is not upgradeable (deploy new version if needed)
+### Org secrets required
 
-## Gas Efficiency
+| Secret | Description |
+| ------ | ----------- |
+| `DEPLOYER_PRIVATE_KEY` | Wallet that owns QuiksToken + UserNodeRegistry |
+| `LISK_SEPOLIA_RPC_URL` | `https://rpc.sepolia-api.lisk.com` |
+| `LISK_MAINNET_RPC_URL` | `https://rpc.api.lisk.com` |
+| `ETH_MAINNET_RPC_URL` | Ethereum mainnet RPC |
+| `DEPLOY_WEBHOOK_TOKEN` | Bearer token for device-api webhook |
+| `DEVICE_API_URL` | `https://device.quikdb.net` |
 
-### Optimizations
-- Single contract architecture reduces cross-contract calls
-- Removed complex role checks and modifiers
-- Simplified storage patterns
-- Batch operations where possible
+## Contract Addresses
 
-### Estimated Gas Costs
-- Token mint: ~50,000 gas
-- User registration: ~80,000 gas
-- Node registration: ~120,000 gas
+Contract addresses are the source of truth in MongoDB (`contractDeployments` collection) — not in this repo.
 
-## CLI Integration
+Live networks: `eth-sepolia`, `eth-mainnet`, `lisk-sepolia`, `lisk-mainnet`
 
-The deployment creates files compatible with the QuikDB CLI:
+## Quirks
 
-```json
-{
-  "UserNodeRegistry": "0x...",
-  "QuiksToken": "0x...",
-  "QuiksTokenImpl": "0x..."
-}
-```
-
-## Development
-
-### Testing
-```bash
-# Run contract tests
-yarn test
-
-# Generate gas snapshot
-yarn snapshot
-```
-
-### Verification
-```bash
-# Verify contracts on Etherscan/Blockscout
-yarn deploy:lsk:testnet  # includes --verify flag
-```
-
-## Migration from Complex Architecture
-
-If migrating from the previous complex architecture:
-
-1. **No Data Migration**: Since this is a simplified deployment, no existing data needs to be migrated
-2. **Address Updates**: Update CLI and frontend to use new contract addresses
-3. **Permission Updates**: Remove role-based access code, use owner-only patterns
-4. **Integration Updates**: Simplify contract interactions to use unified contracts
-
-## Support
-
-For questions about the simplified architecture:
-- Check the contract documentation in `src/`
-- Review deployment scripts in `scripts/`
-- Examine test files for usage examples
+- Storage layout must be preserved across upgrades — never reorder or remove storage variables.
+- `via_ir = true` enables IR-based compilation (better optimization, slower compile).
+- QuiksToken `maxSupply` is enforced on-chain — `mint()` reverts if `totalSupply + amount > 500M`.
+- `payoutTransferService` throws on init if no MongoDB record exists for the active network.
